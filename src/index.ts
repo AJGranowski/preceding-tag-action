@@ -19,13 +19,17 @@ const allTagsResponse = await octokit.rest.git.listMatchingRefs({
 const compareTagsCD = await octokit.rest.repos.compareCommitsWithBasehead({
     owner: "AJGranowski",
     repo: "git-api-test",
-    basehead: "D...C"
+    basehead: "D...C",
+    per_page: 1,
+    page: 1
 });
 
 const compareTagsAD = await octokit.rest.repos.compareCommitsWithBasehead({
     owner: "AJGranowski",
     repo: "git-api-test",
-    basehead: "D...A"
+    basehead: "D...A",
+    per_page: 1,
+    page: 1
 });
 
 console.log(someTagsResponse);
