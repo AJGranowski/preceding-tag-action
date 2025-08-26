@@ -1,10 +1,10 @@
 import { Octokit } from "@octokit/rest";
+
 import { GitHubAPI } from "./GitHubAPI";
+import { PrecedingTag } from "./PrecedingTag";
 
 const octokit: Octokit = new Octokit({});
 const githubAPI = new GitHubAPI(octokit, {owner: "AJGranowski", repo: "git-api-test"});
+const precedingTag = new PrecedingTag(githubAPI);
 
-const allTags = await githubAPI.fetchAllTags(/.+/);
-for (const tag of allTags) {
-    console.log(`distance from ${tag} to C:`, await githubAPI.fetchCommitDifference(tag, "B"));
-}
+console.log(await precedingTag.fetchPrecedingTag("HEAD"));

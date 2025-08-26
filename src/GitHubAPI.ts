@@ -1,4 +1,6 @@
 import type { Octokit } from "@octokit/rest";
+
+import type { CommitDate } from "./CommitDate";
 import type { Repository } from "./Repository";
 
 type GitTag = string;
@@ -44,7 +46,9 @@ class GitHubAPI {
         return this.octokit.rest.repos.compareCommitsWithBasehead({
             owner: this.repo.owner,
             repo: this.repo.repo,
-            basehead: `${base}...${head}`
+            basehead: `${base}...${head}`,
+            page: 1,
+            per_page: 1
         }).then((response) => {
             switch (response.data.status) {
                 case "ahead":
@@ -58,6 +62,21 @@ class GitHubAPI {
                 default:
                     throw new Error(`Unknown compare status: ${response.data.status}`);
             }
+        });
+    }
+
+    async fetchCommitDate(ref: GitRef): Promise<CommitDate> {
+        return this.octokit.rest.repos.getCommit({
+            owner: this.repo.owner,
+            repo: this.repo.repo,
+            ref: ref,
+            page: 1,
+            per_page: 1
+        }).then((response) => {
+            return {
+                author: response.data.commit.author?.date,
+                committer: response.data.commit.committer?.date
+            };
         });
     }
 }
