@@ -38,7 +38,7 @@ export default tseslint.config(
             "eol-last": ["error", "never"],
             "func-call-spacing": "error",
             "implicit-arrow-linebreak": ["error", "beside"],
-            "indent": ["error", 4],
+            "indent": ["error", 4, {SwitchCase: 1}],
             "key-spacing": "error",
             "linebreak-style": ["error", "unix"],
             "lines-between-class-members": ["error", "always", {"exceptAfterSingleLine": true}],

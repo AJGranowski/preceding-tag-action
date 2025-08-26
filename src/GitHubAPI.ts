@@ -43,8 +43,25 @@ class GitHubAPI {
      * If the head ref is an ancestor of the base ref, the result is negative.
      * If the head ref is diverged from the base ref, the result is NaN.
      */
-    async fetchCommitDifference(head: GitRef, base: GitRef): Promise<number> {
-        return Promise.resolve(base.length - head.length);
+    async fetchCommitDifference(base: GitRef, head: GitRef): Promise<number> {
+        return this.octokit.rest.repos.compareCommitsWithBasehead({
+            owner: this.repo.owner,
+            repo: this.repo.repo,
+            basehead: `${base}...${head}`
+        }).then((response) => {
+            switch (response.data.status) {
+                case "ahead":
+                    return response.data.ahead_by;
+                case "behind":
+                    return -response.data.behind_by;
+                case "identical":
+                    return 0;
+                case "diverged":
+                    return NaN;
+                default:
+                    throw new Error(`Unknown compare status: ${response.data.status}`);
+            }
+        });
     }
 }
 
