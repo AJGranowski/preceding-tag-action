@@ -32,7 +32,7 @@ class PrecedingTag {
             })
             .then((tagDistances) => {
                 const precedingTag = tagDistances
-                    .filter((x) => !isNaN(x.commitDifference) && x.commitDifference > 0)
+                    .filter((x) => !isNaN(x.commitDifference) && x.commitDifference >= 0)
                     .reduce((prev: TagDifference | null, next: TagDifference) => {
                         if (prev == null) {
                             return next;
