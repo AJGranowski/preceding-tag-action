@@ -1,0 +1,21 @@
+{
+    "compilerOptions": {
+        "alwaysStrict": true,
+        "declaration": false,
+        "esModuleInterop": true,
+        "module": "nodenext",
+        "noImplicitAny": true,
+        "noImplicitReturns": false,
+        "noUnusedLocals": true,
+        "resolveJsonModule": true,
+        "rootDir": "./",
+        "strictBindCallApply": true,
+        "strictFunctionTypes": true,
+        "strictNullChecks": true,
+        "strictPropertyInitialization": true,
+        "useUnknownInCatchVariables": true
+    },
+    "include": [
+        "src/**/*"
+    ]
+}

@@ -1,0 +1,25 @@
+{
+    "name": "preceding-tag-action",
+    "description": "Finds the most recent tag matching the given pattern that is reachable from this commit.",
+    "license": "MIT",
+    "author": "AJ Granowski",
+    "type": "module",
+    "main": "index.js",
+    "scripts": {
+        "bundle": "node esbuild.config.mjs",
+        "check-types": "tsc -noEmit",
+        "format": "npm exec --no -- eslint --fix",
+        "lint": "npm exec --no -- eslint",
+        "run-bundle": "node dist/index.js"
+    },
+    "dependencies": {
+        "@actions/core": "^1.11.1",
+        "@octokit/rest": "^22.0.0"
+    },
+    "devDependencies": {
+        "esbuild": "^0.25.9",
+        "eslint": "^9.34.0",
+        "typescript": "^5.9.2",
+        "typescript-eslint": "^8.41.0"
+    }
+}
