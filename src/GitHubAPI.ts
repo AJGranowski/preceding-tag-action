@@ -1,11 +1,8 @@
 import type { Octokit } from "@octokit/rest";
+import type { Repository } from "./Repository";
 
 type GitTag = string;
 type GitRef = string;
-interface Repository {
-    owner: string,
-    repo: string
-}
 
 class GitHubAPI {
     private readonly octokit: Octokit;
