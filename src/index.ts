@@ -1,40 +1,7 @@
 import { Octokit } from "@octokit/rest";
+import { GitHubAPI } from "./GitHubAPI";
 
 const octokit: Octokit = new Octokit({});
-
-// https://docs.github.com/en/rest/repos/repos?apiVersion=2022-11-28#list-repository-tags
-const someTagsResponse = await octokit.rest.repos.listTags({
-    owner: "AJGranowski",
-    repo: "git-api-test"
-});
-
-// https://docs.github.com/en/rest/git/refs?apiVersion=2022-11-28#list-matching-references
-const allTagsResponse = await octokit.rest.git.listMatchingRefs({
-    owner: "AJGranowski",
-    repo: "git-api-test",
-    ref: "tags"
-});
-
-// https://docs.github.com/en/rest/commits/commits?apiVersion=2022-11-28#compare-two-commits
-const compareTagsCD = await octokit.rest.repos.compareCommitsWithBasehead({
-    owner: "AJGranowski",
-    repo: "git-api-test",
-    basehead: "D...C",
-    per_page: 1,
-    page: 1
-});
-
-const compareTagsAD = await octokit.rest.repos.compareCommitsWithBasehead({
-    owner: "AJGranowski",
-    repo: "git-api-test",
-    basehead: "D...A",
-    per_page: 1,
-    page: 1
-});
-
-console.log(someTagsResponse);
-console.log(allTagsResponse);
-console.log(compareTagsCD);
-console.log(compareTagsAD);
-
-export {};
+const githubAPI = new GitHubAPI(octokit, {owner: "AJGranowski", repo: "git-api-test"});
+console.log(await githubAPI.fetchAllTags(/.+/));
+console.log(await githubAPI.fetchAllTags(/[B-Z]/));
