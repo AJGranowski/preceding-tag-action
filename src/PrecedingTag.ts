@@ -5,6 +5,8 @@ interface TagDifference {
     commitDifference: number
 }
 
+type MapCallback<T, U> = (value: T, index: number, array: T[]) => U
+
 class PrecedingTag {
     private githubAPI: GitHubAPI;
     constructor(githubAPI: GitHubAPI) {
@@ -55,46 +57,45 @@ class PrecedingTag {
 
                 return precedingTag.tags;
             })
-            .then((precedingTags) => {
+            .then(async (precedingTags) => {
                 if (precedingTags.length === 0) {
                     return null;
                 } else if (precedingTags.length === 1) {
                     return precedingTags[0];
                 }
 
-                return Promise.all(precedingTags.map(async (tag) => {
+                const commitDates = await Promise.all(precedingTags.map(async (tag) => {
                     return {
                         tag: tag,
                         commitDate: await this.githubAPI.fetchCommitDate(tag)
                     };
-                }))
-                    .then((commitDates) => {
-                        return commitDates.reduce((prev, next) => {
-                            let compareNextPrev = this.nullableDateComparator(next.commitDate.committer, prev.commitDate.committer);
-                            if (compareNextPrev > 0) {
-                                return next;
-                            } else if (compareNextPrev < 0) {
-                                return prev;
-                            }
+                }));
 
-                            compareNextPrev = this.nullableDateComparator(next.commitDate.author, prev.commitDate.author);
+                return commitDates.reduce((prev, next) => {
+                    let compareNextPrev = this.nullableDateComparator(next.commitDate.committer, prev.commitDate.committer);
+                    if (compareNextPrev > 0) {
+                        return next;
+                    } else if (compareNextPrev < 0) {
+                        return prev;
+                    }
 
-                            if (compareNextPrev > 0) {
-                                return next;
-                            } else if (compareNextPrev < 0) {
-                                return prev;
-                            }
+                    compareNextPrev = this.nullableDateComparator(next.commitDate.author, prev.commitDate.author);
 
-                            return prev;
-                        }).tag;
-                    });
+                    if (compareNextPrev > 0) {
+                        return next;
+                    } else if (compareNextPrev < 0) {
+                        return prev;
+                    }
+
+                    return prev;
+                }).tag;
             });
     }
 
     /**
      * Simple date comparator, but asserts null is less than any date.
      */
-    private nullableDateComparator = (a: string | null | undefined, b: string | null | undefined): number => {
+    private readonly nullableDateComparator = (a: string | null | undefined, b: string | null | undefined): number => {
         if (a != null && b != null) {
             return (new Date(a)).getTime() - (new Date(b)).getTime();
         } else if (a == null && b != null) {
