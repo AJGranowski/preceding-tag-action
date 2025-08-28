@@ -23,75 +23,65 @@ class PrecedingTag {
      */
     async fetchPrecedingTag(head: GitRef, filter?: RegExp): Promise<string | null> {
         filter = filter ?? /^.+$/;
-        return this.githubAPI.fetchAllTags(filter)
-            .then((tags) => {
-                return Promise.all(tags.map(async (tag) => {
-                    return {
-                        tags: [tag],
-                        commitDifference: await this.githubAPI.fetchCommitDifference(tag, head)
-                    };
-                }));
-            })
-            .then((tagDistances) => {
-                const precedingTag = tagDistances
-                    .filter((x) => !isNaN(x.commitDifference) && x.commitDifference >= 0)
-                    .reduce((prev: TagDifference | null, next: TagDifference) => {
-                        if (prev == null) {
-                            return next;
-                        }
+        const allTags = await this.githubAPI.fetchAllTags(filter);
+        const tagDistances = await Promise.all(allTags.map(async (tag) => {
+            return {
+                tags: [tag],
+                commitDifference: await this.githubAPI.fetchCommitDifference(tag, head)
+            };
+        }));
 
-                        const nextMinusPrev = Math.abs(next.commitDifference) - Math.abs(prev.commitDifference);
-                        if (nextMinusPrev < 0) {
-                            return next;
-                        } else if (nextMinusPrev > 0) {
-                            return prev;
-                        }
-
-                        return {
-                            tags: prev.tags.concat(next.tags),
-                            commitDifference: prev.commitDifference
-                        };
-                    }, null);
-
-                if (precedingTag == null) {
-                    return [];
+        const precedingTag = tagDistances
+            .filter((x) => !isNaN(x.commitDifference) && x.commitDifference >= 0)
+            .reduce((prev: TagDifference | null, next: TagDifference) => {
+                if (prev == null) {
+                    return next;
                 }
 
-                return precedingTag.tags;
-            })
-            .then(async (precedingTags) => {
-                if (precedingTags.length === 0) {
-                    return null;
-                } else if (precedingTags.length === 1) {
-                    return precedingTags[0];
-                }
-
-                const commitDates = await Promise.all(precedingTags.map(async (tag) => {
-                    return {
-                        tag: tag,
-                        commitDate: await this.githubAPI.fetchCommitDate(tag)
-                    };
-                }));
-
-                return commitDates.reduce((prev, next) => {
-                    let compareNextPrev = this.nullableDateComparator(next.commitDate.committer, prev.commitDate.committer);
-                    if (compareNextPrev > 0) {
-                        return next;
-                    } else if (compareNextPrev < 0) {
-                        return prev;
-                    }
-
-                    compareNextPrev = this.nullableDateComparator(next.commitDate.author, prev.commitDate.author);
-
-                    if (compareNextPrev > 0) {
-                        return next;
-                    } else if (compareNextPrev < 0) {
-                        return prev;
-                    }
-
+                const nextMinusPrev = Math.abs(next.commitDifference) - Math.abs(prev.commitDifference);
+                if (nextMinusPrev < 0) {
+                    return next;
+                } else if (nextMinusPrev > 0) {
                     return prev;
-                }).tag;
-            });
+                }
+
+                return {
+                    tags: prev.tags.concat(next.tags),
+                    commitDifference: prev.commitDifference
+                };
+            }, null);
+
+        if (precedingTag == null || precedingTag.tags.length === 0) {
+            return null;
+        } else if (precedingTag.tags.length === 1) {
+            return precedingTag.tags[0];
+        }
+
+        const commitDates = await Promise.all(precedingTag.tags.map(async (tag) => {
+            return {
+                tag: tag,
+                commitDate: await this.githubAPI.fetchCommitDate(tag)
+            };
+        }));
+
+        return commitDates.reduce((prev, next) => {
+            let compareNextPrev = this.nullableDateComparator(next.commitDate.committer, prev.commitDate.committer);
+            if (compareNextPrev > 0) {
+                return next;
+            } else if (compareNextPrev < 0) {
+                return prev;
+            }
+
+            compareNextPrev = this.nullableDateComparator(next.commitDate.author, prev.commitDate.author);
+
+            if (compareNextPrev > 0) {
+                return next;
+            } else if (compareNextPrev < 0) {
+                return prev;
+            }
+
+            return prev;
+        }).tag;
     }
 
     /**
