@@ -47,6 +47,7 @@ class GitHubAPI {
      * Will reject if the API is unavailable, or if the two references cannot be compared.
      */
     async fetchCommitDifference(base: GitRef, head: GitRef): Promise<number> {
+        // https://docs.github.com/en/rest/commits/commits?apiVersion=2022-11-28#compare-two-commits
         return this.octokit.rest.repos.compareCommitsWithBasehead({
             owner: this.repo.owner,
             repo: this.repo.repo,
@@ -75,6 +76,7 @@ class GitHubAPI {
      * Will reject if the API is unavailable, or if the reference does not exist.
      */
     async fetchCommitDate(ref: GitRef): Promise<CommitDate> {
+        // https://docs.github.com/en/rest/commits/commits?apiVersion=2022-11-28#get-a-commit
         return this.octokit.rest.repos.getCommit({
             owner: this.repo.owner,
             repo: this.repo.repo,

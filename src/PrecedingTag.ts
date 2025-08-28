@@ -5,6 +5,8 @@ interface TagDifference {
     commitDifference: number
 }
 
+type GitRef = string;
+
 class PrecedingTag {
     private githubAPI: GitHubAPI;
     constructor(githubAPI: GitHubAPI) {
@@ -16,8 +18,10 @@ class PrecedingTag {
      * Functions similarly to git-describe using GitHub endpoints instead of a local git database.
      * If multiple tags are the same distance away, this function returns the most recent tag (by committer date, then author date).
      * If no tags are reachable from this commit, this function returns null.
+     *
+     * Will reject if the API is unavailable, or if the reference does not exist.
      */
-    async fetchPrecedingTag(head: string, filter?: RegExp): Promise<string | null> {
+    async fetchPrecedingTag(head: GitRef, filter?: RegExp): Promise<string | null> {
         filter = filter ?? /^.+$/;
         return this.githubAPI.fetchAllTags(filter)
             .then((tags) => {
