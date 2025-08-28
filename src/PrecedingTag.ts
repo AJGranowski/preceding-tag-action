@@ -5,8 +5,6 @@ interface TagDifference {
     commitDifference: number
 }
 
-type MapCallback<T, U> = (value: T, index: number, array: T[]) => U
-
 class PrecedingTag {
     private githubAPI: GitHubAPI;
     constructor(githubAPI: GitHubAPI) {
