@@ -16,6 +16,8 @@ class GitHubAPI {
 
     /**
      * Get and return every tag in this repo matching the filter.
+     *
+     * Will reject if the API is unavailable.
      */
     async fetchAllTags(filter: RegExp): Promise<GitTag[]> {
         // https://docs.github.com/en/rest/git/refs?apiVersion=2022-11-28#list-matching-references
@@ -41,6 +43,8 @@ class GitHubAPI {
      * If the head ref is a descendant of the base ref, the result is positive.
      * If the head ref is an ancestor of the base ref, the result is negative.
      * If the head ref is diverged from the base ref, the result is NaN.
+     *
+     * Will reject if the API is unavailable, or if the two references cannot be compared.
      */
     async fetchCommitDifference(base: GitRef, head: GitRef): Promise<number> {
         return this.octokit.rest.repos.compareCommitsWithBasehead({
@@ -65,6 +69,11 @@ class GitHubAPI {
         });
     }
 
+    /**
+     * Get the author and committer dates of a commit.
+     *
+     * Will reject if the API is unavailable, or if the reference does not exist.
+     */
     async fetchCommitDate(ref: GitRef): Promise<CommitDate> {
         return this.octokit.rest.repos.getCommit({
             owner: this.repo.owner,
