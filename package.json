@@ -7,19 +7,23 @@
     "main": "index.js",
     "scripts": {
         "bundle": "node esbuild.config.mjs",
-        "check-types": "tsc -noEmit",
+        "check-types": "npm exec --no -- tsc -noEmit",
         "format": "npm exec --no -- eslint --fix",
         "lint": "npm exec --no -- eslint",
-        "run-bundle": "node dist/index.js"
+        "run-bundle": "node dist/index.js",
+        "test": "npm exec --no -- vitest run"
     },
     "dependencies": {
         "@actions/core": "^1.11.1",
         "@octokit/rest": "^22.0.0"
     },
     "devDependencies": {
+        "@types/node": "^24.3.0",
         "esbuild": "^0.25.9",
         "eslint": "^9.34.0",
         "typescript": "^5.9.2",
-        "typescript-eslint": "^8.41.0"
+        "typescript-eslint": "^8.41.0",
+        "vitest": "^3.2.4",
+        "vitest-mock-extended": "^3.1.0"
     }
 }

@@ -18,6 +18,6 @@
         "useUnknownInCatchVariables": true
     },
     "include": [
-        "src/**/*"
+        "src/**/*", "test/**/*"
     ]
 }
