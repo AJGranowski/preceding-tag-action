@@ -127,7 +127,14 @@ jobs:
             core.info(`LATEST_RELEASE_TAG: ${process.env.LATEST_RELEASE_TAG}`);
             core.info(`RELEASE_REGEX: ${process.env.RELEASE_REGEX}`);
             const regexp = new RegExp(process.env.RELEASE_REGEX);
-            const groups = new Map(Object.entries("release-1.2.3".match(regexp).groups))
-            groups.forEach((value, key, map) => {if (parseFloat(value).toString() === value) map.set(key, parseFloat(value))})
+            const groups = "release-1.2.3".match(regexp).groups;
+
+            // Convert string to number
+            Object.keys(groups).forEach((key) => {
+              let value = groups[key];
+              let parsedValue = parseFloat(value);
+              if (parsedValue.toString() === value) groups[key] = parsedValue;
+            });
+
             core.info("input: release-1.2.3");
             core.info(`output: release-${groups.major}.${groups.minor}.${groups.patch + 1}`);
