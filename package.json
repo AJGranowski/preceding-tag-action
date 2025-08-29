@@ -7,11 +7,11 @@
     "main": "index.js",
     "scripts": {
         "bundle": "node esbuild.config.mjs",
-        "check-types": "npm exec --no -- tsc -noEmit",
-        "format": "npm exec --no -- eslint --fix",
-        "lint": "npm exec --no -- eslint",
+        "check-types": "tsc -noEmit",
+        "format": "eslint --fix",
+        "lint": "eslint",
         "run-bundle": "node dist/index.js",
-        "test": "npm exec --no -- vitest run"
+        "test": "vitest run"
     },
     "dependencies": {
         "@actions/core": "^1.11.1",
