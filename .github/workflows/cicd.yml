@@ -124,7 +124,6 @@ jobs:
 
         with:
           script: |
-            const core = require('@actions/core');
             core.info(`LATEST_RELEASE_TAG: ${process.env.LATEST_RELEASE_TAG}`);
             core.info(`RELEASE_REGEX: ${process.env.RELEASE_REGEX}`);
             const regexp = new RegExp(process.env.RELEASE_REGEX);
