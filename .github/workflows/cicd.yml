@@ -68,14 +68,17 @@ jobs:
     - name: Validate Compose File
       run: docker compose --file compose.yml config --quiet
     
-    - name: Run
+    - name: Run ${{ matrix.script }}
+      env:
+        SCRIPT: ${{ matrix.script }}
       run: |
-        ./npm -- run ${{ matrix.script }}
+        ./npm -- clean-install
+        ./npm -- run "$SCRIPT"
 
     - name: Store Bundle Artifacts
       if: ${{ matrix.script == 'bundle' }}
       uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
       with:
-        name: artifacts
+        name: bundle
         path: dist/
         if-no-files-found: error
