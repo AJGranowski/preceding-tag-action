@@ -4,7 +4,7 @@
     "license": "MIT",
     "author": "AJ Granowski",
     "type": "module",
-    "main": "index.js",
+    "main": "dist/index.js",
     "scripts": {
         "bundle": "node esbuild.config.mjs",
         "check-types": "tsc -noEmit",
