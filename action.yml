@@ -1,0 +1,15 @@
+name: Preceding Tag Action
+description: Finds the most recent tag matching the given pattern that is reachable from this commit.
+runs:
+  using: node24
+  main: dist/index.js
+
+inputs:
+  filter:
+    description: Tag filter
+    required: true
+    default: /^.+$/
+
+outputs:
+  tag:
+    description: The preceding tag, or an empty string if no preceding tag matching the filter was found.
