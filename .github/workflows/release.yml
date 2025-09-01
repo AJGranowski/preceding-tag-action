@@ -1,0 +1,28 @@
+name: Release
+
+on:
+  push:
+    tags:        
+      - "**"
+
+permissions:
+  contents: read
+
+jobs:
+  create-release:
+    name: Create Release
+    runs-on: ubuntu-latest
+
+    if: ${{ startsWith(github.ref, 'refs/tags/v') }}
+    steps:
+    - name: Harden Runner
+      uses: step-security/harden-runner@ec9f2d5744a09debf3a187a3f4f675c53b671911 # v2.13.0
+      with:
+        disable-sudo: true
+        egress-policy: audit
+
+    - name: Tag Check
+      run: echo 'Check release-*.*.* exists matching this v*.*.* tag.'
+
+    - name: Create Release
+      run: echo 'Create a release using the v*.*.* tag.'
