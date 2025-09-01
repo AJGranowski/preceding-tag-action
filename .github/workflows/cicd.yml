@@ -155,7 +155,18 @@ jobs:
           egress-policy: audit
       
       - name: Tag Check
-        run: echo 'Check v*.*.* does not exist.'
+        uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea # v7.0.1
+        env:
+          TAG_NAME: ${{ env.GITHUB_REF_NAME }}
+        with:
+          script: |
+            return this.octokit.rest.repos.getCommit({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              ref: process.env.TAG_NAME.replace("release-", "v"),
+              page: 1,
+              per_page: 1
+            });
 
       - name: Checkout
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
@@ -168,6 +179,7 @@ jobs:
 
       - name: Create Release Commit
         run: echo 'Create a release commit of just the action.yml and the bundle.'
+        # https://github.com/JasonEtco/build-and-tag-action/blob/main/src/lib/create-commit.ts
 
       - name: Tag Release
         run: echo 'Tag the release commit with v*.*.*, triggering a release in a new workflow.'
