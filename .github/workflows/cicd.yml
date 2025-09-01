@@ -159,18 +159,19 @@ jobs:
       - name: Tag Check
         uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea # v7.0.1
         env:
-          TAG_NAME: ${{ env.GITHUB_REF }}
+          GITHUB_REF: ${{ env.GITHUB_REF }}
         with:
           script: |
+            const vTag = process.env.GITHUB_REF.replace("refs/tags/release-", "refs/tags/v");
             return github.rest.git.getRef({
               owner: context.repo.owner,
               repo: context.repo.repo,
-              ref: process.env.TAG_NAME.replace("refs/tags/release-", "refs/tags/v"),
-            }).catch((e) => {
-              if (e.status !== 404) throw e;
+              ref: vTag
             }).then((response) => {
-              throw new Error("Tag exists");
-            })
+              throw new Error(`Tag exists: ${vTag}`);
+            }).catch((e) => {
+              if (e != null && e.status !== 404) throw e;
+            });
 
       - name: Checkout
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
