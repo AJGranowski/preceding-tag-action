@@ -186,5 +186,38 @@ jobs:
         run: echo 'Create a release commit of just the action.yml and the bundle.'
         # https://github.com/JasonEtco/build-and-tag-action/blob/main/src/lib/create-commit.ts
 
+      - name: Create Release Commit
+        uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea # v7.0.1
+        env:
+          GITHUB_REF: ${{ env.GITHUB_REF }}
+        with:
+          script: |
+            import { readFile } from "fs/promises";
+            const package = JSON.parse(await readFile("package.json", "utf8"));
+            const tree = await github.rest.git.createTree({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              tree: [
+                {
+                  path: "action.yml",
+                  mode: "100644",
+                  type: "blob",
+                  content: await readFile("action.yml", "utf8")
+                },
+                {
+                  path: package.main,
+                  mode: "100644",
+                  type: "blob",
+                  content: await readFile(package.main, "utf8")
+                }
+              ]
+            });
+
+            const commit = await github.rest.git.createCommit({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              ...
+              })
+
       - name: Tag Release
         run: echo 'Tag the release commit with v*.*.*, triggering a release in a new workflow.'
