@@ -186,6 +186,6 @@ jobs:
           path: dist/
 
       - name: Create and Tag Release Commit
-        uses: JasonEtco/build-and-tag-action@v2
+        uses: JasonEtco/build-and-tag-action@dd5e4991048c325f6d85b4155e586fc211c644da # v2.0.1
         with:
           tag_name: ${{ fromJson(steps.tag-check.outputs.result) }}
