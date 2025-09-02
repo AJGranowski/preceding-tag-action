@@ -112,20 +112,23 @@ jobs:
           egress-policy: audit
 
       - name: Get Preceding Release Tag
-        run: echo 'this is where we run preceding-tag-action'
+        id: preceding-tag
+        uses: AJGranowski/preceding-tag-action@c08b66c48d658f029e6e5458df2ce186b99f28af # v0.0.0
+        with:
+          filter: ${{ env.RELEASE_REGEX }}
 
       - name: Increment And Create Tag
         id: increment-tag
         uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea # v7.0.1
         env:
-          PRECEDING_RELEASE_TAG: ${{ env.PRECEDING_RELEASE_TAG }}
+          PRECEDING_RELEASE_TAG: ${{ steps.preceding-tag.outputs.tag }}
           RELEASE_REGEX: ${{ env.RELEASE_REGEX }}
         with:
           script: |
-            core.info(`LATEST_RELEASE_TAG: ${process.env.LATEST_RELEASE_TAG}`);
+            core.info(`PRECEDING_RELEASE_TAG: ${process.env.PRECEDING_RELEASE_TAG}`);
             core.info(`RELEASE_REGEX: ${process.env.RELEASE_REGEX}`);
             const regexp = new RegExp(process.env.RELEASE_REGEX);
-            const groups = "release-1.2.3".match(regexp).groups;
+            const groups = process.env.PRECEDING_RELEASE_TAG.match(regexp).groups;
 
             // Convert string to number
             Object.keys(groups).forEach((key) => {
@@ -134,7 +137,6 @@ jobs:
               if (parsedValue.toString() === value) groups[key] = parsedValue;
             });
 
-            core.info("input: release-1.2.3");
             core.info(`output: release-${groups.major}.${groups.minor}.${groups.patch + 1}`);
 
   pre-release:

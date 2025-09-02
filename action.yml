@@ -11,7 +11,7 @@ inputs:
     required: true
   ref:
     description: The branch, tag, or SHA to checkout.
-    default: HEAD
+    default: ${{ github.sha }}
     required: true
   repository:
     description: "Repository name with owner. For example, AJGranowski/preceding-tag-action"
