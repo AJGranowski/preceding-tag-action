@@ -9,6 +9,8 @@ await rm("dist", {
 await esbuild.build({
     bundle: true,
     entryPoints: ["src/index.ts"],
+    format: "esm",
+    inject: ["cjs-shim.mjs"],
     outdir: "dist",
-    platform: "neutral"
+    platform: "node"
 });
