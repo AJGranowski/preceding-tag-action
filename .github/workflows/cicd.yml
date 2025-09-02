@@ -146,6 +146,8 @@ jobs:
     needs: ci
     concurrency:
       group: pre-release-${{ github.ref }}
+    permissions:
+      contents: write
 
     if: ${{ startsWith(github.ref, 'refs/tags/release-') }}
     steps:
