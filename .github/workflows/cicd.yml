@@ -15,9 +15,6 @@ on:
 permissions:
   contents: read
 
-env:
-  RELEASE_REGEX: ^release-(?<major>\d+)\.(?<minor>\d+)\.(?<patch>\d+)$
-
 jobs:
   changed-files:
     name: Detect Changed Files
@@ -103,6 +100,8 @@ jobs:
     needs: [changed-files, ci]
     concurrency:
       group: release-bump
+    env:
+      RELEASE_REGEX: ^release-(?<major>\d+)\.(?<minor>\d+)\.(?<patch>\d+)$
 
     if: ${{ needs.changed-files.outputs.release-bump == 'true' }}
     steps:
@@ -187,5 +186,7 @@ jobs:
 
       - name: Create and Tag Release Commit
         uses: JasonEtco/build-and-tag-action@dd5e4991048c325f6d85b4155e586fc211c644da # v2.0.1
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
         with:
           tag_name: ${{ fromJson(steps.tag-check.outputs.result) }}
