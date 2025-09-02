@@ -2,7 +2,7 @@ import { describe, expect, test } from "vitest";
 import { mock } from "vitest-mock-extended";
 
 import type { GitHubAPI } from "../src/GitHubAPI";
-import { PrecedingTag } from "../src/PrecedingTag";
+import { fetchPrecedingTag } from "../src/fetchPrecedingTag";
 
 describe("PrecedingTag", () => {
     describe("fetchPrecedingTag", () => {
@@ -11,8 +11,7 @@ describe("PrecedingTag", () => {
                 fetchAllTags: () => Promise.resolve([])
             });
 
-            const precedingTag = new PrecedingTag(mockGithubAPI);
-            expect(await precedingTag.fetchPrecedingTag("HEAD")).toBeNull();
+            expect(await fetchPrecedingTag(mockGithubAPI, "HEAD")).toBeNull();
         });
     });
 });
