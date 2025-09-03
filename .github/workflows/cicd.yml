@@ -119,16 +119,22 @@ jobs:
       with:
         node-version: lts/*
 
-    - name: Execute Bundle
+    - name: Bundle Regression Test (1/3)
       id: execute-bundle
       if: ${{ matrix.script == 'bundle' }}
       run: npm run run-bundle && cat "$GITHUB_OUTPUT"
 
-    - name: Print Bundle Output
+    - name: Bundle Regression Test (2/3)
+      id: preceding-tag
+      uses: AJGranowski/preceding-tag-action@c08b66c48d658f029e6e5458df2ce186b99f28af # v0.0.0
+
+    - name: Bundle Regression Test (3/3)
       if: ${{ matrix.script == 'bundle' }}
       env:
-        PRECEDING_TAG: ${{ steps.execute-bundle.outputs.tag }}
-      run: echo "$PRECEDING_TAG"
+        BUNDLE_TAG: ${{ steps.execute-bundle.outputs.tag }}
+        PRECEDING_TAG: ${{ steps.preceding-tag.outputs.tag }}
+      run: |
+        [ "$BUNDLE_TAG" = "$PRECEDING_TAG" ]
 
   release-bump:
     name: Bump Release Tag
