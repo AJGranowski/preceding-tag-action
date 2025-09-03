@@ -14,6 +14,9 @@ class Input {
         this.getInput = getInput;
     }
 
+    /**
+     * Get the tag filtering regular expression if provided.
+     */
     getFilter(): RegExp | undefined {
         const filterString = this.getInput("filter");
         if (filterString.length === 0) {
