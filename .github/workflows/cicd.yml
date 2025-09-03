@@ -120,8 +120,15 @@ jobs:
         node-version: lts/*
 
     - name: Execute Bundle
+      id: execute-bundle
       if: ${{ matrix.script == 'bundle' }}
       run: npm run run-bundle && cat "$GITHUB_OUTPUT"
+
+    - name: Print Bundle Output
+      if: ${{ matrix.script == 'bundle' }}
+      env:
+        PRECEDING_TAG: ${{ steps.execute-bundle.outputs.tag }}
+      run: echo "$PRECEDING_TAG"
 
   release-bump:
     name: Bump Release Tag
