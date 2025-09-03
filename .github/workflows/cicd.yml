@@ -136,7 +136,7 @@ jobs:
         with:
           filter: ${{ env.RELEASE_REGEX }}
 
-      - name: Increment And Create Tag
+      - name: Increment And Create Release Tag
         id: increment-tag
         uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea # v7.0.1
         env:
@@ -156,7 +156,31 @@ jobs:
               if (parsedValue.toString() === value) groups[key] = parsedValue;
             });
 
-            core.info(`output: release-${groups.major}.${groups.minor}.${groups.patch + 1}`);
+            const bumpedTag = `release-${groups.major}.${groups.minor}.${groups.patch + 1}`;
+            if (!regexp.test(bumpedTag)) {
+              throw new Error(`Bumped tag does not match RELEASE_REGEX "${bumpedTag}"`)
+            }
+
+            const bumpedRef = `refs/tags/${bumpedTag}`;
+
+            await github.rest.git.getRef({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              ref: bumpedRef
+            }).then((response) => {
+              throw new Error(`Tag already exists: ${bumpedRef}`);
+            }).catch((e) => {
+              if (e != null && e.status !== 404) throw e;
+            });
+
+            await github.rest.git.createRef({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              ref: bumpedRef,
+              sha: process.env.GITHUB_SHA
+            });
+
+            core.info(`Created tag: ${bumpedRef}`);
 
   pre-release:
     name: Pre-Release
