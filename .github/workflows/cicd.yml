@@ -121,7 +121,7 @@ jobs:
 
     - name: Execute Bundle
       if: ${{ matrix.script == 'bundle' }}
-      run: npm run run-bundle
+      run: npm run run-bundle && cat "$GITHUB_OUTPUT"
 
   release-bump:
     name: Bump Release Tag
