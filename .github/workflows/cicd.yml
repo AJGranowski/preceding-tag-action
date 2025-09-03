@@ -20,8 +20,8 @@ jobs:
     name: Workflow Filter
     runs-on: ubuntu-latest
     outputs:
-      run-ci: ${{ github.event_name == 'workflow_dispatch' || steps.ci-files-changed.outputs.paths_any_modified == 'true' || startsWith(github.ref, 'refs/tags/release-') }}
-      run-release-bump: ${{ github.ref == 'refs/heads/main' && env.COMMIT_IS_TAGGED != 'true' }}
+      run-ci: ${{ (github.event_name == 'workflow_dispatch' || github.ref_type == 'tag' || steps.ci-files-changed.outputs.paths_any_modified == 'true') && !startsWith(github.ref, 'refs/tags/v') }}
+      run-release-bump: ${{ github.ref == 'refs/heads/main' && env.COMMIT_IS_TAGGED != 'true' && env.SKIP_AUTO_RELEASE != 'true' && steps.release-source-files-changed.outputs.paths_any_modified == 'true' }}
 
     steps:
     - name: Harden Runner
@@ -47,7 +47,7 @@ jobs:
     # https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/collaborating-on-repositories-with-code-quality-features/troubleshooting-required-status-checks#handling-skipped-but-required-checks
     - name: CI Files Changed
       id: ci-files-changed
-      if: ${{ github.event_name != 'workflow_dispatch' }}
+      if: ${{ github.event_name != 'workflow_dispatch' && github.ref_type != 'tag' }}
       uses: step-security/changed-files@95b56dadb92a30ca9036f16423fd3c088a71ee94 # v46.0.5
       with:
         files_yaml: |
@@ -56,6 +56,25 @@ jobs:
             - "!*.md"
             - "!.github/**"
             - ".github/workflows/cicd.yml"
+
+    - name: Check for \#skip-auto-release
+      run: |
+        case "$(git show -s --format=%b "$GITHUB_REF")" in
+          *#skip-auto-release*) echo 'SKIP_AUTO_RELEASE=true' >> "$GITHUB_ENV";;
+        esac
+
+    - name: Release Source Files Changed
+      id: release-source-files-changed
+      if: ${{ github.event_name != 'workflow_dispatch' && github.ref_type != 'tag' }}
+      uses: step-security/changed-files@95b56dadb92a30ca9036f16423fd3c088a71ee94 # v46.0.5
+      with:
+        files_yaml: |
+          paths:
+            - "action.yml"
+            - "cjs-shim.mjs"
+            - "esbuild.config.mjs"
+            - "package.json"
+            - "src/**"
 
   ci:
     name: CI
