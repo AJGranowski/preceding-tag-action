@@ -143,12 +143,13 @@ jobs:
     needs: [workflow-filter, ci]
     concurrency:
       group: release-bump
+    environment: elevated-workflow
     permissions:
       contents: write
     env:
       RELEASE_REGEX: ^release-(?<major>\d+)\.(?<minor>\d+)\.(?<patch>\d+)$
 
-    if: ${{ needs.workflow-filter.outputs.run-release-bump == 'true' }}
+    if: ${{ github.ref == 'refs/heads/main' && needs.workflow-filter.outputs.run-release-bump == 'true' }}
     steps:
       - name: Harden Runner
         uses: step-security/harden-runner@ec9f2d5744a09debf3a187a3f4f675c53b671911 # v2.13.0
@@ -169,6 +170,7 @@ jobs:
           PRECEDING_RELEASE_TAG: ${{ steps.preceding-tag.outputs.tag }}
           RELEASE_REGEX: ${{ env.RELEASE_REGEX }}
         with:
+          github-token: ${{ secrets.ELEVATED_WORKFLOW_DEPLOY_KEY }}
           script: |
             core.info(`PRECEDING_RELEASE_TAG: ${process.env.PRECEDING_RELEASE_TAG}`);
             core.info(`RELEASE_REGEX: ${process.env.RELEASE_REGEX}`);
@@ -214,6 +216,7 @@ jobs:
     needs: [workflow-filter, ci]
     concurrency:
       group: release-${{ github.ref }}
+    environment: elevated-workflow
     permissions:
       contents: write
     outputs:
@@ -234,6 +237,7 @@ jobs:
           GITHUB_REF: ${{ env.GITHUB_REF }}
           GITHUB_SHA: ${{ env.GITHUB_SHA }}
         with:
+          github-token: ${{ secrets.ELEVATED_WORKFLOW_DEPLOY_KEY }}
           script: |
             const vTag = process.env.GITHUB_REF.replace("refs/tags/release-", "refs/tags/v");
             await github.rest.git.getRef({
@@ -267,7 +271,7 @@ jobs:
       - name: Create and Tag Release Commit
         uses: JasonEtco/build-and-tag-action@dd5e4991048c325f6d85b4155e586fc211c644da # v2.0.1
         env:
-          GITHUB_TOKEN: ${{ github.token }}
+          GITHUB_TOKEN: ${{ secrets.ELEVATED_WORKFLOW_DEPLOY_KEY }}
         with:
           tag_name: ${{ fromJson(steps.create-version-tag.outputs.result) }}
 
