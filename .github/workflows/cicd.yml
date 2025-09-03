@@ -144,8 +144,6 @@ jobs:
     concurrency:
       group: release-bump
     environment: elevated-workflow
-    permissions:
-      contents: write
     env:
       RELEASE_REGEX: ^release-(?<major>\d+)\.(?<minor>\d+)\.(?<patch>\d+)$
 
@@ -156,6 +154,13 @@ jobs:
         with:
           disable-sudo: true
           egress-policy: audit
+
+      - name: Generate Elevated Workflow token
+        uses: actions/create-github-app-token@a8d616148505b5069dccd32f177bb87d7f39123b # v2.1.1
+        id: elevated-workflow-token
+        with:
+          app-id: 1892052
+          private-key: ${{ secrets.ELEVATED_WORKFLOW_DEPLOY_KEY }}
 
       - name: Get Preceding Release Tag
         id: preceding-tag
@@ -170,7 +175,7 @@ jobs:
           PRECEDING_RELEASE_TAG: ${{ steps.preceding-tag.outputs.tag }}
           RELEASE_REGEX: ${{ env.RELEASE_REGEX }}
         with:
-          github-token: ${{ secrets.ELEVATED_WORKFLOW_DEPLOY_KEY }}
+          github-token: ${{ steps.elevated-workflow-token.outputs.token }}
           script: |
             core.info(`PRECEDING_RELEASE_TAG: ${process.env.PRECEDING_RELEASE_TAG}`);
             core.info(`RELEASE_REGEX: ${process.env.RELEASE_REGEX}`);
@@ -217,8 +222,6 @@ jobs:
     concurrency:
       group: release-${{ github.ref }}
     environment: elevated-workflow
-    permissions:
-      contents: write
     outputs:
       version-tag: ${{ fromJson(steps.create-version-tag.outputs.result) }}
 
@@ -229,6 +232,13 @@ jobs:
         with:
           disable-sudo: true
           egress-policy: audit
+
+      - name: Generate Elevated Workflow token
+        uses: actions/create-github-app-token@a8d616148505b5069dccd32f177bb87d7f39123b # v2.1.1
+        id: elevated-workflow-token
+        with:
+          app-id: 1892052
+          private-key: ${{ secrets.ELEVATED_WORKFLOW_DEPLOY_KEY }}
       
       - name: Create Version Tag
         id: create-version-tag
@@ -237,7 +247,7 @@ jobs:
           GITHUB_REF: ${{ env.GITHUB_REF }}
           GITHUB_SHA: ${{ env.GITHUB_SHA }}
         with:
-          github-token: ${{ secrets.ELEVATED_WORKFLOW_DEPLOY_KEY }}
+          github-token: ${{ steps.elevated-workflow-token.outputs.token }}
           script: |
             const vTag = process.env.GITHUB_REF.replace("refs/tags/release-", "refs/tags/v");
             await github.rest.git.getRef({
@@ -271,7 +281,7 @@ jobs:
       - name: Create and Tag Release Commit
         uses: JasonEtco/build-and-tag-action@dd5e4991048c325f6d85b4155e586fc211c644da # v2.0.1
         env:
-          GITHUB_TOKEN: ${{ secrets.ELEVATED_WORKFLOW_DEPLOY_KEY }}
+          GITHUB_TOKEN: ${{ steps.elevated-workflow-token.outputs.token }}
         with:
           tag_name: ${{ fromJson(steps.create-version-tag.outputs.result) }}
 
