@@ -124,7 +124,7 @@ jobs:
       run: npm run run-bundle
 
   release-bump:
-    name: Tag for Release
+    name: Bump Release Tag
     runs-on: ubuntu-latest
     needs: [workflow-filter, ci]
     concurrency:
