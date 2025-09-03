@@ -1,6 +1,7 @@
 name: CI/CD
 
 on:
+  create:
   workflow_dispatch:
   push:
     branches:
