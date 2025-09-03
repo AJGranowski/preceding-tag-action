@@ -10,7 +10,7 @@ try {
     await (async (): Promise<void> => {
         const input: Input = new Input(core.getInput, github.context);
         const octokit: Octokit = new Octokit({
-            auth: core.getInput("token") // bump2
+            auth: core.getInput("token") // bump3
         });
 
         const githubAPI = new GitHubAPI(octokit, input.getRepository());
