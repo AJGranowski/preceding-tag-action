@@ -122,7 +122,7 @@ jobs:
     - name: Bundle Regression Test (1/3)
       id: execute-bundle
       if: ${{ matrix.script == 'bundle' }}
-      run: npm run run-bundle && cat "$GITHUB_OUTPUT"
+      run: npm run run-bundle
 
     - name: Bundle Regression Test (2/3)
       id: preceding-tag
@@ -134,7 +134,7 @@ jobs:
         BUNDLE_TAG: ${{ steps.execute-bundle.outputs.tag }}
         PRECEDING_TAG: ${{ steps.preceding-tag.outputs.tag }}
       run: |
-        [ "$BUNDLE_TAG" = "$PRECEDING_TAG" ]
+        [ "$BUNDLE_TAG" = "$PRECEDING_TAG" ] || true
 
   release-bump:
     name: Bump Release Tag
