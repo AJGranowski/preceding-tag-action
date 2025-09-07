@@ -127,7 +127,7 @@ jobs:
     - name: Bundle Regression Test (2/3)
       if: ${{ matrix.script == 'bundle' }}
       id: preceding-tag
-      uses: AJGranowski/preceding-tag-action@eadc6b64b4db073c436d7621b731fe939240f30c # v0.0.1
+      uses: AJGranowski/preceding-tag-action@59d4a22a2e0f1d2d044eedc1cbc101e0ec6ac106 # v0.0.2
 
     - name: Bundle Regression Test (3/3)
       if: ${{ matrix.script == 'bundle' }}
@@ -135,7 +135,7 @@ jobs:
         BUNDLE_TAG: ${{ steps.execute-bundle.outputs.tag }}
         PRECEDING_TAG: ${{ steps.preceding-tag.outputs.tag }}
       run: |
-        [ "$BUNDLE_TAG" = "$PRECEDING_TAG" ] || true
+        [ "$BUNDLE_TAG" = "$PRECEDING_TAG" ]
 
   release-bump:
     name: Bump Release Tag
@@ -164,7 +164,7 @@ jobs:
 
       - name: Get Preceding Release Tag
         id: preceding-tag
-        uses: AJGranowski/preceding-tag-action@c08b66c48d658f029e6e5458df2ce186b99f28af # v0.0.0
+        uses: AJGranowski/preceding-tag-action@59d4a22a2e0f1d2d044eedc1cbc101e0ec6ac106 # v0.0.2
         with:
           filter: ${{ env.RELEASE_REGEX }}
 
