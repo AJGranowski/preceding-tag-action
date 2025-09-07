@@ -7,7 +7,7 @@ runs:
 inputs:
   filter:
     description: Tag filter
-    default: /^.+$/
+    default: ^.+$
     required: true
   ref:
     description: The branch, tag, or SHA to checkout.

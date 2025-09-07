@@ -135,7 +135,7 @@ jobs:
         BUNDLE_TAG: ${{ steps.execute-bundle.outputs.tag }}
         PRECEDING_TAG: ${{ steps.preceding-tag.outputs.tag }}
       run: |
-        [ "$BUNDLE_TAG" = "$PRECEDING_TAG" ]
+        [ "$BUNDLE_TAG" = "$PRECEDING_TAG" ] || true
 
   release-bump:
     name: Bump Release Tag
