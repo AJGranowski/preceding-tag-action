@@ -17,10 +17,10 @@ class Input {
     /**
      * Get the tag filtering regular expression if provided.
      */
-    getFilter(): RegExp | undefined {
+    getFilter(): RegExp {
         const filterString = this.getInput("filter");
         if (filterString.length === 0) {
-            return undefined;
+            return /^.+$/;
         }
 
         return new RegExp(filterString);

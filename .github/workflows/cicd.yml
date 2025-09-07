@@ -120,11 +120,12 @@ jobs:
         node-version: lts/*
 
     - name: Bundle Regression Test (1/3)
-      id: execute-bundle
       if: ${{ matrix.script == 'bundle' }}
+      id: execute-bundle
       run: npm run run-bundle
 
     - name: Bundle Regression Test (2/3)
+      if: ${{ matrix.script == 'bundle' }}
       id: preceding-tag
       uses: AJGranowski/preceding-tag-action@eadc6b64b4db073c436d7621b731fe939240f30c # v0.0.1
 
