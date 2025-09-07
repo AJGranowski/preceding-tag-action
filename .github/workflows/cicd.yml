@@ -159,7 +159,7 @@ jobs:
         uses: actions/create-github-app-token@a8d616148505b5069dccd32f177bb87d7f39123b # v2.1.1
         id: release-ruleset-bypass-token
         with:
-          app-id: ${{ env.APP_ID }}
+          app-id: ${{ vars.APP_ID }}
           private-key: ${{ secrets.APP_PRIVATE_KEY }}
 
       - name: Get Preceding Release Tag
@@ -237,7 +237,7 @@ jobs:
         uses: actions/create-github-app-token@a8d616148505b5069dccd32f177bb87d7f39123b # v2.1.1
         id: release-ruleset-bypass-token
         with:
-          app-id: ${{ env.APP_ID }}
+          app-id: ${{ vars.APP_ID }}
           private-key: ${{ secrets.APP_PRIVATE_KEY }}
       
       - name: Create Version Tag
