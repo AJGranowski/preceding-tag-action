@@ -283,7 +283,7 @@ jobs:
       group: release-${{ github.ref }}
     environment: release-ruleset-bypass
     outputs:
-      version-tag: ${{ fromJson(steps.create-version-tag.outputs.result) }}
+      version-tag: ${{ steps.create-version-tag.outputs.tag }}
 
     if: ${{ startsWith(github.ref, 'refs/tags/release-') && needs.workflow-filter.outputs.run-release-bump != 'true' }}
     steps:
