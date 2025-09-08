@@ -121,11 +121,7 @@ jobs:
       env:
         SCRIPT: ${{ matrix.script }}
       run: |
-        if [ "$SCRIPT" = 'bundle' ]; then
-          ./npm -- clean-install --only=production
-        else
-          ./npm -- clean-install
-        fi
+        ./npm -- clean-install
         ./npm -- run "$SCRIPT"
 
     - name: Store Bundle Artifacts
