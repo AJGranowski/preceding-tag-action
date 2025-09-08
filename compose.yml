@@ -40,4 +40,12 @@ services:
         bind:
           create_host_path: true
 
+      # Use volumes for intermediate directories (improves performance on Windows)
+      - type: "volume"
+        source: node_modules
+        target: "/app/node_modules"
+
     working_dir: "/app"
+
+volumes:
+  node_modules:
