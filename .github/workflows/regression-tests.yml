@@ -21,7 +21,7 @@ jobs:
             filter: ^release-(?<major>\d+)\.(?<minor>\d+)\.(?<patch>\d+)$
             ref: ""
             repository: ""
-          - name: Starting from a different ref
+          - name: Starting from a different commit
             filter: ""
             ref: 7f6f9a02a5f985b460f60b8dbe6c11294695c96f
             repository: ""
