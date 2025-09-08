@@ -139,7 +139,7 @@ jobs:
     - name: Bundle Regression Test (1/3)
       if: ${{ matrix.script == 'bundle' }}
       id: execute-bundle
-      run: npm run run-bundle
+      uses: ./
 
     - name: Bundle Regression Test (2/3)
       if: ${{ matrix.script == 'bundle' }}
