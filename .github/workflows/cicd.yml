@@ -327,7 +327,7 @@ jobs:
               sha: process.env.GITHUB_SHA
             });
 
-            return vTag.substring("refs/tags/".length);
+            core.setOutput("tag", vTag.substring("refs/tags/".length));
 
       - name: Checkout
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
@@ -343,7 +343,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ steps.release-ruleset-bypass-token.outputs.token }}
         with:
-          tag_name: ${{ fromJson(steps.create-version-tag.outputs.result) }}
+          tag_name: ${{ steps.create-version-tag.outputs.result.tag }}
 
   release:
     name: Release
