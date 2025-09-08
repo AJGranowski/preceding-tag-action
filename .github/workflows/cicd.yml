@@ -221,73 +221,73 @@ jobs:
 
     if: ${{ github.ref == 'refs/heads/main' && needs.check-release-files.outputs.changed == 'true' }}
     steps:
-      - name: Harden Runner
-        uses: step-security/harden-runner@ec9f2d5744a09debf3a187a3f4f675c53b671911 # v2.13.0
-        with:
-          disable-sudo: true
-          egress-policy: block
-          allowed-endpoints: >
-            api.github.com:443
+    - name: Harden Runner
+      uses: step-security/harden-runner@ec9f2d5744a09debf3a187a3f4f675c53b671911 # v2.13.0
+      with:
+        disable-sudo: true
+        egress-policy: block
+        allowed-endpoints: >
+          api.github.com:443
 
-      - name: Generate Elevated Workflow token
-        uses: actions/create-github-app-token@a8d616148505b5069dccd32f177bb87d7f39123b # v2.1.1
-        id: release-ruleset-bypass-token
-        with:
-          app-id: ${{ vars.APP_ID }}
-          private-key: ${{ secrets.APP_PRIVATE_KEY }}
+    - name: Generate Elevated Workflow token
+      uses: actions/create-github-app-token@a8d616148505b5069dccd32f177bb87d7f39123b # v2.1.1
+      id: release-ruleset-bypass-token
+      with:
+        app-id: ${{ vars.APP_ID }}
+        private-key: ${{ secrets.APP_PRIVATE_KEY }}
 
-      - name: Get Preceding Release Tag
-        id: preceding-tag
-        uses: AJGranowski/preceding-tag-action@59d4a22a2e0f1d2d044eedc1cbc101e0ec6ac106 # v0.0.2
-        with:
-          filter: ${{ env.RELEASE_REGEX }}
+    - name: Get Preceding Release Tag
+      id: preceding-tag
+      uses: AJGranowski/preceding-tag-action@59d4a22a2e0f1d2d044eedc1cbc101e0ec6ac106 # v0.0.2
+      with:
+        filter: ${{ env.RELEASE_REGEX }}
 
-      - name: Increment And Create Release Tag
-        id: increment-tag
-        uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea # v7.0.1
-        env:
-          PRECEDING_RELEASE_TAG: ${{ steps.preceding-tag.outputs.tag }}
-          RELEASE_REGEX: ${{ env.RELEASE_REGEX }}
-        with:
-          github-token: ${{ steps.release-ruleset-bypass-token.outputs.token }}
-          script: |
-            core.info(`PRECEDING_RELEASE_TAG: ${process.env.PRECEDING_RELEASE_TAG}`);
-            core.info(`RELEASE_REGEX: ${process.env.RELEASE_REGEX}`);
-            const regexp = new RegExp(process.env.RELEASE_REGEX);
-            const groups = process.env.PRECEDING_RELEASE_TAG.match(regexp).groups;
+    - name: Increment And Create Release Tag
+      id: increment-tag
+      uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea # v7.0.1
+      env:
+        PRECEDING_RELEASE_TAG: ${{ steps.preceding-tag.outputs.tag }}
+        RELEASE_REGEX: ${{ env.RELEASE_REGEX }}
+      with:
+        github-token: ${{ steps.release-ruleset-bypass-token.outputs.token }}
+        script: |
+          core.info(`PRECEDING_RELEASE_TAG: ${process.env.PRECEDING_RELEASE_TAG}`);
+          core.info(`RELEASE_REGEX: ${process.env.RELEASE_REGEX}`);
+          const regexp = new RegExp(process.env.RELEASE_REGEX);
+          const groups = process.env.PRECEDING_RELEASE_TAG.match(regexp).groups;
 
-            // Convert string to number
-            Object.keys(groups).forEach((key) => {
-              let value = groups[key];
-              let parsedValue = parseFloat(value);
-              if (parsedValue.toString() === value) groups[key] = parsedValue;
-            });
+          // Convert string to number
+          Object.keys(groups).forEach((key) => {
+            let value = groups[key];
+            let parsedValue = parseFloat(value);
+            if (parsedValue.toString() === value) groups[key] = parsedValue;
+          });
 
-            const bumpedTag = `release-${groups.major}.${groups.minor}.${groups.patch + 1}`;
-            if (!regexp.test(bumpedTag)) {
-              throw new Error(`Bumped tag does not match RELEASE_REGEX "${bumpedTag}"`)
-            }
+          const bumpedTag = `release-${groups.major}.${groups.minor}.${groups.patch + 1}`;
+          if (!regexp.test(bumpedTag)) {
+            throw new Error(`Bumped tag does not match RELEASE_REGEX "${bumpedTag}"`)
+          }
 
-            const bumpedRef = `refs/tags/${bumpedTag}`;
+          const bumpedRef = `refs/tags/${bumpedTag}`;
 
-            await github.rest.git.getRef({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              ref: bumpedRef
-            }).then((response) => {
-              throw new Error(`Tag already exists: ${bumpedRef}`);
-            }).catch((e) => {
-              if (e != null && e.status !== 404) throw e;
-            });
+          await github.rest.git.getRef({
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            ref: bumpedRef
+          }).then((response) => {
+            throw new Error(`Tag already exists: ${bumpedRef}`);
+          }).catch((e) => {
+            if (e != null && e.status !== 404) throw e;
+          });
 
-            await github.rest.git.createRef({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              ref: bumpedRef,
-              sha: process.env.GITHUB_SHA
-            });
+          await github.rest.git.createRef({
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            ref: bumpedRef,
+            sha: process.env.GITHUB_SHA
+          });
 
-            core.info(`Created tag: ${bumpedRef}`);
+          core.info(`Created tag: ${bumpedRef}`);
 
   pre-release:
     name: Pre-Release
