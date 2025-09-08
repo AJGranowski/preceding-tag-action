@@ -8,7 +8,14 @@ permissions:
 
 jobs:
   test:
+    name: Regression Test
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        include:
+          - filter: ""
+            ref: ""
+            repository: ""
 
     steps:
     - name: Checkout
@@ -23,10 +30,18 @@ jobs:
     - name: Run Local Action
       id: preceding-tag-local
       uses: ./
+      with:
+        filter: ${{ matrix.filter }}
+        ref: ${{ matrix.ref }}
+        repository: ${{ repository }}
 
     - name: Run Published Action
       id: preceding-tag-published
       uses: AJGranowski/preceding-tag-action@59d4a22a2e0f1d2d044eedc1cbc101e0ec6ac106 # v0.0.2
+      with:
+        filter: ${{ matrix.filter }}
+        ref: ${{ matrix.ref }}
+        repository: ${{ repository }}
 
     - name: Expect Outputs To Be Equal
       env:
