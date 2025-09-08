@@ -19,7 +19,12 @@ jobs:
             repository: ""
             expected-tag: release-0.0.0
           - name: Get preceding tag from a tag
-            filter: ^release-\d+\.\d+\.[^2]+$
+            filter: ""
+            ref: release-0.0.2
+            repository: ""
+            expected-tag: release-0.0.2
+          - name: Get preceding tag from a tag, ignoring the tag
+            filter: ^(?!.*(release-0\.0\.2)).+$
             ref: release-0.0.2
             repository: ""
             expected-tag: release-0.0.1
