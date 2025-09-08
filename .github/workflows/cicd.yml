@@ -155,7 +155,7 @@ jobs:
     outputs:
       changed: ${{ steps.latest-release-hash.outputs.hash != steps.bundle-hash.outputs.hash }}
 
-    if: ${{ github.ref == 'refs/heads/main' && (needs.workflow-filter.outputs.run-check-release-files == 'true' || true) }}
+    if: ${{ github.ref == 'refs/heads/main' && needs.workflow-filter.outputs.run-check-release-files == 'true' }}
     steps:
     - name: Harden Runner
       uses: step-security/harden-runner@ec9f2d5744a09debf3a187a3f4f675c53b671911 # v2.13.0
