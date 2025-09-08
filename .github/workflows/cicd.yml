@@ -343,7 +343,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ steps.release-ruleset-bypass-token.outputs.token }}
         with:
-          tag_name: ${{ steps.create-version-tag.outputs.result.tag }}
+          tag_name: ${{ steps.create-version-tag.outputs.tag }}
 
   release:
     name: Release
