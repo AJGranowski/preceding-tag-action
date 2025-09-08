@@ -29,7 +29,7 @@ jobs:
       uses: step-security/harden-runner@0634a2670c59f64b4a01f0f96f84700a4088b9f0 # v2.12.0
       with:
         disable-sudo: true
-        egress-policy: audit
+        egress-policy: block
         allowed-endpoints: >
           github.com:443
 
@@ -94,7 +94,15 @@ jobs:
       uses: step-security/harden-runner@0634a2670c59f64b4a01f0f96f84700a4088b9f0 # v2.12.0
       with:
         disable-sudo: true
-        egress-policy: audit
+        egress-policy: block
+        allowed-endpoints: >
+          api.github.com:443
+          auth.docker.io:443
+          dl-cdn.alpinelinux.org:443
+          github.com:443
+          production.cloudflare.docker.com:443
+          registry-1.docker.io:443
+          registry.npmjs.org:443
     
     - name: Checkout
       uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
@@ -162,7 +170,10 @@ jobs:
       uses: step-security/harden-runner@ec9f2d5744a09debf3a187a3f4f675c53b671911 # v2.13.0
       with:
         disable-sudo: true
-        egress-policy: audit
+        egress-policy: block
+        allowed-endpoints: >
+          api.github.com:443
+          github.com:443
 
     - name: Get Latest Release Tag
       id: latest-release-tag
@@ -214,7 +225,9 @@ jobs:
         uses: step-security/harden-runner@ec9f2d5744a09debf3a187a3f4f675c53b671911 # v2.13.0
         with:
           disable-sudo: true
-          egress-policy: audit
+          egress-policy: block
+          allowed-endpoints: >
+            api.github.com:443
 
       - name: Generate Elevated Workflow token
         uses: actions/create-github-app-token@a8d616148505b5069dccd32f177bb87d7f39123b # v2.1.1
@@ -292,7 +305,10 @@ jobs:
         uses: step-security/harden-runner@ec9f2d5744a09debf3a187a3f4f675c53b671911 # v2.13.0
         with:
           disable-sudo: true
-          egress-policy: audit
+          egress-policy: block
+          allowed-endpoints: >
+            api.github.com:443
+            github.com:443
 
       - name: Generate Elevated Workflow token
         uses: actions/create-github-app-token@a8d616148505b5069dccd32f177bb87d7f39123b # v2.1.1
