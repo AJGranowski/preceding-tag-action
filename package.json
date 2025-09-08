@@ -8,6 +8,7 @@
     "scripts": {
         "bundle": "node esbuild.config.mjs",
         "check-types": "tsc -noEmit",
+        "ci": "npm run check-types && npm run lint && npm run test && npm run bundle",
         "format": "eslint --fix",
         "lint": "eslint",
         "run-bundle": "node dist/index.js",

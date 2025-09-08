@@ -85,7 +85,7 @@ jobs:
     if: ${{ needs.workflow-filter.outputs.run-ci == 'true' }}
     strategy:
       matrix:
-        script: ["bundle", "check-types", "lint", "test"]
+        script: ["bundle", "check-types", "lint", "test", "ci"]
 
     steps:
     - name: Harden Runner
