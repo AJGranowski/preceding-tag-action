@@ -12,9 +12,6 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        filter: []
-        ref: []
-        repository: []
         include:
           - filter: ""
             ref: ""
@@ -36,7 +33,7 @@ jobs:
       with:
         filter: ${{ matrix.filter }}
         ref: ${{ matrix.ref }}
-        repository: ${{ repository }}
+        repository: ${{ matrix.repository }}
 
     - name: Run Published Action
       id: preceding-tag-published
@@ -44,7 +41,7 @@ jobs:
       with:
         filter: ${{ matrix.filter }}
         ref: ${{ matrix.ref }}
-        repository: ${{ repository }}
+        repository: ${{ matrix.repository }}
 
     - name: Expect Outputs To Be Equal
       env:
