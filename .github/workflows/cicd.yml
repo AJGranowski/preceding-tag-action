@@ -6,8 +6,9 @@ on:
     branches:
       - "**"
       - "!dependabot/**"
-    tags:        
+    tags:
       - "**"
+      - "!v**"
   pull_request:
     branches:
       - "**"
