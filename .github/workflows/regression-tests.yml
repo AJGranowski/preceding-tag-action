@@ -12,6 +12,9 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
+        filter: []
+        ref: []
+        repository: []
         include:
           - filter: ""
             ref: ""
