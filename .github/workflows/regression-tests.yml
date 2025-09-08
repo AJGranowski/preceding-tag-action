@@ -8,12 +8,15 @@ permissions:
 
 jobs:
   test:
-    name: Regression Test
+    name: Test
     runs-on: ubuntu-latest
     strategy:
       matrix:
         include:
           - filter: ""
+            ref: ""
+            repository: ""
+          - filter: ^v(?<major>\d+)\.(?<minor>\d+)\.(?<patch>\d+)$
             ref: ""
             repository: ""
 
