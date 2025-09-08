@@ -8,17 +8,27 @@ permissions:
 
 jobs:
   test:
-    name: Test
+    name: Test ${{ matrix.name }}
     runs-on: ubuntu-latest
     strategy:
       matrix:
         include:
-          - filter: ""
+          - name: Empty inputs
+            filter: ""
             ref: ""
             repository: ""
-          - filter: ^v(?<major>\d+)\.(?<minor>\d+)\.(?<patch>\d+)$
+          - name: Filter for release-* tags
+            filter: ^release-(?<major>\d+)\.(?<minor>\d+)\.(?<patch>\d+)$
             ref: ""
             repository: ""
+          - name: Starting from a different ref
+            filter: ""
+            ref: 7f6f9a02a5f985b460f60b8dbe6c11294695c96f
+            repository: ""
+          - name: Using a different repository
+            filter: ""
+            ref: ""
+            repository: "github/markup"
 
     steps:
     - name: Checkout
