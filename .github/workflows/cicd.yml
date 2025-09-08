@@ -301,66 +301,66 @@ jobs:
 
     if: ${{ startsWith(github.ref, 'refs/tags/release-') && needs.workflow-filter.outputs.run-release-bump != 'true' }}
     steps:
-      - name: Harden Runner
-        uses: step-security/harden-runner@ec9f2d5744a09debf3a187a3f4f675c53b671911 # v2.13.0
-        with:
-          disable-sudo: true
-          egress-policy: block
-          allowed-endpoints: >
-            api.github.com:443
-            github.com:443
+    - name: Harden Runner
+      uses: step-security/harden-runner@ec9f2d5744a09debf3a187a3f4f675c53b671911 # v2.13.0
+      with:
+        disable-sudo: true
+        egress-policy: block
+        allowed-endpoints: >
+          api.github.com:443
+          github.com:443
 
-      - name: Generate Elevated Workflow token
-        uses: actions/create-github-app-token@a8d616148505b5069dccd32f177bb87d7f39123b # v2.1.1
-        id: release-ruleset-bypass-token
-        with:
-          app-id: ${{ vars.APP_ID }}
-          private-key: ${{ secrets.APP_PRIVATE_KEY }}
-      
-      - name: Create Version Tag
-        id: create-version-tag
-        uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea # v7.0.1
-        env:
-          GITHUB_REF: ${{ env.GITHUB_REF }}
-          GITHUB_SHA: ${{ env.GITHUB_SHA }}
-        with:
-          github-token: ${{ steps.release-ruleset-bypass-token.outputs.token }}
-          script: |
-            const vTag = process.env.GITHUB_REF.replace("refs/tags/release-", "refs/tags/v");
-            await github.rest.git.getRef({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              ref: vTag
-            }).then((response) => {
-              throw new Error(`Tag already exists: ${vTag}`);
-            }).catch((e) => {
-              if (e != null && e.status !== 404) throw e;
-            });
+    - name: Generate Elevated Workflow token
+      uses: actions/create-github-app-token@a8d616148505b5069dccd32f177bb87d7f39123b # v2.1.1
+      id: release-ruleset-bypass-token
+      with:
+        app-id: ${{ vars.APP_ID }}
+        private-key: ${{ secrets.APP_PRIVATE_KEY }}
+    
+    - name: Create Version Tag
+      id: create-version-tag
+      uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea # v7.0.1
+      env:
+        GITHUB_REF: ${{ env.GITHUB_REF }}
+        GITHUB_SHA: ${{ env.GITHUB_SHA }}
+      with:
+        github-token: ${{ steps.release-ruleset-bypass-token.outputs.token }}
+        script: |
+          const vTag = process.env.GITHUB_REF.replace("refs/tags/release-", "refs/tags/v");
+          await github.rest.git.getRef({
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            ref: vTag
+          }).then((response) => {
+            throw new Error(`Tag already exists: ${vTag}`);
+          }).catch((e) => {
+            if (e != null && e.status !== 404) throw e;
+          });
 
-            await github.rest.git.createRef({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              ref: vTag,
-              sha: process.env.GITHUB_SHA
-            });
+          await github.rest.git.createRef({
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            ref: vTag,
+            sha: process.env.GITHUB_SHA
+          });
 
-            core.setOutput("tag", vTag.substring("refs/tags/".length));
+          core.setOutput("tag", vTag.substring("refs/tags/".length));
 
-      - name: Checkout
-        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
-      
-      - name: Download Bundled Artifacts
-        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
-        with:
-          name: bundle
-          path: ./
+    - name: Checkout
+      uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+    
+    - name: Download Bundled Artifacts
+      uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+      with:
+        name: bundle
+        path: ./
 
-      - name: Create and Tag Release Commit
-        uses: JasonEtco/build-and-tag-action@dd5e4991048c325f6d85b4155e586fc211c644da # v2.0.1
-        env:
-          GITHUB_TOKEN: ${{ steps.release-ruleset-bypass-token.outputs.token }}
-        with:
-          tag_name: ${{ steps.create-version-tag.outputs.tag }}
+    - name: Create and Tag Release Commit
+      uses: JasonEtco/build-and-tag-action@dd5e4991048c325f6d85b4155e586fc211c644da # v2.0.1
+      env:
+        GITHUB_TOKEN: ${{ steps.release-ruleset-bypass-token.outputs.token }}
+      with:
+        tag_name: ${{ steps.create-version-tag.outputs.tag }}
 
   release:
     name: Release
