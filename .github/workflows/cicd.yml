@@ -118,17 +118,23 @@ jobs:
         cache-binary: false
         name: ci
 
+    - name: Docker Cache
+      uses: actions/cache@5a3ec84eff668545956fd18022155c47e93e2684 # v4.2.3
+      with:
+        path: /tmp/buildkit-cache
+        key: buildkit-${{ runner.os }}-${{ hashFiles('./container-images/**') }}
+
     - name: Build Docker images
       uses: docker/bake-action@3acf805d94d93a86cce4ca44798a76464a75b88c # v6.9.0
       with:
         allow: |
           network.host
         builder: ${{ steps.setup-buildx-action.outputs.name }}
-        load: false
+        load: true
         no-cache: true
         set: |
-          *.cache-from=type=gha,scope=global
-          *.cache-to=type=gha,mode=min,scope=global
+          *.cache-from=type=local,src=/tmp/buildkit-cache
+          *.cache-to=type=local,dest=/tmp/buildkit-cache,mode=max
 
     - name: NPM Cache
       uses: actions/cache@5a3ec84eff668545956fd18022155c47e93e2684 # v4.2.3
