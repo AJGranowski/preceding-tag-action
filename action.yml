@@ -6,19 +6,19 @@ runs:
 
 inputs:
   filter:
-    description: Tag filter
+    description: A regular expression used to filter candidate tag names.
     default: ^.+$
     required: true
   ref:
-    description: The branch, tag, or SHA to checkout.
+    description: The branch, tag, or SHA to find the preceding tag from.
     default: ${{ github.sha }}
     required: true
   repository:
-    description: "Repository name with owner. For example, AJGranowski/preceding-tag-action"
+    description: Repository name with owner. For example, AJGranowski/preceding-tag-action
     default: ${{ github.repository }}
     required: true
   token:
-    description: Personal access token used to query the repository.
+    description: Personal access token (PAT) used to fetch the tags.
     default: ${{ github.token }}
     required: true
 
