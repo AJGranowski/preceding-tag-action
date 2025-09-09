@@ -1,5 +1,5 @@
 # docker buildx imagetools inspect --format='{{json .Manifest.Digest}}' node:current-alpine
-FROM node:24.0.1-alpine@sha256:37712740dc486f179b9540be1c6703cef3f805ea932573a007db748b71189afe
+FROM node:24.7.0-alpine@sha256:be4d5e92ac68483ec71440bf5934865b4b7fcb93588f17a24d411d15f0204e4f
 
 COPY entrypoint /entrypoint
 ARG GOSU_VERSION=1.17
