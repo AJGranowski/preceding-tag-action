@@ -23,6 +23,7 @@ jobs:
     outputs:
       run-ci: ${{ (github.event_name == 'workflow_dispatch' || github.ref_type == 'tag' || steps.ci-files-changed.outputs.paths_any_modified == 'true') && !startsWith(github.ref, 'refs/tags/v') }}
       run-check-release-files: ${{ github.ref == 'refs/heads/main' && steps.tag-check.outputs.is-commit-tagged != 'true' && env.SKIP_AUTO_RELEASE != 'true' && steps.release-source-files-changed.outputs.paths_any_modified == 'true' }}
+      latest-release-tag: ${{ steps.latest-release-tag.outputs.tag }}
 
     steps:
     - name: Harden Runner
@@ -79,6 +80,20 @@ jobs:
             - "esbuild.config.mjs"
             - "package.json"
             - "src/**"
+
+    - name: Get Latest Release Tag
+      id: latest-release-tag
+      uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea # v7.0.1
+      with:
+        script: |
+          core.setOutput("tag", await github.rest.repos.getLatestRelease({
+              owner: context.repo.owner,
+              repo: context.repo.repo
+          }).then((response) => {
+              return response.data.tag_name
+          }).catch((e) => {
+              if (e != null && e.status !== 404) return "";
+          }));
 
   ci:
     name: CI
@@ -185,25 +200,11 @@ jobs:
           api.github.com:443
           github.com:443
 
-    - name: Get Latest Release Tag
-      id: latest-release-tag
-      uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea # v7.0.1
-      with:
-        script: |
-          core.setOutput("tag", await github.rest.repos.getLatestRelease({
-              owner: context.repo.owner,
-              repo: context.repo.repo
-          }).then((response) => {
-              return response.data.tag_name
-          }).catch((e) => {
-              if (e != null && e.status !== 404) return "";
-          }));
-
     - name: Checkout Latest Release
-      if: ${{ steps.latest-release-tag.outputs.tag != '' }}
+      if: ${{ needs.workflow-filter.outputs.latest-release-tag != '' }}
       uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
       with:
-        ref: ${{ steps.latest-release-tag.outputs.tag }}
+        ref: ${{ needs.workflow-filter.outputs.latest-release-tag }}
 
     - name: Hash Latest Release Files
       id: latest-release-hash
@@ -375,7 +376,9 @@ jobs:
   release:
     name: Release
     runs-on: ubuntu-latest
-    needs: pre-release
+    needs: [pre-release, workflow-filter]
+    permissions:
+      contents: write # Needed to create a release https://docs.github.com/en/rest/releases/releases#create-a-release
     concurrency:
       group: release-${{ github.ref }}
       cancel-in-progress: true
@@ -388,5 +391,33 @@ jobs:
         disable-sudo: true
         egress-policy: audit
 
+    - name: Compare Against Latest Release
+      id: is-latest-release
+      uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea # v7.0.1
+      env:
+        LATEST_RELEASE_TAG: ${{ needs.workflow-filter.outputs.latest-release-tag }}
+        THIS_RELEASE_TAG: ${{ needs.pre-release.outputs.version-tag }}
+      with:
+        script: |
+          core.setOutput("result", (() => {
+            const toVersionArray = (str) => str.split(/[^\d]+/).filter((x) => parseInt(x).toString() === x).map((x) => parseInt(x));
+            const latestReleaseTag = toVersionArray(process.env.LATEST_RELEASE_TAG);
+            const thisReleaseTag = toVersionArray(process.env.THIS_RELEASE_TAG);
+            const minLength = Math.min(thisReleaseTag.length, latestReleaseTag.length);
+            for (let i = 0; i < minLength; i++) {
+              const difference = thisReleaseTag[i] - latestReleaseTag[i];
+              if (difference > 0) return true;
+              if (difference < 0) return false;
+            }
+            if (thisReleaseTag.length >= latestReleaseTag.length) return true;
+            return false;
+          })());
+
     - name: Create Release
-      run: echo 'Create a release using the ${{ needs.pre-release.outputs.version-tag }} tag.'
+      uses: ncipollo/release-action@b7eabc95ff50cbeeedec83973935c8f306dfcd0b # v1.20.0
+      with:
+        generateReleaseNotes: true
+        immutableCreate: true
+        makeLatest: ${{ steps.is-latest-release.outputs.result == 'true' }}
+        name: Release ${{ needs.pre-release.outputs.version-tag }}
+        tag: ${{ needs.pre-release.outputs.version-tag }}
