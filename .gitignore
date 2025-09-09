@@ -1,7 +1,0 @@
-.vscode/
-dist/
-node_modules/
-tmp/
-.npmrc
-*.key
-*.tmp
