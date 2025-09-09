@@ -1,7 +1,6 @@
 [![CICD][cicd-badge]][cicd-link]
 [![Coverage Status][coverage-badge]][coverage-link]
 [![OpenSSF Scorecard][ossf-scorecard-badge]][ossf-scorecard-link]
-[![OpenSSF Best Practices][ossf-best-practices-badge]][ossf-best-practices-link]
 
 <header align="center">
     <h1 align="center">Preceding Tag Action</h1>
