@@ -16,7 +16,8 @@ This action functions similar to [`git describe`][git-describe-link] by finding 
 
 - env:
     PRECEDING_TAG: ${{ steps.preceding-tag.outputs.tag }}
-  run: echo "Preceding tag: "$PRECEDING_TAG"
+  run: |
+    echo "Preceding tag: "$PRECEDING_TAG"
 ```
 
 ```yml
@@ -27,7 +28,8 @@ This action functions similar to [`git describe`][git-describe-link] by finding 
 
 - env:
     PRECEDING_RELEASE_TAG: ${{ steps.preceding-release-tag.outputs.tag }}
-  run: echo "Preceding release tag: "$PRECEDING_RELEASE_TAG"
+  run: |
+    echo "Preceding release tag: "$PRECEDING_RELEASE_TAG"
 ```
 
 
