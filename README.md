@@ -1,4 +1,7 @@
 [![CICD][cicd-badge]][cicd-link]
+[![Coverage Status][coverage-badge]][coverage-link]
+[![OpenSSF Scorecard][ossf-scorecard-badge]][ossf-scorecard-link]
+[![OpenSSF Best Practices][ossf-best-practices-badge]][ossf-best-practices-link]
 
 <header align="center">
     <h1 align="center">Preceding Tag Action</h1>
@@ -50,6 +53,10 @@ Although this project publishes version tags, we strongly recommend [pinning thi
 
 [cicd-badge]: https://github.com/AJGranowski/preceding-tag-action/actions/workflows/cicd.yml/badge.svg?branch=main
 [cicd-link]: https://github.com/AJGranowski/preceding-tag-action/actions/workflows/cicd.yml
+[coverage-badge]: https://codecov.io/github/AJGranowski/preceding-tag-action/graph/badge.svg?token=709TF09YRV
+[coverage-link]: https://codecov.io/github/AJGranowski/preceding-tag-action
 [git-describe-link]: https://git-scm.com/docs/git-describe
 [latest-release-link]: https://github.com/AJGranowski/preceding-tag-action/releases/latest
+[ossf-scorecard-badge]: https://api.securityscorecards.dev/projects/github.com/AJGranowski/preceding-tag-action/badge
+[ossf-scorecard-link]: https://securityscorecards.dev/viewer/?uri=github.com/AJGranowski/preceding-tag-action
 [security-sha-pinning-link]: https://docs.github.com/en/actions/reference/security/secure-use#using-third-party-actions
