@@ -76,7 +76,6 @@ jobs:
       with:
         files_yaml: |
           paths:
-            - "action.yml"
             - "cjs-shim.mjs"
             - "esbuild.config.mjs"
             - "package.json"
@@ -188,7 +187,7 @@ jobs:
     runs-on: ubuntu-latest
     needs: [workflow-filter, ci]
     outputs:
-      changed: ${{ steps.latest-release-hash.outputs.hash != steps.bundle-hash.outputs.hash }}
+      changed: ${{ steps.latest-release.outputs.action-hash == steps.bundle.outputs.action-hash && steps.latest-release.outputs.bundle-hash != steps.bundle.outputs.bundle-hash }}
 
     if: ${{ github.ref == 'refs/heads/main' && needs.workflow-filter.outputs.run-check-release-files == 'true' }}
     steps:
@@ -206,9 +205,11 @@ jobs:
       with:
         ref: ${{ needs.workflow-filter.outputs.latest-release-tag }}
 
-    - name: Hash Latest Release Files
-      id: latest-release-hash
-      run: echo 'hash=${{ hashFiles('./dist/**', './action.yml') }}' >> "$GITHUB_OUTPUT"
+    - name: Hash Latest Release
+      id: latest-release
+      run: |
+        echo 'bundle-hash=${{ hashFiles('./dist/**') }}' >> "$GITHUB_OUTPUT"
+        echo 'action-hash=${{ hashFiles('./action.yml') }}' >> "$GITHUB_OUTPUT"
 
     - name: Download Bundled Artifacts
       uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
@@ -216,9 +217,11 @@ jobs:
         name: bundle
         path: ./
 
-    - name: Hash Bundle Files
-      id: bundle-hash
-      run: echo 'hash=${{ hashFiles('./dist/**', './action.yml') }}' >> "$GITHUB_OUTPUT"
+    - name: Hash Bundle
+      id: bundle
+      run: |
+        echo 'bundle-hash=${{ hashFiles('./dist/**') }}' >> "$GITHUB_OUTPUT"
+        echo 'action-hash=${{ hashFiles('./action.yml') }}' >> "$GITHUB_OUTPUT"
 
   release-bump:
     name: Bump Release Tag
@@ -404,7 +407,7 @@ jobs:
             const thisReleaseTag = toVersionArray(process.env.THIS_RELEASE_TAG);
             core.info(`This Release Tag Components: ${JSON.stringify(thisReleaseTag)}`);
             const latestReleaseTag = toVersionArray(process.env.LATEST_RELEASE_TAG);
-            core.info(`Latest Release Tag Components: ${JSON.stringify(thisReleaseTag)}`);
+            core.info(`Latest Release Tag Components: ${JSON.stringify(latestReleaseTag)}`);
 
             const minLength = Math.min(thisReleaseTag.length, latestReleaseTag.length);
             for (let i = 0; i < minLength; i++) {
