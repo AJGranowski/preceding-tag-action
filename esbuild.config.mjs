@@ -1,4 +1,4 @@
-import * as esbuild from "esbuild";
+import { build } from "esbuild";
 import { rm } from "fs/promises";
 
 await rm("dist", {
@@ -6,7 +6,7 @@ await rm("dist", {
     recursive: true
 });
 
-await esbuild.build({
+await build({
     bundle: true,
     entryPoints: ["src/index.ts"],
     format: "esm",
