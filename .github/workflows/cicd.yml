@@ -22,7 +22,7 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       run-ci: ${{ (github.event_name == 'workflow_dispatch' || github.ref_type == 'tag' || steps.ci-files-changed.outputs.paths_any_modified == 'true') && !startsWith(github.ref, 'refs/tags/v') }}
-      run-check-release-files: ${{ github.ref == 'refs/heads/main' && steps.tag-check.outputs.is-commit-tagged != 'true' && env.SKIP_AUTO_RELEASE != 'true' && steps.release-source-files-changed.outputs.paths_any_modified == 'true' }}
+      run-check-release-files: ${{ github.ref == 'refs/heads/main' && steps.tag-check.outputs.is-commit-tagged != 'true' && steps.commit-comment.outputs.skip-auto-release != 'true' && steps.release-source-files-changed.outputs.paths_any_modified == 'true' }}
       latest-release-tag: ${{ steps.latest-release-tag.outputs.tag }}
 
     steps:
@@ -64,9 +64,10 @@ jobs:
             - ".github/workflows/regression-tests.yml"
 
     - name: Check for \#skip-auto-release
+      id: commit-comment
       run: |
         case "$(git show -s --format=%b "$GITHUB_REF")" in
-          *#skip-auto-release*) echo 'SKIP_AUTO_RELEASE=true' >> "$GITHUB_ENV";;
+          *#skip-auto-release*) echo 'skip-auto-release=true' >> "$GITHUB_OUTPUT";;
         esac
 
     - name: Release Source Files Changed
