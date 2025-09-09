@@ -87,12 +87,12 @@ jobs:
       with:
         script: |
           core.setOutput("tag", await github.rest.repos.getLatestRelease({
-              owner: context.repo.owner,
-              repo: context.repo.repo
+            owner: context.repo.owner,
+            repo: context.repo.repo
           }).then((response) => {
-              return response.data.tag_name
+            return response.data.tag_name
           }).catch((e) => {
-              if (e != null && e.status !== 404) return "";
+            if (e != null && e.status !== 404) return "";
           }));
 
   ci:
