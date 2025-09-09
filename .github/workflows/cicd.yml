@@ -84,7 +84,7 @@ jobs:
 
     - name: Get Latest Release Tag
       id: latest-release-tag
-      uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea # v7.0.1
+      uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8.0.0
       with:
         script: |
           core.setOutput("tag", await github.rest.repos.getLatestRelease({
@@ -259,7 +259,7 @@ jobs:
 
     - name: Increment And Create Release Tag
       id: increment-tag
-      uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea # v7.0.1
+      uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8.0.0
       env:
         PRECEDING_RELEASE_TAG: ${{ steps.preceding-tag.outputs.tag }}
         RELEASE_REGEX: ${{ env.RELEASE_REGEX }}
@@ -334,7 +334,7 @@ jobs:
     
     - name: Create Version Tag
       id: create-version-tag
-      uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea # v7.0.1
+      uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8.0.0
       env:
         GITHUB_REF: ${{ env.GITHUB_REF }}
         GITHUB_SHA: ${{ env.GITHUB_SHA }}
@@ -397,7 +397,7 @@ jobs:
 
     - name: Compare Against Latest Release
       id: is-latest-release
-      uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea # v7.0.1
+      uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8.0.0
       env:
         LATEST_RELEASE_TAG: ${{ needs.workflow-filter.outputs.latest-release-tag }}
         THIS_RELEASE_TAG: ${{ needs.pre-release.outputs.version-tag }}
