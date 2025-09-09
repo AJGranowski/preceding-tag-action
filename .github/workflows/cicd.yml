@@ -115,7 +115,6 @@ jobs:
       id: setup-buildx-action
       uses: docker/setup-buildx-action@e468171a9de216ec08956ac3ada2f0791b6bd435 # v3.11.1
       with:
-        cache-binary: false
         name: ci
 
     - name: Docker Cache
@@ -131,7 +130,6 @@ jobs:
           network.host
         builder: ${{ steps.setup-buildx-action.outputs.name }}
         load: true
-        no-cache: false
         set: |
           *.cache-from=type=local,src=/tmp/buildkit-cache
           *.cache-to=type=local,dest=/tmp/buildkit-cache,mode=max
