@@ -399,10 +399,13 @@ jobs:
         THIS_RELEASE_TAG: ${{ needs.pre-release.outputs.version-tag }}
       with:
         script: |
-          core.setOutput("result", (() => {
+          const result = (() => {
             const toVersionArray = (str) => str.split(/[^\d]+/).filter((x) => parseInt(x).toString() === x).map((x) => parseInt(x));
-            const latestReleaseTag = toVersionArray(process.env.LATEST_RELEASE_TAG);
             const thisReleaseTag = toVersionArray(process.env.THIS_RELEASE_TAG);
+            core.info(`This Release Tag Components: ${JSON.stringify(thisReleaseTag)}`);
+            const latestReleaseTag = toVersionArray(process.env.LATEST_RELEASE_TAG);
+            core.info(`Latest Release Tag Components: ${JSON.stringify(thisReleaseTag)}`);
+
             const minLength = Math.min(thisReleaseTag.length, latestReleaseTag.length);
             for (let i = 0; i < minLength; i++) {
               const difference = thisReleaseTag[i] - latestReleaseTag[i];
@@ -411,16 +414,16 @@ jobs:
             }
             if (thisReleaseTag.length >= latestReleaseTag.length) return true;
             return false;
-          })().toString());
+          })();
 
-    - name: Debug Print
-      run: echo '${{ steps.is-latest-release.outputs.result }}'
+          core.info(`Result: ${result}`);
+          core.setOutput("is-latest", result);
 
     - name: Create Release
       uses: ncipollo/release-action@b7eabc95ff50cbeeedec83973935c8f306dfcd0b # v1.20.0
       with:
         generateReleaseNotes: true
         immutableCreate: true
-        makeLatest: ${{ steps.is-latest-release.outputs.result == 'true' }}
+        makeLatest: ${{ steps.is-latest-release.outputs.is-latest == 'true' }}
         name: Release ${{ needs.pre-release.outputs.version-tag }}
         tag: ${{ needs.pre-release.outputs.version-tag }}
