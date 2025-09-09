@@ -411,7 +411,10 @@ jobs:
             }
             if (thisReleaseTag.length >= latestReleaseTag.length) return true;
             return false;
-          })());
+          })().toString());
+
+    - name: Debug Print
+      run: echo '${{ steps.is-latest-release.outputs.result }}'
 
     - name: Create Release
       uses: ncipollo/release-action@b7eabc95ff50cbeeedec83973935c8f306dfcd0b # v1.20.0
