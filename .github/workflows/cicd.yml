@@ -183,10 +183,10 @@ jobs:
     needs: ci
     uses: ./.github/workflows/integration-tests.yml
 
-#  ci-regression-tests:
-#    name: CI (Regression Tests)
-#    needs: ci
-#    uses: ./.github/workflows/regression-tests.yml
+  ci-regression-tests:
+    name: CI (Regression Tests)
+    needs: ci
+    uses: ./.github/workflows/regression-tests.yml
 
   check-release-files:
     name: Check Release File Changes
