@@ -1,10 +1,10 @@
-import type * as core from "@actions/core";
-import type * as github from "@actions/github";
+import type { getInput } from "@actions/core";
+import type { context } from "@actions/github";
 
 import type { Repository } from "./Repository";
 
-type core_getInput = typeof core["getInput"];
-type github_context = typeof github["context"];
+type core_getInput = typeof getInput;
+type github_context = typeof context;
 
 class Input {
     private readonly getInput: core_getInput;

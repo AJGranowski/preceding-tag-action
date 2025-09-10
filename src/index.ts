@@ -1,5 +1,5 @@
 import * as core from "@actions/core";
-import * as github from "@actions/github";
+import { context } from "@actions/github";
 import { Octokit } from "@octokit/rest";
 
 import { fetchPrecedingTag } from "./fetchPrecedingTag";
@@ -8,9 +8,9 @@ import { Input } from "./Input";
 
 try {
     await (async (): Promise<void> => {
-        const input: Input = new Input(core.getInput, github.context);
+        const input: Input = new Input(core.getInput, context);
         const octokit: Octokit = new Octokit({
-            auth: core.getInput("token") //bump 2
+            auth: core.getInput("token")
         });
 
         const githubAPI = new GitHubAPI(octokit, input.getRepository());
