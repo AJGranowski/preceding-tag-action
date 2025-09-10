@@ -14,20 +14,24 @@ jobs:
       matrix:
         include:
           - name: Empty inputs
-            filter: ""
+            include-ref: ""
             ref: ""
+            regex: ""
             repository: ""
           - name: Filter for release-* tags
-            filter: ^release-(?<major>\d+)\.(?<minor>\d+)\.(?<patch>\d+)$
+            include-ref: ""
             ref: ""
+            regex: ^release-(?<major>\d+)\.(?<minor>\d+)\.(?<patch>\d+)$
             repository: ""
           - name: Starting from a different commit
-            filter: ""
+            include-ref: ""
             ref: 7f6f9a02a5f985b460f60b8dbe6c11294695c96f
+            regex: ""
             repository: ""
           - name: Using a different repository
-            filter: ""
+            include-ref: ""
             ref: ""
+            regex: ""
             repository: "github/markup"
 
     steps:
@@ -50,16 +54,18 @@ jobs:
       id: preceding-tag-local
       uses: ./
       with:
-        filter: ${{ matrix.filter }}
+        include-ref: ${{ matrix.include-ref }}
         ref: ${{ matrix.ref }}
+        regex: ${{ matrix.regex }}
         repository: ${{ matrix.repository }}
 
     - name: Run Published Action
       id: preceding-tag-published
       uses: AJGranowski/preceding-tag-action@80c580ff81c21e3212bdf3e447a41837e8861bab # v0.0.6
       with:
-        filter: ${{ matrix.filter }}
+        include-ref: ${{ matrix.include-ref }}
         ref: ${{ matrix.ref }}
+        regex: ${{ matrix.regex }}
         repository: ${{ matrix.repository }}
 
     - name: Expect Outputs To Be Equal

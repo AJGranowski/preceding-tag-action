@@ -260,7 +260,7 @@ jobs:
       id: preceding-tag
       uses: AJGranowski/preceding-tag-action@80c580ff81c21e3212bdf3e447a41837e8861bab # v0.0.6
       with:
-        filter: ${{ env.RELEASE_REGEX }}
+        regex: ${{ env.RELEASE_REGEX }}
 
     - name: Increment And Create Release Tag
       id: increment-tag
