@@ -56,6 +56,18 @@ class Input {
             repo: matcher.groups.repo
         };
     }
+
+    /**
+     * Return the token if it exists, or undefined.
+     */
+    getToken(): string | undefined {
+        const token = this.getInput("token");
+        if (token.length === 0) {
+            return undefined;
+        }
+
+        return token;
+    }
 }
 
 export { Input };
