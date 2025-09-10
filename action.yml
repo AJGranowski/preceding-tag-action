@@ -6,10 +6,6 @@ runs:
   main: dist/index.js
 
 inputs:
-  filter:
-    description: A regular expression used to filter candidate tag names.
-    default: ^.+$
-    required: false
   include-ref:
     description: Consider candidate tags pointing to `ref`.
     default: "false"
@@ -18,6 +14,10 @@ inputs:
     description: The branch, tag, or SHA to find the preceding tag from.
     default: ${{ github.sha }}
     required: true
+  regex:
+    description: A regular expression used to filter candidate tag names.
+    default: ^.+$
+    required: false
   repository:
     description: Repository name with owner. For example, AJGranowski/preceding-tag-action
     default: ${{ github.repository }}
