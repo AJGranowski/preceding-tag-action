@@ -26,7 +26,7 @@ This action functions similar to [`git describe`][git-describe-link] by finding 
 - uses: AJGranowski/preceding-tag-action@▒▒▒▒▒▒▒▒▒▒▒▒▒ COMMIT SHA ▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒ # vX.Y.Z
   id: preceding-release-tag
   with:
-    filter: ^release-.+$
+    regex: ^release-.+$
 
 - env:
     PRECEDING_RELEASE_TAG: ${{ steps.preceding-release-tag.outputs.tag }}

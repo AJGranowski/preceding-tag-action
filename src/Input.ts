@@ -21,7 +21,7 @@ class Input {
      * Get the tag filtering regular expression, defaults to matching every non-zero string.
      */
     getFilter(): RegExp {
-        const filterString = this.getInput("filter");
+        const filterString = this.getInput("regex");
         if (filterString.length === 0) {
             return /^.+$/;
         }
