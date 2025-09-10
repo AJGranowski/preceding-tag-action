@@ -7,7 +7,7 @@ runs:
 
 inputs:
   include-ref:
-    description: Consider candidate tags pointing to `ref`.
+    description: If true, include tags pointing to `ref` as candidates.
     default: "false"
     required: false
   ref:
