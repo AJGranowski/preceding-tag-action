@@ -8,13 +8,16 @@ import { Input } from "./Input";
 
 try {
     await (async (): Promise<void> => {
-        const input: Input = new Input(core.getInput, context);
+        const input: Input = new Input(core.getInput, core.getBooleanInput, context);
         const octokit: Octokit = new Octokit({
             auth: input.getToken()
         });
 
         const githubAPI = new GitHubAPI(octokit, input.getRepository());
-        const precedingTag = await fetchPrecedingTag(githubAPI, input.getRef(), input.getFilter());
+        const precedingTag = await fetchPrecedingTag(githubAPI, input.getRef(), {
+            filter: input.getFilter(),
+            excludeRef: input.getExcludeRef()
+        });
 
         if (precedingTag == null) {
             core.setOutput("tag", "");
