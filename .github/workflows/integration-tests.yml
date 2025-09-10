@@ -115,6 +115,7 @@ jobs:
       uses: ./
       with:
         filter: ${{ matrix.filter }}
+        include-ref: ${{ matrix.include-ref }}
         ref: ${{ matrix.ref }}
         repository: ${{ matrix.repository }}
 
