@@ -1,0 +1,14 @@
+changelog:
+  categories:
+    - title: Breaking Changes 🛠
+      labels:
+        - major-change
+    - title: Added Features 🎉
+      labels:
+        - minor-change
+    - title: Other Changes
+      labels:
+        - "*"
+  exclude:
+    authors:
+      - dependabot
