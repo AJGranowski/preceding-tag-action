@@ -16,7 +16,7 @@ try {
         const githubAPI = new GitHubAPI(octokit, input.getRepository());
         const precedingTag = await fetchPrecedingTag(githubAPI, input.getRef(), {
             filter: input.getFilter(),
-            excludeRef: input.getExcludeRef()
+            includeRef: input.getIncludeRef()
         });
 
         if (precedingTag == null) {

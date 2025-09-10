@@ -70,26 +70,26 @@ jobs:
       matrix:
         include:
           - name: Should return the preceding tag from a SHA.
-            exclude-ref: ""
             filter: ""
+            include-ref: ""
             ref: 7f6f9a02a5f985b460f60b8dbe6c11294695c96f
             repository: ""
             expected-tag: release-0.0.0
-          - name: Should return this tag if the ref is a tag that matches the filter.
-            exclude-ref: ""
+          - name: Should return the preceding tag from a tag.
             filter: ^release-.+$
-            ref: release-0.0.2
-            repository: ""
-            expected-tag: release-0.0.2
-          - name: Should return the preceding tag if the ref is a tag that matches the filter, but exclude-ref is true.
-            exclude-ref: true
-            filter: ^release-.+$
+            include-ref: ""
             ref: release-0.0.2
             repository: ""
             expected-tag: release-0.0.1
+          - name: Should return this tag if ref matches the filter and include-ref is set to true.
+            filter: ^release-.+$
+            include-ref: true
+            ref: release-0.0.2
+            repository: ""
+            expected-tag: release-0.0.2
           - name: Should return an empty string if no preceding tag exists.
-            exclude-ref: ""
             filter: ""
+            include-ref: ""
             ref: 42371bd608bcc9ca46e0a3be0e3403571cd8d824
             repository: ""
             expected-tag: ""

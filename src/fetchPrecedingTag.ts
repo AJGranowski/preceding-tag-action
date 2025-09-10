@@ -8,7 +8,7 @@ interface TagDifference {
 type GitRef = string;
 interface Options {
     filter?: RegExp;
-    excludeRef?: boolean;
+    includeRef?: boolean;
 }
 
 /**
@@ -22,7 +22,7 @@ interface Options {
 async function fetchPrecedingTag(githubAPI: GitHubAPI, head: GitRef, options?: Options): Promise<string | null> {
     const optionsWithDefaults = {
         filter: /^.+$/,
-        excludeRef: false,
+        includeRef: false,
         ...options
     } satisfies Required<Options>;
 
@@ -40,11 +40,11 @@ async function fetchPrecedingTag(githubAPI: GitHubAPI, head: GitRef, options?: O
                 return false;
             }
 
-            if (optionsWithDefaults.excludeRef) {
-                return x.commitDifference > 0;
+            if (optionsWithDefaults.includeRef) {
+                return x.commitDifference >= 0;
             }
 
-            return x.commitDifference >= 0;
+            return x.commitDifference > 0;
         })
         .reduce((prev: TagDifference | null, next: TagDifference) => {
             if (prev == null) {

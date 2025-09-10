@@ -18,17 +18,6 @@ class Input {
     }
 
     /**
-     * Return the exclude-ref option, defaults to false.
-     */
-    getExcludeRef(): boolean {
-        if (this.getInput("exclude-ref").length === 0) {
-            return false;
-        }
-
-        return this.getBooleanInput("exclude-ref");
-    }
-
-    /**
      * Get the tag filtering regular expression, defaults to matching every non-zero string.
      */
     getFilter(): RegExp {
@@ -38,6 +27,17 @@ class Input {
         }
 
         return new RegExp(filterString);
+    }
+
+    /**
+     * Return the include-ref option, defaults to false.
+     */
+    getIncludeRef(): boolean {
+        if (this.getInput("include-ref").length === 0) {
+            return false;
+        }
+
+        return this.getBooleanInput("include-ref");
     }
 
     /**

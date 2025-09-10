@@ -6,13 +6,13 @@ runs:
   main: dist/index.js
 
 inputs:
-  exclude-ref:
-    description: Disqualify candidate tags pointing to `ref`.
-    default: "false"
-    required: false
   filter:
     description: A regular expression used to filter candidate tag names.
     default: ^.+$
+    required: false
+  include-ref:
+    description: Consider candidate tags pointing to `ref`.
+    default: "false"
     required: false
   ref:
     description: The branch, tag, or SHA to find the preceding tag from.
