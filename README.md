@@ -43,7 +43,7 @@ Although this project publishes version tags, we strongly recommend [pinning thi
 | `repository`  | String  | `${{ github.repository }}` | Repository name with owner. For example, `AJGranowski/preceding-tag-action` |
 | `ref`         | String  | `${{ github.sha }}`        | The branch, tag, or SHA to find the preceding tag from.                     |
 | `regex`       | String  | `^.+$`                     | A regular expression used to filter candidate tag names.                    |
-| `include-ref` | Boolean | `false`                    | Include tags pointing to `ref` as candidates.                               |
+| `include-ref` | Boolean | `false`                    | If true, include tags pointing to `ref` as candidates.                      |
 | `token`       | String  | `${{ github.token }}`      | Personal access token (PAT) used to fetch the tags.                         |
 
 ## Outputs
