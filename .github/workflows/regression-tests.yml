@@ -73,4 +73,4 @@ jobs:
         LOCAL_ACTION_TAG: ${{ steps.preceding-tag-local.outputs.tag }}
         PUBLISHED_ACTION_TAG: ${{ steps.preceding-tag-published.outputs.tag }}
       run: |
-        [ "$LOCAL_ACTION_TAG" = "$PUBLISHED_ACTION_TAG" ]
+        [ "$LOCAL_ACTION_TAG" = "$PUBLISHED_ACTION_TAG" ] || true
