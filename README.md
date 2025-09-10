@@ -52,8 +52,8 @@ Although this project publishes version tags, we strongly recommend [pinning thi
 
 [cicd-badge]: https://github.com/AJGranowski/preceding-tag-action/actions/workflows/cicd.yml/badge.svg?branch=main
 [cicd-link]: https://github.com/AJGranowski/preceding-tag-action/actions/workflows/cicd.yml
-[coverage-badge]: https://codecov.io/github/AJGranowski/preceding-tag-action/graph/badge.svg?token=709TF09YRV
-[coverage-link]: https://codecov.io/github/AJGranowski/preceding-tag-action
+[coverage-badge]: https://coveralls.io/repos/github/AJGranowski/preceding-tag-action/badge.svg?branch=main
+[coverage-link]: https://coveralls.io/github/AJGranowski/preceding-tag-action?branch=main
 [git-describe-link]: https://git-scm.com/docs/git-describe
 [latest-release-link]: https://github.com/AJGranowski/preceding-tag-action/releases/latest
 [ossf-scorecard-badge]: https://api.securityscorecards.dev/projects/github.com/AJGranowski/preceding-tag-action/badge
