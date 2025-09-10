@@ -38,12 +38,13 @@ This action functions similar to [`git describe`][git-describe-link] by finding 
 Although this project publishes version tags, we strongly recommend [pinning this action to a full-length commit SHA][security-sha-pinning-link]. You can get the SHA of the latest release from the [latest release page][latest-release-link] by clicking the commit link, then and copying the SHA from the URL.
 
 ## Inputs
-| Name         | Type   | Default                    | Description                                                                 |
-|--------------|--------|----------------------------|-----------------------------------------------------------------------------|
-| `repository` | String | `${{ github.repository }}` | Repository name with owner. For example, `AJGranowski/preceding-tag-action` |
-| `ref`        | String | `${{ github.sha }}`        | The branch, tag, or SHA to find the preceding tag from.                     |
-| `filter`     | String | `^.+$`                     | A regular expression used to filter candidate tag names.                    |
-| `token`      | String | `${{ github.token }}`      | Personal access token (PAT) used to fetch the tags.                         |
+| Name          | Type    | Default                    | Description                                                                 |
+|---------------|---------|----------------------------|-----------------------------------------------------------------------------|
+| `repository`  | String  | `${{ github.repository }}` | Repository name with owner. For example, `AJGranowski/preceding-tag-action` |
+| `ref`         | String  | `${{ github.sha }}`        | The branch, tag, or SHA to find the preceding tag from.                     |
+| `filter`      | String  | `^.+$`                     | A regular expression used to filter candidate tag names.                    |
+| `include-ref` | Boolean | `false`                    | Consider candidate tags pointing to `ref`.                                  |
+| `token`       | String  | `${{ github.token }}`      | Personal access token (PAT) used to fetch the tags.                         |
 
 ## Outputs
 | Name  | Type   | Description  |

@@ -6,6 +6,10 @@ interface TagDifference {
 }
 
 type GitRef = string;
+interface Options {
+    filter?: RegExp;
+    includeRef?: boolean;
+}
 
 /**
  * This function finds the most recent tag that is reachable from a commit.
@@ -15,9 +19,14 @@ type GitRef = string;
  *
  * Will reject if the API is unavailable, or if the reference does not exist.
  */
-async function fetchPrecedingTag(githubAPI: GitHubAPI, head: GitRef, filter?: RegExp): Promise<string | null> {
-    filter = filter ?? /^.+$/;
-    const allTags = await githubAPI.fetchAllTags(filter);
+async function fetchPrecedingTag(githubAPI: GitHubAPI, head: GitRef, options?: Options): Promise<string | null> {
+    const optionsWithDefaults = {
+        filter: /^.+$/,
+        includeRef: false,
+        ...options
+    } satisfies Required<Options>;
+
+    const allTags = await githubAPI.fetchAllTags(optionsWithDefaults.filter);
     const tagDistances = await Promise.all(allTags.map(async (tag) => {
         return {
             tags: [tag],
@@ -26,7 +35,17 @@ async function fetchPrecedingTag(githubAPI: GitHubAPI, head: GitRef, filter?: Re
     }));
 
     const precedingTag = tagDistances
-        .filter((x) => !isNaN(x.commitDifference) && x.commitDifference >= 0)
+        .filter((x) => {
+            if (isNaN(x.commitDifference)) {
+                return false;
+            }
+
+            if (optionsWithDefaults.includeRef) {
+                return x.commitDifference >= 0;
+            }
+
+            return x.commitDifference > 0;
+        })
         .reduce((prev: TagDifference | null, next: TagDifference) => {
             if (prev == null) {
                 return next;

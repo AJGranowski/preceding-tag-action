@@ -69,23 +69,27 @@ jobs:
     strategy:
       matrix:
         include:
-          - name: Get preceding tag from a SHA
+          - name: Should return the preceding tag from a SHA.
             filter: ""
+            include-ref: ""
             ref: 7f6f9a02a5f985b460f60b8dbe6c11294695c96f
             repository: ""
             expected-tag: release-0.0.0
-          - name: Get preceding tag from a tag
-            filter: ""
-            ref: release-0.0.2
-            repository: ""
-            expected-tag: release-0.0.2
-          - name: Get preceding tag from a tag, ignoring the tag
-            filter: ^(?!.*(release-0\.0\.2)).+$
+          - name: Should return the preceding tag from a tag.
+            filter: ^release-.+$
+            include-ref: ""
             ref: release-0.0.2
             repository: ""
             expected-tag: release-0.0.1
-          - name: No preceding tag exists
+          - name: Should return this tag if ref matches the filter and include-ref is set to true.
+            filter: ^release-.+$
+            include-ref: true
+            ref: release-0.0.2
+            repository: ""
+            expected-tag: release-0.0.2
+          - name: Should return an empty string if no preceding tag exists.
             filter: ""
+            include-ref: ""
             ref: 42371bd608bcc9ca46e0a3be0e3403571cd8d824
             repository: ""
             expected-tag: ""
@@ -111,6 +115,7 @@ jobs:
       uses: ./
       with:
         filter: ${{ matrix.filter }}
+        include-ref: ${{ matrix.include-ref }}
         ref: ${{ matrix.ref }}
         repository: ${{ matrix.repository }}
 
