@@ -187,6 +187,14 @@ jobs:
     needs: ci
     uses: ./.github/workflows/regression-tests.yml
 
+  ci-required-checks:
+    name: CI (Required Checks)
+    runs-on: ubuntu-latest
+    needs: [ci, ci-integration-tests]
+    if: always()
+    steps:
+    - run: ${{ !contains(needs.*.result, 'failure') }}
+
   check-release-files:
     name: Check Release File Changes
     runs-on: ubuntu-latest
