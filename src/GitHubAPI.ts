@@ -1,10 +1,8 @@
 import type { Octokit } from "@octokit/rest";
 
-import type { CommitDate } from "./CommitDate";
-import type { Repository } from "./Repository";
-
-type GitTag = string;
-type GitRef = string;
+import type { CommitDate } from "./types/CommitDate";
+import type { GitRef } from "./types/GitRef";
+import type { Repository } from "./types/Repository";
 
 class GitHubAPI {
     private readonly octokit: Octokit;
@@ -19,7 +17,7 @@ class GitHubAPI {
      *
      * Will reject if the API is unavailable.
      */
-    async fetchAllTags(filter: RegExp): Promise<GitTag[]> {
+    async fetchAllTags(filter: RegExp): Promise<string[]> {
         // https://docs.github.com/en/rest/git/refs?apiVersion=2022-11-28#list-matching-references
         return this.octokit.rest.git.listMatchingRefs({
             owner: this.repo.owner,

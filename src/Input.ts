@@ -1,7 +1,7 @@
 import type { getBooleanInput, getInput } from "@actions/core";
 import type { context } from "@actions/github";
 
-import type { Repository } from "./Repository";
+import type { Repository } from "./types/Repository";
 
 type core_getBooleanInput = typeof getBooleanInput;
 type core_getInput = typeof getInput;
