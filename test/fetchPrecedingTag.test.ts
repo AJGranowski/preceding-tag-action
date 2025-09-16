@@ -13,5 +13,9 @@ describe("PrecedingTag", () => {
 
             expect(await fetchPrecedingTag(mockGithubAPI, "HEAD")).toBeNull();
         });
+
+        test("should not fail", () => {
+            throw new Error("fail");
+        });
     });
 });
