@@ -35,7 +35,7 @@ This action functions similar to [`git describe`][git-describe-link] by finding 
 ```
 
 
-Although this project publishes version tags, we strongly recommend [pinning this action to a full-length commit SHA][security-sha-pinning-link]. You can get the SHA of the latest release from the [latest release page][latest-release-link] by clicking the commit link, then and copying the SHA from the URL.
+Although this project publishes version tags, I strongly recommend [pinning this action to a full-length commit SHA][security-sha-pinning-link]. You can get the SHA of the latest release from the [latest release page][latest-release-link] by clicking the commit link, then and copying the SHA from the URL.
 
 ## Inputs
 | Name          | Type    | Default                    | Description                                                                 |
