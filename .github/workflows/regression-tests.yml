@@ -61,7 +61,7 @@ jobs:
 
     - name: Run Published Action
       id: preceding-tag-published
-      uses: AJGranowski/preceding-tag-action@d167fcae8259ae22dbf54668f1df2e42bb7aa5a9 # v1.0.0
+      uses: AJGranowski/preceding-tag-action@a90eecea5a5d3cc69e04d6357ce271dc65c9436e # v1.0.1
       with:
         include-ref: ${{ matrix.include-ref }}
         ref: ${{ matrix.ref }}
