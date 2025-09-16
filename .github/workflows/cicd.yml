@@ -401,6 +401,7 @@ jobs:
         egress-policy: block
         allowed-endpoints: >
           api.github.com:443
+          github.com:443
 
     - name: Compare Against Latest Release
       id: is-latest-release
@@ -430,9 +431,13 @@ jobs:
           core.info(`Result: ${result}`);
           core.setOutput("is-latest", result);
 
+    - name: Checkout
+      uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
+
     - name: Create Release
       uses: ncipollo/release-action@b7eabc95ff50cbeeedec83973935c8f306dfcd0b # v1.20.0
       with:
+        body: ⚠️ This release is largely untested, use at your own risk. ⚠️
         generateReleaseNotes: true
         immutableCreate: true
         makeLatest: ${{ steps.is-latest-release.outputs.is-latest == 'true' }}
