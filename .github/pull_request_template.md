@@ -14,3 +14,4 @@ https://github.com/AJGranowski/preceding-tag-action/blob/main/CONTRIBUTING.md
 - [ ] `./npm run lint` succeeds.
 - [ ] `./npm run test` succeeds.
 - [ ] `./npm run bundle` succeeds.
+- [ ] Inputs, outputs, and descriptions of `README.md` and `action.yml` match.
