@@ -1,14 +1,14 @@
 import type { GitHubAPI } from "./GitHubAPI";
+import type { GitRef } from "./types/GitRef";
+
+interface Options {
+    filter?: RegExp;
+    includeRef?: boolean;
+}
 
 interface TagDifference {
     tags: string[]
     commitDifference: number
-}
-
-type GitRef = string;
-interface Options {
-    filter?: RegExp;
-    includeRef?: boolean;
 }
 
 /**
