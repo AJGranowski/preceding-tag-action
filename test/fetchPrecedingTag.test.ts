@@ -1,10 +1,4 @@
-import {
-    describe,
-    expect,
-    test,
-    vi
-} from "vitest";
-
+import { describe, expect, test } from "vitest";
 import { mock } from "vitest-mock-extended";
 
 import type { GitHubAPI } from "../src/GitHubAPI";
@@ -21,7 +15,7 @@ describe("fetchPrecedingTag", () => {
 
     test("should compare each tag against the target ref", async () => {
         const mockGithubAPI = mock<GitHubAPI>({
-            fetchAllTags: () => Promise.resolve(["tag1", "tag2", "tag3"]),
+            fetchAllTags: () => Promise.resolve(["tag1", "tag2", "tag3"])
         });
 
         await fetchPrecedingTag(mockGithubAPI, "HEAD");
@@ -115,7 +109,7 @@ describe("fetchPrecedingTag", () => {
 
         mockGithubAPI.fetchCommitDate.mockImplementation((tag) => {
             const committerCommitDate = ({
-                "tag1": "2025-08-14T01:02:03Z",
+                "tag1": "2025-08-14T01:02:03Z"
             })[tag];
 
             return Promise.resolve({
@@ -127,7 +121,7 @@ describe("fetchPrecedingTag", () => {
 
         mockGithubAPI.fetchCommitDate.mockImplementation((tag) => {
             const committerCommitDate = ({
-                "tag2": "2025-08-14T01:02:03Z",
+                "tag2": "2025-08-14T01:02:03Z"
             })[tag];
 
             return Promise.resolve({
