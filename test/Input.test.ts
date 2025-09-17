@@ -11,12 +11,12 @@ import type { getBooleanInput as getBooleanInputType, getInput as getInputType }
 
 import { Input } from "../src/Input";
 
-type core_getBooleanInput = typeof getBooleanInputType;
-type core_getInput = typeof getInputType;
-type github_context = typeof contextType;
+type Core_getBooleanInput = typeof getBooleanInputType;
+type Core_getInput = typeof getInputType;
+type Github_context = typeof contextType;
 
 // https://github.com/actions/toolkit/blob/f58042f9cc16bcaa87afaa86c2974a8c771ce1ea/packages/core/src/core.ts#L188-L208
-function makeGetBooleanInput(getInput: core_getInput): core_getBooleanInput {
+function makeGetBooleanInput(getInput: Core_getInput): Core_getBooleanInput {
     const trueValue = ["true", "True", "TRUE"];
     const falseValue = ["false", "False", "FALSE"];
     return (name, options) => {
@@ -35,7 +35,7 @@ describe("Input", () => {
         test("should return a non-zero match-all regular expression on an empty input", () => {
             const getInput = vi.fn().mockReturnValue("");
             const getBooleanInput = makeGetBooleanInput(getInput);
-            const context = mock<github_context>({});
+            const context = mock<Github_context>({});
             const input = new Input(getInput, getBooleanInput, context);
             const regex = input.getFilter();
             expect(regex.test("")).toBe(false);
