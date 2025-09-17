@@ -30,4 +30,28 @@ describe("fetchPrecedingTag", () => {
         expect(mockGithubAPI.fetchCommitDifference).toBeCalledWith("tag2", "HEAD");
         expect(mockGithubAPI.fetchCommitDifference).toBeCalledWith("tag3", "HEAD");
     });
+
+    test("should return the closest preceding tag", async () => {
+        const mockGithubAPI = mock<GitHubAPI>({
+            fetchAllTags: () => Promise.resolve(["tag1", "tag2", "tag3"])
+        });
+
+        mockGithubAPI.fetchCommitDifference.mockImplementation((a, b) => {
+            const abTable: Record<string, number> = {
+                "tag1": 3,
+                "tag2": 2,
+                "tag3": -1
+            };
+
+            if (b === "HEAD") {
+                return Promise.resolve(abTable[a] ?? NaN);
+            } else if (a === "HEAD") {
+                return Promise.resolve(-(abTable[b] ?? NaN));
+            }
+
+            return Promise.resolve(NaN);
+        });
+
+        expect(await fetchPrecedingTag(mockGithubAPI, "HEAD")).toBe("tag2");
+    });
 });
