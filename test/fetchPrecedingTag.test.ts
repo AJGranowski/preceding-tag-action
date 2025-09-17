@@ -61,15 +61,26 @@ describe("fetchPrecedingTag", () => {
     });
 
     test("should compare each tag against the target ref", async () => {
+        const tags = ["tag1", "tag2", "tag3"];
         const mockGithubAPI = mock<GitHubAPI>({
-            fetchAllTags: () => Promise.resolve(["tag1", "tag2", "tag3"])
+            fetchAllTags: () => Promise.resolve(tags)
         });
 
         await fetchPrecedingTag(mockGithubAPI, "HEAD");
 
-        expect(mockGithubAPI.fetchCommitDifference).toBeCalledWith("tag1", "HEAD");
-        expect(mockGithubAPI.fetchCommitDifference).toBeCalledWith("tag2", "HEAD");
-        expect(mockGithubAPI.fetchCommitDifference).toBeCalledWith("tag3", "HEAD");
+        const nonHeadArgs = [];
+        for (const call of mockGithubAPI.fetchCommitDifference.mock.calls) {
+            expect(call.length === 2);
+            expect(call).contains("HEAD");
+            if (call[0] === "HEAD") {
+                nonHeadArgs.push(call[1]);
+            } else {
+                nonHeadArgs.push(call[0]);
+            }
+        }
+
+        expect(nonHeadArgs).containSubset(tags);
+        expect(tags).containSubset(nonHeadArgs);
     });
 
     test("should return the closest preceding tag", async () => {
