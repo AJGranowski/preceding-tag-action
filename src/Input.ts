@@ -3,15 +3,15 @@ import type { context } from "@actions/github";
 
 import type { Repository } from "./types/Repository";
 
-type core_getBooleanInput = typeof getBooleanInput;
-type core_getInput = typeof getInput;
-type github_context = typeof context;
+type Core_getBooleanInput = typeof getBooleanInput;
+type Core_getInput = typeof getInput;
+type Github_context = typeof context;
 
 class Input {
-    private readonly context: github_context;
-    private readonly getBooleanInput: core_getBooleanInput;
-    private readonly getInput: core_getInput;
-    constructor(getInput: core_getInput, getBooleanInput: core_getBooleanInput, context: github_context) {
+    private readonly context: Github_context;
+    private readonly getBooleanInput: Core_getBooleanInput;
+    private readonly getInput: Core_getInput;
+    constructor(getInput: Core_getInput, getBooleanInput: Core_getBooleanInput, context: Github_context) {
         this.context = context;
         this.getBooleanInput = getBooleanInput;
         this.getInput = getInput;
