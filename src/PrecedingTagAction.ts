@@ -6,7 +6,7 @@ import { fetchPrecedingTag } from "./fetchPrecedingTag";
 import { GitHubAPI } from "./GitHubAPI";
 import { Input } from "./Input";
 
-async function main() {
+async function main(): Promise<void> {
     const input: Input = new Input(core.getInput, core.getBooleanInput, context);
     const octokit: Octokit = new Octokit({
         auth: input.getToken()
@@ -25,9 +25,9 @@ async function main() {
     }
 }
 
-export default async () => {
+export default async (): Promise<void> => {
     try {
-        await main()
+        await main();
     } catch (e) {
         if (e instanceof Error) {
             core.setFailed(e);
@@ -35,4 +35,4 @@ export default async () => {
             core.setFailed("An unknown error occurred.");
         }
     }
-}
+};
