@@ -22,7 +22,5 @@ export default defineConfig({
                 }
             }
         ]
-        //exclude: ["**/*.fuzz.*"],
-        //include: ["test/**/*"]
     }
 });
