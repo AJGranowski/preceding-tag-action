@@ -49,7 +49,7 @@ class Input {
         const invalidURLSequences = /[?&/]|(^\.)|(\.$)/;
         const ref = this.getInput("ref");
         if (startsWithRef.test(ref) || invalidGitSequences.test(ref) || invalidURLSequences.test(ref)) {
-            throw new Error(`Invalid input ref: ${ref}`);
+            throw new Error(`Invalid input ref "${ref}"`);
         }
 
         return ref.length > 0 ? ref : "HEAD";
@@ -59,7 +59,7 @@ class Input {
      * Generate a Repository object, either from the action inputs or the context this action is running in.
      */
     getRepository(): Repository {
-        const validRepositoryString = /^[a-z\d-]+\/[\w.-]+/;
+        const validRepositoryString = /^[a-z\d-]+\/[\w.-]+$/i;
         const invalidRepositorySequences = /(\/\.)|(\/\.\.)/;
         const inputString = this.getInput("repository");
         if (inputString.length === 0) {
@@ -69,13 +69,9 @@ class Input {
             };
         }
 
-        if (!validRepositoryString.test(inputString) || invalidRepositorySequences.test(inputString)) {
-            throw new Error(`Invalid input repository: ${inputString}`);
-        }
-
         const matcher = inputString.match(/^(?<owner>[^/]+)\/(?<repo>[^/]+)$/);
-        if (matcher == null || matcher.groups == null) {
-            throw new Error(`Invalid repository "${inputString}". Expected format {owner}/{repo}`);
+        if (!validRepositoryString.test(inputString) || invalidRepositorySequences.test(inputString) || matcher == null || matcher.groups == null) {
+            throw new Error(`Invalid input repository "${inputString}". Expected format {owner}/{repo}`);
         }
 
         return {
