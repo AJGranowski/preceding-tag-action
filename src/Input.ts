@@ -46,7 +46,7 @@ class Input {
     getRef(): string {
         const startsWithRef = /^refs\//i;
         const invalidGitSequences = /(\.\/)|(\.\.)|(\.lock$)|[~^:?*[@\\]|(\/\/)|(\.$)/;
-        const invalidURLSequences = /[?&/]|(^\.)|(\.$)/;
+        const invalidURLSequences = /[?&/$%]|(^\.)|(\.$)/;
         const ref = this.getInput("ref");
         if (startsWithRef.test(ref) || invalidGitSequences.test(ref) || invalidURLSequences.test(ref)) {
             throw new Error(`Invalid input ref "${ref}"`);
