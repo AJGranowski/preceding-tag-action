@@ -26,12 +26,6 @@ services:
       - type: "bind"
         source: "./"
         target: "/app"
-
-      # Rename "container.npmrc" to ".npmrc"
-      - type: "bind"
-        read_only: true
-        source: "./container.npmrc"
-        target: "/app/.npmrc"
         
       # Bind the NPM cache.
       - type: "bind"

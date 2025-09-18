@@ -38,4 +38,4 @@ done
 if [ "$o_no_build" != "true" ]; then
     $COMPOSE_ENGINE build
 fi
-./user-mirror $COMPOSE_ENGINE run --rm npm "$@"
+./user-mirror $COMPOSE_ENGINE run --rm npm --userconfig ./container.npmrc "$@"
