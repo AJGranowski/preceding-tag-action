@@ -5,7 +5,6 @@
 <header align="center">
     <h1 align="center">Preceding Tag Action</h1>
     <p align="center">Find the most recent tag that is reachable from a commit.</p>
-    <p align="center"><b>🚧 THIS ACTION IS UNDER ACTIVE DEVELOPMENT, DO NOT USE 🚧</b></p>
 </header>
 
 ## About
