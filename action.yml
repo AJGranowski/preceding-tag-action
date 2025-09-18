@@ -1,6 +1,10 @@
 name: Preceding Tag Action
 author: AJ Granowski
 description: Find the most recent tag that is reachable from a commit.
+branding:
+  color: orange
+  icon: git-merge
+
 runs:
   using: node24
   main: dist/index.js
