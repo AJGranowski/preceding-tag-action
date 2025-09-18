@@ -49,7 +49,7 @@ class Input {
         const invalidURLSequences = /[?&/$%]|(^\.)|(\.$)/;
         const ref = this.getInput("ref");
         if (startsWithRef.test(ref) || invalidGitSequences.test(ref) || invalidURLSequences.test(ref)) {
-            throw new Error(`Invalid input ref "${ref}"`);
+            throw new SyntaxError(`Invalid input ref "${ref}"`);
         }
 
         return ref.length > 0 ? ref : "HEAD";
@@ -71,7 +71,7 @@ class Input {
 
         const matcher = inputString.match(/^(?<owner>[^/]+)\/(?<repo>[^/]+)$/);
         if (!validRepositoryString.test(inputString) || invalidRepositorySequences.test(inputString) || matcher == null || matcher.groups == null) {
-            throw new Error(`Invalid input repository "${inputString}". Expected format {owner}/{repo}`);
+            throw new SyntaxError(`Invalid input repository "${inputString}". Expected format {owner}/{repo}`);
         }
 
         return {
