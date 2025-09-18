@@ -1,0 +1,3 @@
+# https://github.com/github-linguist/linguist/blob/main/docs/overrides.md
+entrypoint linguist-vendored
+user-mirror linguist-vendored
