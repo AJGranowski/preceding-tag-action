@@ -55,8 +55,16 @@ class GitHubAPI {
         }).then((response) => {
             switch (response.data.status) {
                 case "ahead":
+                    if (response.data.ahead_by < 0) {
+                        throw new Error(`ahead_by property is negative: ${response.data.ahead_by}`);
+                    }
+
                     return response.data.ahead_by;
                 case "behind":
+                    if (response.data.behind_by < 0) {
+                        throw new Error(`behind_by property is negative: ${response.data.behind_by}`);
+                    }
+
                     return -response.data.behind_by;
                 case "identical":
                     return 0;
