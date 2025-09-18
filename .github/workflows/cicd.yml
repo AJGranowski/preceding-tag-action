@@ -471,7 +471,6 @@ jobs:
     - name: Create Release
       uses: ncipollo/release-action@b7eabc95ff50cbeeedec83973935c8f306dfcd0b # v1.20.0
       with:
-        body: ⚠️ This release is largely untested, use at your own risk. ⚠️
         draft: true
         generateReleaseNotes: true
         generateReleaseNotesPreviousTag: ${{ steps.preceding-release-tag.outputs.tag }}

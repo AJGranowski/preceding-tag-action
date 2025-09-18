@@ -1,11 +1,11 @@
 [![CICD][cicd-badge]][cicd-link]
 [![Coverage Status][coverage-badge]][coverage-link]
 [![OpenSSF Scorecard][ossf-scorecard-badge]][ossf-scorecard-link]
+[![OpenSSF Best Practices][ossf-best-practices-badge]][ossf-best-practices-link]
 
 <header align="center">
     <h1 align="center">Preceding Tag Action</h1>
     <p align="center">Find the most recent tag that is reachable from a commit.</p>
-    <p align="center"><b>🚧 THIS ACTION IS UNDER ACTIVE DEVELOPMENT, DO NOT USE 🚧</b></p>
 </header>
 
 ## About
@@ -57,6 +57,8 @@ Although this project publishes version tags, I strongly recommend [pinning this
 [coverage-link]: https://coveralls.io/github/AJGranowski/preceding-tag-action?branch=main
 [git-describe-link]: https://git-scm.com/docs/git-describe
 [latest-release-link]: https://github.com/AJGranowski/preceding-tag-action/releases/latest
+[ossf-best-practices-badge]: https://www.bestpractices.dev/projects/11154/badge
+[ossf-best-practices-link]: https://www.bestpractices.dev/projects/11154
 [ossf-scorecard-badge]: https://api.securityscorecards.dev/projects/github.com/AJGranowski/preceding-tag-action/badge
 [ossf-scorecard-link]: https://securityscorecards.dev/viewer/?uri=github.com/AJGranowski/preceding-tag-action
 [security-sha-pinning-link]: https://docs.github.com/en/actions/reference/security/secure-use#using-third-party-actions
