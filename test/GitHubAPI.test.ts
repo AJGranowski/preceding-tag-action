@@ -47,4 +47,47 @@ describe("GitHubAPI", () => {
             expect(commitDate.committer).toBe(expectedComitter);
         });
     });
+
+    describe("fetchAllTags", () => {
+        test("should forward tags returned from the GitHub API", async () => {
+            const expectedTags = ["tag1", "tag2", "tag3"];
+            const response = {
+                data: expectedTags.map((tag) => ({
+                    ref: `refs/tags/${tag}`
+                }))
+            };
+
+            const octokit = mock<Octokit>({
+                rest: {
+                    git: {
+                        listMatchingRefs: (() => Promise.resolve(response)) as any
+                    }
+                }
+            });
+
+            const githubAPI = new GitHubAPI(octokit, defaultRepo);
+            const tags = await githubAPI.fetchAllTags(new RegExp(""));
+            expect(tags).containSubset(expectedTags);
+            expect(expectedTags).containSubset(tags);
+        });
+
+        test("should fail if the returned ref is not a tag", async () => {
+            const response = {
+                data: [{
+                    ref: "refs/heads/some-branch"
+                }]
+            };
+
+            const octokit = mock<Octokit>({
+                rest: {
+                    git: {
+                        listMatchingRefs: (() => Promise.resolve(response)) as any
+                    }
+                }
+            });
+
+            const githubAPI = new GitHubAPI(octokit, defaultRepo);
+            expect(githubAPI.fetchAllTags(new RegExp(""))).rejects.toThrowError();
+        });
+    });
 });
