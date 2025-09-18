@@ -444,8 +444,29 @@ jobs:
           core.info(`Result: ${result}`);
           core.setOutput("is-latest", result);
 
-    - name: Checkout
-      uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
+    - name: Get Parent Commit
+      id: parent-commit
+      uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8.0.0
+      with:
+        script: |
+          const parentSHA = await github.rest.repos.getCommit({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              ref: process.env.GITHUB_SHA!,
+              page: 1,
+              per_page: 1
+          }).then((response) => {
+              return response.data.parents[0].sha;
+          });
+
+          core.setOutput("sha", parentSHA);
+
+    - name: Get Preceding Release Tag Of Parent Commit
+      id: preceding-release-tag
+      uses: AJGranowski/preceding-tag-action@a90eecea5a5d3cc69e04d6357ce271dc65c9436e # v1.0.1
+      with:
+        ref: ${{ steps.parent-commit.outputs.sha }}
+        regex: ${{ env.RELEASE_REGEX }}
 
     - name: Create Release
       uses: ncipollo/release-action@b7eabc95ff50cbeeedec83973935c8f306dfcd0b # v1.20.0
@@ -453,6 +474,7 @@ jobs:
         body: ⚠️ This release is largely untested, use at your own risk. ⚠️
         draft: true
         generateReleaseNotes: true
+        generateReleaseNotesPreviousTag: ${{ steps.preceding-release-tag.outputs.tag }}
         immutableCreate: true
         makeLatest: ${{ steps.is-latest-release.outputs.is-latest == 'true' }}
         name: Release ${{ needs.pre-release.outputs.version-tag }}
