@@ -271,7 +271,7 @@ jobs:
 
     - name: Get Preceding Release Tag
       id: preceding-tag
-      uses: AJGranowski/preceding-tag-action@a90eecea5a5d3cc69e04d6357ce271dc65c9436e # v1.0.1
+      uses: AJGranowski/preceding-tag-action@50a89255e7e2173eab3d48941b9419e5d5dc9aaa # v1.0.5
       with:
         regex: ${{ env.RELEASE_REGEX }}
 
@@ -463,7 +463,7 @@ jobs:
 
     - name: Get Preceding Release Tag Of Parent Commit
       id: preceding-release-tag
-      uses: AJGranowski/preceding-tag-action@a90eecea5a5d3cc69e04d6357ce271dc65c9436e # v1.0.1
+      uses: AJGranowski/preceding-tag-action@50a89255e7e2173eab3d48941b9419e5d5dc9aaa # v1.0.5
       with:
         ref: ${{ steps.parent-commit.outputs.sha }}
         regex: ${{ env.RELEASE_REGEX }}
