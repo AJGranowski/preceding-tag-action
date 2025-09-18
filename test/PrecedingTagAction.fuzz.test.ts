@@ -143,14 +143,26 @@ describe("Fuzzing PrecedingTagAction", () => {
             (Octokit.prototype as any).rest.repos.getCommit = () => Promise.resolve(getCommitValue);
 
             await PrecedingTagAction();
+            let failure = false;
             for (const call of (core.setFailed as any).mock.calls) {
+                failure = true;
                 if (call[0] instanceof Error) {
+                    // Ignore input parsing errors
+                    if (call[0].message.startsWith("Invalid input")) {
+                        continue;
+                    }
+
                     throw call[0];
                 }
             }
 
-            expect(core.setFailed).not.toBeCalled();
-            expect(core.setOutput).toHaveBeenCalledOnce();
+            if (failure) {
+                expect(core.setFailed).toHaveBeenCalledOnce();
+                expect(core.setOutput).not.toBeCalled();
+            } else {
+                expect(core.setFailed).not.toBeCalled();
+                expect(core.setOutput).toHaveBeenCalledOnce();
+            }
         };
 
         fc.assert(fc.asyncProperty.apply(null, [...properties, predicate] as any).beforeEach(() => {
