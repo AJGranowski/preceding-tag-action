@@ -20,7 +20,7 @@ interface GenerateTestParameterSetOptions {
 
 function generateTestParameterSet(options: GenerateTestParameterSetOptions): Set<TestParameter> {
     const result = new Set<TestParameter>();
-    /* eslint max-depth: off */
+    /* eslint-disable max-depth */
     for (const tag1Author of options.tag1Authors) {
         for (const tag1Committer of options.tag1Committers) {
             for (const tag2Author of options.tag2Authors) {
@@ -35,6 +35,7 @@ function generateTestParameterSet(options: GenerateTestParameterSetOptions): Set
             }
         }
     }
+    /* eslint-enable max-depth */
 
     return result;
 }

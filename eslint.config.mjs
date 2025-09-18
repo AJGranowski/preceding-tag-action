@@ -90,4 +90,3 @@ export default tseslint.config(
         extends: [tseslint.configs.disableTypeChecked]
     }
 );
-

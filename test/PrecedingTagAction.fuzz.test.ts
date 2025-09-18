@@ -1,12 +1,11 @@
 import {
-    beforeEach,
     describe,
     expect,
     test,
     vi
 } from "vitest";
 
-import * as fc from 'fast-check';
+import * as fc from "fast-check";
 
 import * as core from "@actions/core";
 import { context } from "@actions/github";
@@ -78,11 +77,11 @@ describe("Fuzzing PrecedingTagAction", () => {
                 headers: fc.object(),
                 status: fc.constant(200),
                 url: fc.webUrl(),
-                data: fc.integer().chain((number: number) => {
+                data: fc.integer().chain((number: any): any => {
                     if (number > 0) {
                         return fc.record({
                             status: fc.constantFrom("ahead", "diverged"),
-                            ahead_by: fc.constant(number),
+                            ahead_by: fc.constant(number)
                         });
                     } else if (number < 0) {
                         return fc.record({
@@ -114,25 +113,26 @@ describe("Fuzzing PrecedingTagAction", () => {
         ];
 
         const predicate = async (
-                getInput_regex: any,
-                getInput_includeRef: any,
-                getInput_ref: any,
-                getInput_repository: any,
-                getInput_token: any,
-                getInput_default: any,
-                getBooleanInput: any,
-                owner: any,
-                repo: any,
-                listMatchingRefsValue: any,
-                compareCommitsWithBaseheadValue: any,
-                getCommitValue: any) => {
+            getInput_regex: any,
+            getInput_includeRef: any,
+            getInput_ref: any,
+            getInput_repository: any,
+            getInput_token: any,
+            getInput_default: any,
+            getBooleanInput: any,
+            owner: any,
+            repo: any,
+            listMatchingRefsValue: any,
+            compareCommitsWithBaseheadValue: any,
+            getCommitValue: any) => { // eslint-disable-line max-params
+
             (core as any).getInput = vi.fn().mockImplementation((key) => {
                 return ({
                     "regex": getInput_regex,
                     "include-ref": getInput_includeRef,
                     "ref": getInput_ref,
                     "repository": getInput_repository,
-                    "token": getInput_token,
+                    "token": getInput_token
                 } as any)[key] ?? getInput_default;
             });
             (core as any).getBooleanInput = getBooleanInput;
@@ -145,7 +145,7 @@ describe("Fuzzing PrecedingTagAction", () => {
             await PrecedingTagAction();
             for (const call of (core.setFailed as any).mock.calls) {
                 if (call[0] instanceof Error) {
-                    throw call[0]
+                    throw call[0];
                 }
             }
 
@@ -153,16 +153,16 @@ describe("Fuzzing PrecedingTagAction", () => {
             expect(core.setOutput).toHaveBeenCalledOnce();
         };
 
-        fc.assert(fc.asyncProperty(...properties, predicate).beforeEach(() => {
-            (core as any).getInput = () => {throw new Error("Not implemented.")};
-            (core as any).getBooleanInput = () => {throw new Error("Not implemented.")};
+        fc.assert(fc.asyncProperty.apply(null, [...properties, predicate] as any).beforeEach(() => {
+            (core as any).getInput = () => {throw new Error("Not implemented.");};
+            (core as any).getBooleanInput = () => {throw new Error("Not implemented.");};
             (core as any).setFailed = vi.fn();
             (core as any).setOutput = vi.fn();
             (context.repo.owner as any) = undefined;
             (context.repo.repo as any) = undefined;
-            (Octokit.prototype as any).rest.git.listMatchingRefs = () => {throw new Error("Not implemented.")};
-            (Octokit.prototype as any).rest.repos.compareCommitsWithBasehead = () => {throw new Error("Not implemented.")};
-            (Octokit.prototype as any).rest.repos.getCommit = () => {throw new Error("Not implemented.")};
+            (Octokit.prototype as any).rest.git.listMatchingRefs = () => {throw new Error("Not implemented.");};
+            (Octokit.prototype as any).rest.repos.compareCommitsWithBasehead = () => {throw new Error("Not implemented.");};
+            (Octokit.prototype as any).rest.repos.getCommit = () => {throw new Error("Not implemented.");};
         }), {includeErrorInReport: true});
     });
 });
