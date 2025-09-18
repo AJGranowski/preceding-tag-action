@@ -44,7 +44,14 @@ class Input {
      * Get the ref to get the preceding tag of. Defaults to HEAD if not supplied for some reason.
      */
     getRef(): string {
+        const startsWithRef = /^refs\//i;
+        const invalidGitSequences = /(\.\/)|(\.\.)|(\.lock$)|[~^:?*[@\\]|(\/\/)|(\.$)/;
+        const invalidURLSequences = /[?&/]|(^\.)|(\.$)/;
         const ref = this.getInput("ref");
+        if (startsWithRef.test(ref) || invalidGitSequences.test(ref) || invalidURLSequences.test(ref)) {
+            throw new Error(`Invalid input ref: ${ref}`);
+        }
+
         return ref.length > 0 ? ref : "HEAD";
     }
 
@@ -52,12 +59,18 @@ class Input {
      * Generate a Repository object, either from the action inputs or the context this action is running in.
      */
     getRepository(): Repository {
+        const validRepositoryString = /^[a-z\d-]+\/[\w.-]+/;
+        const invalidRepositorySequences = /(\/\.)|(\/\.\.)/;
         const inputString = this.getInput("repository");
         if (inputString.length === 0) {
             return {
                 owner: this.context.repo.owner,
                 repo: this.context.repo.repo
             };
+        }
+
+        if (!validRepositoryString.test(inputString) || invalidRepositorySequences.test(inputString)) {
+            throw new Error(`Invalid input repository: ${inputString}`);
         }
 
         const matcher = inputString.match(/^(?<owner>[^/]+)\/(?<repo>[^/]+)$/);
