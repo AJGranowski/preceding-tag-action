@@ -157,6 +157,7 @@ jobs:
         key: npm-${{ runner.os }}-${{ hashFiles('./package-lock.json') }}
     
     - name: Run ${{ matrix.script }}
+      if: ${{ !(matrix.script == 'fuzz' && (github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/release-'))) }}
       env:
         SCRIPT: ${{ matrix.script }}
       run: |
@@ -445,6 +446,7 @@ jobs:
       uses: ncipollo/release-action@b7eabc95ff50cbeeedec83973935c8f306dfcd0b # v1.20.0
       with:
         body: ⚠️ This release is largely untested, use at your own risk. ⚠️
+        draft: true
         generateReleaseNotes: true
         immutableCreate: true
         makeLatest: ${{ steps.is-latest-release.outputs.is-latest == 'true' }}
