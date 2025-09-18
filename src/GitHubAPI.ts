@@ -25,7 +25,13 @@ class GitHubAPI {
             ref: "tags"
         }).then((response) => {
             return response.data
-                .map((object) => object.ref.substring("refs/tags/".length))
+                .map((object) => {
+                    if (!object.ref.startsWith("refs/tags/")) {
+                        throw new Error(`Returned ref is not a tag: ${object.ref}`);
+                    }
+
+                    return object.ref.substring("refs/tags/".length);
+                })
                 .filter((tag: string) => filter.test(tag));
         });
 
