@@ -102,7 +102,7 @@ jobs:
     if: ${{ needs.workflow-filter.outputs.run-ci == 'true' }}
     strategy:
       matrix:
-        script: ["bundle", "check-types", "fuzz", "lint", "test"]
+        script: ["bundle", "check-types", "lint", "test"]
 
     steps:
     - name: Harden Runner
@@ -157,7 +157,6 @@ jobs:
         key: npm-${{ runner.os }}-${{ hashFiles('./package-lock.json') }}
     
     - name: Run ${{ matrix.script }}
-      if: ${{ !(matrix.script == 'fuzz' && (github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/release-'))) }}
       env:
         SCRIPT: ${{ matrix.script }}
       run: |
@@ -177,6 +176,12 @@ jobs:
           dist/
           action.yml
         if-no-files-found: error
+
+  fuzz-tests:
+    name: Fuzz Tests
+    needs: workflow-filter
+    if: ${{ needs.workflow-filter.outputs.run-ci == 'true' && !(github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/release-')) }}
+    uses: ./.github/workflows/fuzz-tests.yml
 
   ci-integration-tests:
     name: Integration Tests
