@@ -452,7 +452,7 @@ jobs:
           const parentSHA = await github.rest.repos.getCommit({
               owner: context.repo.owner,
               repo: context.repo.repo,
-              ref: process.env.GITHUB_SHA!,
+              ref: process.env.GITHUB_SHA,
               page: 1,
               per_page: 1
           }).then((response) => {
