@@ -6,6 +6,21 @@ export default defineConfig({
             enabled: true,
             include: ["src/**/*"],
             reporter: ["lcov", "text"]
-        }
+        },
+        projects: [
+            {
+                test: {
+                    exclude: ["**/*.fuzz.test.ts"],
+                    include: ["test/**/*.test.ts"],
+                    name: "unit"
+                }
+            },
+            {
+                test: {
+                    include: ["test/**/*.fuzz.test.ts"],
+                    name: "fuzz"
+                }
+            }
+        ]
     }
 });

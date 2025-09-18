@@ -80,6 +80,12 @@ export default tseslint.config(
         }
     },
     {
+        files: ["test/**"],
+        rules: {
+            "@typescript-eslint/explicit-function-return-type": "off"
+        }
+    },
+    {
         files: ["**/*.cjs", "**/*.js", "**/*.mjs"],
         extends: [tseslint.configs.disableTypeChecked]
     }
