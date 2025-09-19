@@ -11,6 +11,7 @@
         "format": "eslint --fix",
         "fuzz": "vitest run --project fuzz",
         "lint": "eslint",
+        "pr-checks": "npm run check-types && npm run lint && npm run test && npm run bundle",
         "run-bundle": "node dist/index.js",
         "test": "vitest run --project unit"
     },
