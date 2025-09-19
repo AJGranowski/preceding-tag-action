@@ -3,13 +3,17 @@ author: AJ Granowski
 description: Find the most recent tag that is reachable from a commit.
 branding:
   color: orange
-  icon: git-merge
+  icon: tag
 
 runs:
   using: node24
   main: dist/index.js
 
 inputs:
+  default-tag:
+    description: The default tag to return if no preceding tag was found.
+    default: ""
+    required: false
   include-ref:
     description: If true, include tags pointing to `ref` as candidates.
     default: "false"
@@ -33,4 +37,6 @@ inputs:
 
 outputs:
   tag:
-    description: The preceding tag, or an empty string if no preceding tag matching the filter was found.
+    description: The preceding tag, or `default-tag` if no preceding tag matching the filter was found.
+  tag-found:
+    description: True if the preceding tag was found. False if the `default-tag` fallback was used.

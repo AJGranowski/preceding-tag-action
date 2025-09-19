@@ -157,7 +157,7 @@ describe("Fuzzing PrecedingTagAction", () => {
                 expect(core.setOutput).not.toBeCalled();
             } else {
                 expect(core.setFailed).not.toBeCalled();
-                expect(core.setOutput).toHaveBeenCalledOnce();
+                expect(core.setOutput).toBeCalledTimes(2);
             }
         };
 

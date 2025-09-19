@@ -30,6 +30,18 @@ class Input {
     }
 
     /**
+     * Validate each input.
+     */
+    validateInputs(): void {
+        this.getDefaultTag();
+        this.getFilter();
+        this.getIncludeRef();
+        this.getRef();
+        this.getRepository();
+        this.getToken();
+    }
+
+    /**
      * The default value to return if no preceding tag was found.
      */
     getDefaultTag(): string {

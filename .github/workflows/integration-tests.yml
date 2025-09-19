@@ -70,29 +70,53 @@ jobs:
       matrix:
         include:
           - name: Should return the preceding tag from a SHA.
+            default-tag: ""
             include-ref: ""
             ref: 7f6f9a02a5f985b460f60b8dbe6c11294695c96f
             regex: ""
             repository: ""
             expected-tag: release-0.0.0
+            expected-tag-found: true
           - name: Should return the preceding tag from a tag.
+            default-tag: ""
             include-ref: ""
             ref: release-0.0.2
             regex: ^release-.+$
             repository: ""
             expected-tag: release-0.0.1
+            expected-tag-found: true
           - name: Should return this tag if ref matches the filter and include-ref is set to true.
+            default-tag: ""
             include-ref: true
             ref: release-0.0.2
             regex: ^release-.+$
             repository: ""
             expected-tag: release-0.0.2
+            expected-tag-found: true
           - name: Should return an empty string if no preceding tag exists.
+            default-tag: ""
             include-ref: ""
             ref: 42371bd608bcc9ca46e0a3be0e3403571cd8d824
             regex: ""
             repository: ""
             expected-tag: ""
+            expected-tag-found: false
+          - name: Should return the default-tag if no preceding tag exists.
+            default-tag: "this-is-a-default-tag"
+            include-ref: ""
+            ref: 42371bd608bcc9ca46e0a3be0e3403571cd8d824
+            regex: ""
+            repository: ""
+            expected-tag: "this-is-a-default-tag"
+            expected-tag-found: false
+          - name: Should warn if the default-tag does not match the regex.
+            default-tag: "123"
+            include-ref: ""
+            ref: 42371bd608bcc9ca46e0a3be0e3403571cd8d824
+            regex: "^[a-zA-Z]+$"
+            repository: ""
+            expected-tag: "123"
+            expected-tag-found: false
 
     steps:
     - name: Harden Runner
@@ -114,14 +138,22 @@ jobs:
       id: preceding-tag-local
       uses: ./
       with:
+        default-tag: ${{ matrix.default-tag }}
         include-ref: ${{ matrix.include-ref }}
         ref: ${{ matrix.ref }}
         regex: ${{ matrix.regex }}
         repository: ${{ matrix.repository }}
 
-    - name: Compare Output
+    - name: Compare Output (tag)
       env:
         EXPECTED_TAG: ${{ matrix.expected-tag }}
         OUTPUTS_TAG: ${{ steps.preceding-tag-local.outputs.tag }}
       run: |
         [ "$EXPECTED_TAG" = "$OUTPUTS_TAG" ]
+
+    - name: Compare Output (tag-found)
+      env:
+        EXPECTED_TAG_FOUND: ${{ matrix.expected-tag-found }}
+        OUTPUTS_TAG_FOUND: ${{ steps.preceding-tag-local.outputs.tag-found }}
+      run: |
+        [ "$EXPECTED_TAG_FOUND" = "$OUTPUTS_TAG_FOUND" ]
