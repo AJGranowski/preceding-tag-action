@@ -1,6 +1,6 @@
 #!/bin/sh
 
-COMPOSE_ENGINE='docker compose';
+COMPOSE_ENGINE='docker compose'
 
 # Parse options
 while [ $# -gt 0 ]; do
@@ -18,21 +18,21 @@ while [ $# -gt 0 ]; do
             COMPOSE_ENGINE='podman-compose'
             ;;
         --no-build)
-            o_no_build=true;
+            o_no_build=true
             ;;
         --)
-            shift;
-            break;
+            shift
+            break
             ;;
         -*)
-            printf 'Unknown option %s\n' $1 >&2;
-            exit 1;
+            printf 'Unknown option %s\n' $1 >&2
+            exit 1
             ;;
         *)
-            break;
+            break
             ;;
     esac
-    shift;
+    shift
 done
 
 if [ "$o_no_build" != "true" ]; then
