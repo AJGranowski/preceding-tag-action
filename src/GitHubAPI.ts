@@ -18,7 +18,14 @@ class GitHubAPI {
      * Will reject if the API is unavailable.
      */
     async fetchAllTags(filter: RegExp): Promise<string[]> {
-        // https://docs.github.com/en/rest/git/refs?apiVersion=2022-11-28#list-matching-references
+        /*
+         * https://docs.github.com/en/rest/git/refs?apiVersion=2022-11-28#list-matching-references
+         * Yes, this endpoint looks like it lists every tag. See for yourself:
+         * https://api.github.com/repos/torvalds/linux/git/matching-refs/tags
+         *
+         * If for some reason this doesn't return every tag, switch to iterating over listTags:
+         * https://docs.github.com/en/rest/repos/repos?apiVersion=2022-11-28#list-repository-tags
+         */
         return this.octokit.rest.git.listMatchingRefs({
             owner: this.repo.owner,
             repo: this.repo.repo,
@@ -34,11 +41,6 @@ class GitHubAPI {
                 })
                 .filter((tag: string) => filter.test(tag));
         });
-
-        /*
-         * If the above endpoint doesn't return all tags for some reason, switch to iterating over listTags
-         * https://docs.github.com/en/rest/repos/repos?apiVersion=2022-11-28#list-repository-tags
-         */
     }
 
     /**
