@@ -87,7 +87,7 @@ describe("GitHubAPI", () => {
             });
 
             const githubAPI = new GitHubAPI(octokit, defaultRepo);
-            expect(githubAPI.fetchAllTags(new RegExp(""))).rejects.toThrowError();
+            await expect(githubAPI.fetchAllTags(new RegExp(""))).rejects.toThrowError();
         });
     });
 
@@ -195,7 +195,7 @@ describe("GitHubAPI", () => {
             });
 
             const githubAPI = new GitHubAPI(octokit, defaultRepo);
-            expect(githubAPI.fetchCommitDifference("ref1", "ref2")).rejects.toThrowError();
+            await expect(githubAPI.fetchCommitDifference("ref1", "ref2")).rejects.toThrowError();
         });
 
         test("should throw error if behind_by is negative", async () => {
@@ -215,7 +215,7 @@ describe("GitHubAPI", () => {
             });
 
             const githubAPI = new GitHubAPI(octokit, defaultRepo);
-            expect(githubAPI.fetchCommitDifference("ref1", "ref2")).rejects.toThrowError();
+            await expect(githubAPI.fetchCommitDifference("ref1", "ref2")).rejects.toThrowError();
         });
 
         test("should throw error on unknown status", async () => {
@@ -232,7 +232,7 @@ describe("GitHubAPI", () => {
             });
 
             const githubAPI = new GitHubAPI(octokit, defaultRepo);
-            expect(githubAPI.fetchCommitDifference("ref1", "ref2")).rejects.toThrowError();
+            await expect(githubAPI.fetchCommitDifference("ref1", "ref2")).rejects.toThrowError();
         });
     });
 });
