@@ -43,13 +43,15 @@ Although this project publishes version tags, I strongly recommend [pinning this
 | `repository`  | String  | `${{ github.repository }}` | Repository name with owner. For example, `AJGranowski/preceding-tag-action` |
 | `ref`         | String  | `${{ github.sha }}`        | The branch, tag, or SHA to find the preceding tag from.                     |
 | `regex`       | String  | `^.+$`                     | A regular expression used to filter candidate tag names.                    |
+| `default-tag` | String  | ``                         | The default tag to return if no preceding tag was found.                    |
 | `include-ref` | Boolean | `false`                    | If true, include tags pointing to `ref` as candidates.                      |
 | `token`       | String  | `${{ github.token }}`      | Personal access token (PAT) used to fetch the tags.                         |
 
 ## Outputs
-| Name  | Type   | Description  |
-|-------|--------|------------------------------------------------------------------------------------------|
-| `tag` | String | The preceding tag, or an empty string if no preceding tag matching the filter was found. |
+| Name        | Type    | Description                                                                            |
+|-------------|---------|----------------------------------------------------------------------------------------|
+| `tag`       | String  | The preceding tag, or `default-tag` if no preceding tag matching the filter was found. |
+| `tag-found` | Boolean | True if the preceding tag was found. False if the `default-tag` fallback was used.     |
 
 [cicd-badge]: https://github.com/AJGranowski/preceding-tag-action/actions/workflows/cicd.yml/badge.svg?branch=main
 [cicd-link]: https://github.com/AJGranowski/preceding-tag-action/actions/workflows/cicd.yml
