@@ -31,6 +31,30 @@ function makeGetBooleanInput(getInput: Core_getInput): Core_getBooleanInput {
 }
 
 describe("Input", () => {
+    describe("getDefaultTag", () => {
+        test("should not warn if there is no input", () => {
+            const getInput = vi.fn().mockReturnValue("");
+            const warning = vi.fn();
+            const input = new Input(getInput, vi.fn(), warning, mock<Github_context>({}));
+            expect(input.getDefaultTag()).toBe("");
+            expect(warning).not.toBeCalled();
+        });
+
+        test("should warn if default tag does not match regex", () => {
+            const getInput = vi.fn().mockImplementation((input) => {
+                return ({
+                    "default-tag": "abc",
+                    "regex": "^\\d+$"
+                } as any)[input];
+            });
+
+            const warning = vi.fn();
+            const input = new Input(getInput, vi.fn(), warning, mock<Github_context>({}));
+            expect(input.getDefaultTag()).toBe("abc");
+            expect(warning).toHaveBeenCalledOnce();
+        });
+    });
+
     describe("getFilter", () => {
         test("should return a non-zero match-all regular expression on an empty input", () => {
             const getInput = vi.fn().mockReturnValue("");
@@ -115,6 +139,30 @@ describe("Input", () => {
             const getInput = vi.fn().mockReturnValue("/");
             const input = new Input(getInput, vi.fn(), vi.fn(), mock<Github_context>({}));
             expect(() => input.getRepository()).toThrowError(/^Invalid input repository /);
+        });
+    });
+
+    describe("memoization", () => {
+        test("should only call getInput once for each input", () => {
+            const getInput = vi.fn().mockReturnValue("");
+            const getBooleanInput = makeGetBooleanInput(getInput);
+            const input = new Input(getInput, getBooleanInput, vi.fn(), mock<Github_context>({}));
+            const callEveryGetMethod = () => {
+                input.getDefaultTag();
+                input.getFilter();
+                input.getIncludeRef();
+                input.getRef();
+                input.getRepository();
+                input.getToken();
+            };
+
+            callEveryGetMethod();
+            const initialCallCount = getInput.mock.calls.length;
+            expect(getInput).toBeCalledTimes(initialCallCount);
+            callEveryGetMethod();
+            callEveryGetMethod();
+            callEveryGetMethod();
+            expect(getInput).toBeCalledTimes(initialCallCount);
         });
     });
 });

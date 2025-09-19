@@ -38,11 +38,7 @@ class Input {
         }
 
         const defaultTag = this.getInput("default-tag");
-        if (defaultTag.length === 0) {
-            return "";
-        }
-
-        if (!this.getFilter().test(defaultTag)) {
+        if (defaultTag.length !== 0 && !this.getFilter().test(defaultTag)) {
             this.warning(`Input default-tag "${defaultTag}" does not match the tag filter.`);
         }
 
@@ -60,10 +56,11 @@ class Input {
 
         const filterString = this.getInput("regex");
         if (filterString.length === 0) {
-            return /^.+$/;
+            this.memoization.getFilter = /^.+$/;
+        } else {
+            this.memoization.getFilter = new RegExp(filterString);
         }
 
-        this.memoization.getFilter = new RegExp(filterString);
         return this.memoization.getFilter;
     }
 
@@ -77,7 +74,6 @@ class Input {
 
         if (this.getInput("include-ref").length === 0) {
             this.memoization.getIncludeRef = false;
-            return this.memoization.getIncludeRef;
         } else {
             this.memoization.getIncludeRef = this.getBooleanInput("include-ref");
         }
