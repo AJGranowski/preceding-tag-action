@@ -3,7 +3,7 @@ author: AJ Granowski
 description: Find the most recent tag that is reachable from a commit.
 branding:
   color: orange
-  icon: git-merge
+  icon: tag
 
 runs:
   using: node24
