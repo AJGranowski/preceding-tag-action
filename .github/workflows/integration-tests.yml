@@ -109,6 +109,14 @@ jobs:
             repository: ""
             expected-tag: "this-is-a-default-tag"
             expected-tag-found: false
+          - name: Should warn if the default-tag does not match the regex.
+            default-tag: "123"
+            include-ref: ""
+            ref: 42371bd608bcc9ca46e0a3be0e3403571cd8d824
+            regex: "^[a-zA-Z]+$"
+            repository: ""
+            expected-tag: "123"
+            expected-tag-found: false
 
     steps:
     - name: Harden Runner
