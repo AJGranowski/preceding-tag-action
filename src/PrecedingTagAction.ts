@@ -8,6 +8,7 @@ import { Input } from "./Input";
 
 async function main(): Promise<void> {
     const input: Input = new Input(core.getInput, core.getBooleanInput, core.warning, context);
+    input.validateInputs();
     const octokit: Octokit = new Octokit({
         auth: input.getToken()
     });
@@ -19,7 +20,7 @@ async function main(): Promise<void> {
     });
 
     if (precedingTag == null) {
-        core.setOutput("tag", "");
+        core.setOutput("tag", input.getDefaultTag());
     } else {
         core.setOutput("tag", precedingTag);
     }
