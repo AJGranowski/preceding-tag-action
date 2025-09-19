@@ -7,7 +7,7 @@ import { GitHubAPI } from "./GitHubAPI";
 import { Input } from "./Input";
 
 async function main(): Promise<void> {
-    const input: Input = new Input(core.getInput, core.getBooleanInput, context);
+    const input: Input = new Input(core.getInput, core.getBooleanInput, core.warning, context);
     const octokit: Octokit = new Octokit({
         auth: input.getToken()
     });

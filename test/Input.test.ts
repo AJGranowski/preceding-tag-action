@@ -35,7 +35,7 @@ describe("Input", () => {
         test("should return a non-zero match-all regular expression on an empty input", () => {
             const getInput = vi.fn().mockReturnValue("");
             const getBooleanInput = makeGetBooleanInput(getInput);
-            const input = new Input(getInput, getBooleanInput, mock<Github_context>({}));
+            const input = new Input(getInput, getBooleanInput, vi.fn(), mock<Github_context>({}));
             const regex = input.getFilter();
             expect(regex.test("")).toBe(false);
             expect(regex.test("a1-.")).toBe(true);
@@ -45,31 +45,31 @@ describe("Input", () => {
     describe("getRef", () => {
         test("should fail on .. input", () => {
             const getInput = vi.fn().mockReturnValue("..");
-            const input = new Input(getInput, vi.fn(), mock<Github_context>({}));
+            const input = new Input(getInput, vi.fn(), vi.fn(), mock<Github_context>({}));
             expect(() => input.getRef()).toThrowError(/^Invalid input ref /);
         });
 
         test("should fail on ./ input", () => {
             const getInput = vi.fn().mockReturnValue("./");
-            const input = new Input(getInput, vi.fn(), mock<Github_context>({}));
+            const input = new Input(getInput, vi.fn(), vi.fn(), mock<Github_context>({}));
             expect(() => input.getRef()).toThrowError(/^Invalid input ref /);
         });
 
         test("should fail on input beginning with .", () => {
             const getInput = vi.fn().mockReturnValue(".abc");
-            const input = new Input(getInput, vi.fn(), mock<Github_context>({}));
+            const input = new Input(getInput, vi.fn(), vi.fn(), mock<Github_context>({}));
             expect(() => input.getRef()).toThrowError(/^Invalid input ref /);
         });
 
         test("should fail on input ending with .", () => {
             const getInput = vi.fn().mockReturnValue("abc.");
-            const input = new Input(getInput, vi.fn(), mock<Github_context>({}));
+            const input = new Input(getInput, vi.fn(), vi.fn(), mock<Github_context>({}));
             expect(() => input.getRef()).toThrowError(/^Invalid input ref /);
         });
 
         test("should fail on input containing &", () => {
             const getInput = vi.fn().mockReturnValue("someref&foo");
-            const input = new Input(getInput, vi.fn(), mock<Github_context>({}));
+            const input = new Input(getInput, vi.fn(), vi.fn(), mock<Github_context>({}));
             expect(() => input.getRef()).toThrowError(/^Invalid input ref /);
         });
     });
@@ -77,7 +77,7 @@ describe("Input", () => {
     describe("getRepository", () => {
         test("should return owner and repo", () => {
             const getInput = vi.fn().mockReturnValue("AJGranowski/preceding-tag-action");
-            const input = new Input(getInput, vi.fn(), mock<Github_context>({}));
+            const input = new Input(getInput, vi.fn(), vi.fn(), mock<Github_context>({}));
             expect(input.getRepository()).toEqual({
                 owner: "AJGranowski",
                 repo: "preceding-tag-action"
@@ -86,7 +86,7 @@ describe("Input", () => {
 
         test("should not fail if repo name contains two ..", () => {
             const getInput = vi.fn().mockReturnValue("AJGranowski/some..repo");
-            const input = new Input(getInput, vi.fn(), mock<Github_context>({}));
+            const input = new Input(getInput, vi.fn(), vi.fn(), mock<Github_context>({}));
             expect(input.getRepository()).toEqual({
                 owner: "AJGranowski",
                 repo: "some..repo"
@@ -95,25 +95,25 @@ describe("Input", () => {
 
         test("should fail on repo name .", () => {
             const getInput = vi.fn().mockReturnValue("AJGranowski/.");
-            const input = new Input(getInput, vi.fn(), mock<Github_context>({}));
+            const input = new Input(getInput, vi.fn(), vi.fn(), mock<Github_context>({}));
             expect(() => input.getRepository()).toThrowError(/^Invalid input repository /);
         });
 
         test("should fail on repo name ..", () => {
             const getInput = vi.fn().mockReturnValue("AJGranowski/..");
-            const input = new Input(getInput, vi.fn(), mock<Github_context>({}));
+            const input = new Input(getInput, vi.fn(), vi.fn(), mock<Github_context>({}));
             expect(() => input.getRepository()).toThrowError(/^Invalid input repository /);
         });
 
         test("should fail if there is no /", () => {
             const getInput = vi.fn().mockReturnValue("AJGranowski");
-            const input = new Input(getInput, vi.fn(), mock<Github_context>({}));
+            const input = new Input(getInput, vi.fn(), vi.fn(), mock<Github_context>({}));
             expect(() => input.getRepository()).toThrowError(/^Invalid input repository /);
         });
 
         test("should fail if there is only /", () => {
             const getInput = vi.fn().mockReturnValue("/");
-            const input = new Input(getInput, vi.fn(), mock<Github_context>({}));
+            const input = new Input(getInput, vi.fn(), vi.fn(), mock<Github_context>({}));
             expect(() => input.getRepository()).toThrowError(/^Invalid input repository /);
         });
     });
