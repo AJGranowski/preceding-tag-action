@@ -21,8 +21,10 @@ async function main(): Promise<void> {
 
     if (precedingTag == null) {
         core.setOutput("tag", input.getDefaultTag());
+        core.setOutput("tag-found", false);
     } else {
         core.setOutput("tag", precedingTag);
+        core.setOutput("tag-found", true);
     }
 }
 
