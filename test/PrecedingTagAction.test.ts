@@ -14,7 +14,8 @@ vi.mock("@actions/core", () => ({
     getInput: vi.fn(() => ""),
     getBooleanInput: vi.fn(() => false),
     setFailed: vi.fn(),
-    setOutput: vi.fn()
+    setOutput: vi.fn(),
+    warning: vi.fn()
 }));
 
 vi.mock("@actions/github", () => ({

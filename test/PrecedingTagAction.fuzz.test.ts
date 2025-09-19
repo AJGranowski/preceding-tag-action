@@ -16,8 +16,9 @@ import PrecedingTagAction from "../src/PrecedingTagAction";
 vi.mock("@actions/core", () => ({
     getInput: undefined,
     getBooleanInput: undefined,
-    setFailed: () => undefined,
-    setOutput: () => undefined
+    setFailed: undefined,
+    setOutput: undefined,
+    warning: undefined
 }));
 
 vi.mock("@actions/github", () => ({
@@ -49,16 +50,18 @@ fc.configureGlobal({ numRuns: Number.MAX_SAFE_INTEGER, interruptAfterTimeLimit: 
 describe("Fuzzing PrecedingTagAction", () => {
     test("should not fail", {timeout: 10 * 60 * 1000}, async () => {
         const properties = [
-            fc.stringMatching(/^\w*$/),
-            fc.string(),
-            fc.string(),
-            fc.stringMatching(/^\w+\/\w+$/),
-            fc.string(),
-            fc.string(),
-            fc.func(fc.boolean()),
-            fc.string(),
-            fc.string(),
-            fc.record({
+            fc.record({ // getInput
+                "default-tag": fc.string(),
+                "regex": fc.stringMatching(/^\w*$/),
+                "include-ref": fc.string(),
+                "ref": fc.string(),
+                "repository": fc.stringMatching(/^\w+\/\w+$/),
+                "token": fc.string()
+            }),
+            fc.func(fc.boolean()), // getBooleanInput
+            fc.string(), // owner
+            fc.string(), // repo
+            fc.record({ // listMatchingRefsValue
                 headers: fc.object(),
                 status: fc.constant(200),
                 url: fc.webUrl(),
@@ -73,7 +76,7 @@ describe("Fuzzing PrecedingTagAction", () => {
                     })
                 }))
             }),
-            fc.record({
+            fc.record({ // compareCommitsWithBaseheadValue
                 headers: fc.object(),
                 status: fc.constant(200),
                 url: fc.webUrl(),
@@ -95,7 +98,7 @@ describe("Fuzzing PrecedingTagAction", () => {
                     }
                 })
             }),
-            fc.record({
+            fc.record({ // getCommitValue
                 headers: fc.object(),
                 status: fc.constant(200),
                 url: fc.webUrl(),
@@ -113,12 +116,7 @@ describe("Fuzzing PrecedingTagAction", () => {
         ];
 
         const predicate = async (
-            getInput_regex: any,
-            getInput_includeRef: any,
-            getInput_ref: any,
-            getInput_repository: any,
-            getInput_token: any,
-            getInput_default: any,
+            getInput: any,
             getBooleanInput: any,
             owner: any,
             repo: any,
@@ -127,13 +125,11 @@ describe("Fuzzing PrecedingTagAction", () => {
             getCommitValue: any) => { // eslint-disable-line max-params
 
             (core as any).getInput = vi.fn().mockImplementation((key) => {
-                return ({
-                    "regex": getInput_regex,
-                    "include-ref": getInput_includeRef,
-                    "ref": getInput_ref,
-                    "repository": getInput_repository,
-                    "token": getInput_token
-                } as any)[key] ?? getInput_default;
+                if (key in getInput) {
+                    return getInput[key];
+                }
+
+                throw new Error(`unknown key ${key}`);
             });
             (core as any).getBooleanInput = getBooleanInput;
             context.repo.owner = owner;
@@ -170,6 +166,7 @@ describe("Fuzzing PrecedingTagAction", () => {
             (core as any).getBooleanInput = () => {throw new Error("Not implemented.");};
             (core as any).setFailed = vi.fn();
             (core as any).setOutput = vi.fn();
+            (core as any).warning = vi.fn();
             (context.repo.owner as any) = undefined;
             (context.repo.repo as any) = undefined;
             (Octokit.prototype as any).rest.git.listMatchingRefs = () => {throw new Error("Not implemented.");};
