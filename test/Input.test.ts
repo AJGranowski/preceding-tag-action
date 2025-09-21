@@ -60,9 +60,9 @@ describe("Input", () => {
             const getInput = vi.fn().mockReturnValue("");
             const getBooleanInput = makeGetBooleanInput(getInput);
             const input = new Input(getInput, getBooleanInput, vi.fn(), mock<Github_context>({}));
-            const regex = input.getFilter();
-            expect(regex.test("")).toBe(false);
-            expect(regex.test("a1-.")).toBe(true);
+            const filter = input.getFilter();
+            expect(filter("")).toBe(false);
+            expect(filter("a1-.")).toBe(true);
         });
     });
 

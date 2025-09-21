@@ -77,7 +77,7 @@ describe("GitHubAPI", () => {
             });
 
             const githubAPI = new GitHubAPI(octokit, defaultRepo);
-            const tags = await githubAPI.fetchAllTags(new RegExp(""));
+            const tags = await githubAPI.fetchAllTags(() => true);
             expect(tags).containSubset(expectedTags);
             expect(expectedTags).containSubset(tags);
         });

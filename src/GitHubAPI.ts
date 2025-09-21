@@ -20,7 +20,7 @@ class GitHubAPI {
      *
      * Will reject if the API is unavailable.
      */
-    async fetchAllTags(filter: RegExp): Promise<string[]> {
+    async fetchAllTags(filter: (string: string) => boolean): Promise<string[]> {
         let totalTags = 0;
         // https://docs.github.com/en/rest/repos/repos?apiVersion=2022-11-28#list-repository-tags
         const allTags = await this.octokit.paginate(this.octokit.rest.repos.listTags, {
@@ -28,7 +28,7 @@ class GitHubAPI {
             repo: this.repo.repo,
             per_page: 100 // max
         }, (response, done) => {
-            const result = response.data.filter((object) => object.commit.sha.length > 0 && filter.test(object.name))
+            const result = response.data.filter((object) => object.commit.sha.length > 0 && filter(object.name))
                 .map((object) => object.name);
 
             totalTags += result.length;
