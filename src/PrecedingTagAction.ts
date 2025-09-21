@@ -18,12 +18,13 @@ async function main(): Promise<void> {
         auth: input.getToken() != null ? `token ${input.getToken()}` : undefined,
         throttle: {
             onRateLimit: (retryAfter, options, octokit, retryCount): boolean => {
-                const logPrefix = `Request quota exhausted for request ${options.method} ${JSON.stringify(options)}.`;
+                const logPrefix = `Request quota exhausted for request ${options.method} ${options.url}.`;
                 if (retryCount >= 1) {
                     octokit.log.warn(logPrefix);
                     return false;
                 }
 
+                retryAfter = retryAfter + 10;
                 if (retryAfter > maxRetryTimeSeconds) {
                     octokit.log.warn(`${logPrefix} Retry time (${retryAfter} seconds) exceeds the maximum retry time (${maxRetryTimeSeconds} seconds).`);
                     return false;
@@ -31,7 +32,7 @@ async function main(): Promise<void> {
 
                 const date = new Date();
                 date.setSeconds(date.getSeconds() + retryAfter);
-                octokit.log.warn(`${logPrefix} Retrying after ${retryAfter} seconds (${date.toISOString()})... `);
+                console.log(`${logPrefix} Retrying after ${retryAfter} seconds (${date.toISOString()})... `);
                 return true;
             },
             onSecondaryRateLimit: (retryAfter, options): boolean => {

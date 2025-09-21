@@ -33,7 +33,17 @@ vi.mock("@actions/github", () => ({
 vi.mock("@octokit/rest", () => {
     const Octokit = vi.fn();
     (Octokit as any).plugin = vi.fn().mockReturnValue(Octokit);
-    Octokit.prototype.paginate = async (x: any, ...args: any) => (await x(...args)).data;
+    Octokit.prototype.log = {
+        debug: () => {},
+        error: () => {},
+        info: () => {},
+        warn: () => {}
+    };
+
+    Octokit.prototype.paginate = async (fn: any, args: any, mapper: any = (response: any) => response.data) => {
+        return mapper(await fn(args), () => {});
+    };
+
     Octokit.prototype.rest = {
         repos: {
             compareCommitsWithBasehead: undefined,
@@ -53,7 +63,7 @@ describe("Fuzzing PrecedingTagAction", () => {
             fc.record({ // getInput
                 "default-tag": fc.string(),
                 "regex": fc.stringMatching(/^\w*$/),
-                "include-ref": fc.string(),
+                "include-ref": fc.constantFrom("", "true", "false", "string"),
                 "ref": fc.string(),
                 "repository": fc.stringMatching(/^\w+\/\w+$/),
                 "token": fc.string()
@@ -66,7 +76,10 @@ describe("Fuzzing PrecedingTagAction", () => {
                 status: fc.constant(200),
                 url: fc.webUrl(),
                 data: fc.array(fc.record({
-                    tag: fc.string()
+                    tag: fc.string(),
+                    commit: fc.record({
+                        sha: fc.string()
+                    })
                 }))
             }),
             fc.record({ // compareCommitsWithBaseheadValue
@@ -77,16 +90,20 @@ describe("Fuzzing PrecedingTagAction", () => {
                     if (number > 0) {
                         return fc.record({
                             status: fc.constantFrom("ahead", "diverged"),
-                            ahead_by: fc.constant(number)
+                            ahead_by: fc.constant(number),
+                            behind_by: fc.integer()
                         });
                     } else if (number < 0) {
                         return fc.record({
                             status: fc.constantFrom("behind", "diverged"),
+                            ahead_by: fc.integer(),
                             behind_by: fc.constant(-number)
                         });
                     } else {
                         return fc.record({
-                            status: fc.constant("identical")
+                            status: fc.constant("identical"),
+                            ahead_by: fc.constant(0),
+                            behind_by: fc.constant(0)
                         });
                     }
                 })
