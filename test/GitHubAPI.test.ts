@@ -53,12 +53,22 @@ describe("GitHubAPI", () => {
             const expectedTags = ["tag1", "tag2", "tag3"];
             const response = {
                 data: expectedTags.map((tag) => ({
-                    name: tag
+                    name: tag,
+                    commit: {
+                        sha: randomString()
+                    }
                 }))
             };
 
+            const paginate = async (fn: any, args: any, mapper: any = (response: any) => response.data) => {
+                return mapper(await fn(args), () => {});
+            };
+
             const octokit = mock<Octokit>({
-                paginate: (async (x: any, ...args: any) => (await x(...args)).data) as any,
+                log: {
+                    debug: () => {}
+                },
+                paginate: paginate as any,
                 rest: {
                     repos: {
                         listTags: (() => Promise.resolve(response)) as any

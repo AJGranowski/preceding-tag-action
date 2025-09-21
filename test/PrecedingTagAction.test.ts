@@ -30,7 +30,17 @@ vi.mock("@actions/github", () => ({
 vi.mock("@octokit/rest", () => {
     const Octokit = vi.fn();
     (Octokit as any).plugin = vi.fn().mockReturnValue(Octokit);
-    Octokit.prototype.paginate = async (x: any, ...args: any) => (await x(...args)).data;
+    Octokit.prototype.log = {
+        debug: () => {},
+        error: () => {},
+        info: () => {},
+        warn: () => {}
+    };
+
+    Octokit.prototype.paginate = async (fn: any, args: any, mapper: any = (response: any) => response.data) => {
+        return mapper(await fn(args), () => {});
+    };
+
     Octokit.prototype.rest = {
         repos: {
             compareCommitsWithBasehead: vi.fn(() => Promise.reject()),
