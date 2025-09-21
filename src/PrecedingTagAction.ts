@@ -24,6 +24,7 @@ async function main(): Promise<void> {
                     return false;
                 }
 
+                retryAfter = retryAfter + 10;
                 if (retryAfter > maxRetryTimeSeconds) {
                     octokit.log.warn(`${logPrefix} Retry time (${retryAfter} seconds) exceeds the maximum retry time (${maxRetryTimeSeconds} seconds).`);
                     return false;
