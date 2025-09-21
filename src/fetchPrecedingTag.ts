@@ -2,7 +2,7 @@ import type { GitHubAPI } from "./GitHubAPI";
 import type { GitRef } from "./types/GitRef";
 
 interface Options {
-    filter?: RegExp;
+    filter?: (string: string) => boolean;
     includeRef?: boolean;
 }
 
@@ -21,7 +21,7 @@ interface TagDifference {
  */
 async function fetchPrecedingTag(githubAPI: GitHubAPI, head: GitRef, options?: Options): Promise<string | null> {
     const optionsWithDefaults = {
-        filter: /^.+$/,
+        filter: (string: string): boolean => string.length > 0,
         includeRef: false,
         ...options
     } satisfies Required<Options>;

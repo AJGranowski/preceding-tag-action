@@ -50,7 +50,7 @@ class Input {
         }
 
         const defaultTag = this.getInput("default-tag");
-        if (defaultTag.length !== 0 && !this.getFilter().test(defaultTag)) {
+        if (defaultTag.length !== 0 && !this.getFilter()(defaultTag)) {
             this.warning(`Input default-tag "${defaultTag}" does not match the tag filter.`);
         }
 
@@ -61,16 +61,17 @@ class Input {
     /**
      * Get the tag filtering regular expression, defaults to matching every non-zero string.
      */
-    getFilter(): RegExp {
+    getFilter(): (string: string) => boolean {
         if (this.memoization.getFilter != null) {
             return this.memoization.getFilter;
         }
 
         const filterString = this.getInput("regex");
         if (filterString.length === 0) {
-            this.memoization.getFilter = /^.+$/;
+            this.memoization.getFilter = (string: string): boolean => string.length > 0;
         } else {
-            this.memoization.getFilter = new RegExp(filterString);
+            const regex = new RegExp(filterString);
+            this.memoization.getFilter = regex.test.bind(regex);
         }
 
         return this.memoization.getFilter;

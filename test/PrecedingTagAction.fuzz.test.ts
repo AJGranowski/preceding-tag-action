@@ -76,7 +76,7 @@ describe("Fuzzing PrecedingTagAction", () => {
                 status: fc.constant(200),
                 url: fc.webUrl(),
                 data: fc.array(fc.record({
-                    tag: fc.string(),
+                    name: fc.string(),
                     commit: fc.record({
                         sha: fc.string()
                     })
