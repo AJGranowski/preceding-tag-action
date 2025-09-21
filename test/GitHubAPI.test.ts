@@ -53,14 +53,15 @@ describe("GitHubAPI", () => {
             const expectedTags = ["tag1", "tag2", "tag3"];
             const response = {
                 data: expectedTags.map((tag) => ({
-                    ref: `refs/tags/${tag}`
+                    name: tag
                 }))
             };
 
             const octokit = mock<Octokit>({
+                paginate: (async (x: any, ...args: any) => (await x(...args)).data) as any,
                 rest: {
-                    git: {
-                        listMatchingRefs: (() => Promise.resolve(response)) as any
+                    repos: {
+                        listTags: (() => Promise.resolve(response)) as any
                     }
                 }
             });
@@ -69,25 +70,6 @@ describe("GitHubAPI", () => {
             const tags = await githubAPI.fetchAllTags(new RegExp(""));
             expect(tags).containSubset(expectedTags);
             expect(expectedTags).containSubset(tags);
-        });
-
-        test("should fail if the returned ref is not a tag", async () => {
-            const response = {
-                data: [{
-                    ref: "refs/heads/some-branch"
-                }]
-            };
-
-            const octokit = mock<Octokit>({
-                rest: {
-                    git: {
-                        listMatchingRefs: (() => Promise.resolve(response)) as any
-                    }
-                }
-            });
-
-            const githubAPI = new GitHubAPI(octokit, defaultRepo);
-            await expect(githubAPI.fetchAllTags(new RegExp(""))).rejects.toThrowError();
         });
     });
 

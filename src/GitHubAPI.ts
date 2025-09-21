@@ -20,7 +20,7 @@ class GitHubAPI {
      */
     async fetchAllTags(filter: RegExp): Promise<string[]> {
         // https://docs.github.com/en/rest/repos/repos?apiVersion=2022-11-28#list-repository-tags
-        const response = await this.octokit.paginate(this.octokit.repos.listTags, {
+        const response = await this.octokit.paginate(this.octokit.rest.repos.listTags, {
             owner: this.repo.owner,
             repo: this.repo.repo,
             per_page: 100 // max
