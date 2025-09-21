@@ -32,13 +32,13 @@ vi.mock("@actions/github", () => ({
 
 vi.mock("@octokit/rest", () => {
     const Octokit = vi.fn();
+    (Octokit as any).plugin = vi.fn().mockReturnValue(Octokit);
+    Octokit.prototype.paginate = async (x: any, ...args: any) => (await x(...args)).data;
     Octokit.prototype.rest = {
-        git: {
-            listMatchingRefs: undefined
-        },
         repos: {
             compareCommitsWithBasehead: undefined,
-            getCommit: () => undefined
+            getCommit: undefined,
+            listTags: undefined
         }
     };
 
@@ -61,19 +61,12 @@ describe("Fuzzing PrecedingTagAction", () => {
             fc.func(fc.boolean()), // getBooleanInput
             fc.string(), // owner
             fc.string(), // repo
-            fc.record({ // listMatchingRefsValue
+            fc.record({ // listTags
                 headers: fc.object(),
                 status: fc.constant(200),
                 url: fc.webUrl(),
                 data: fc.array(fc.record({
-                    ref: fc.stringMatching(/^refs\/tags\/.+$/),
-                    node_id: fc.string(),
-                    url: fc.webUrl(),
-                    object: fc.record({
-                        type: fc.string(),
-                        sha: fc.string({minLength: 40, maxLength: 40}),
-                        url: fc.webUrl()
-                    })
+                    tag: fc.string()
                 }))
             }),
             fc.record({ // compareCommitsWithBaseheadValue
@@ -120,7 +113,7 @@ describe("Fuzzing PrecedingTagAction", () => {
             getBooleanInput: any,
             owner: any,
             repo: any,
-            listMatchingRefsValue: any,
+            listTags: any,
             compareCommitsWithBaseheadValue: any,
             getCommitValue: any) => { // eslint-disable-line max-params
 
@@ -134,9 +127,9 @@ describe("Fuzzing PrecedingTagAction", () => {
             (core as any).getBooleanInput = getBooleanInput;
             context.repo.owner = owner;
             context.repo.repo = repo;
-            (Octokit.prototype as any).rest.git.listMatchingRefs = () => Promise.resolve(listMatchingRefsValue);
             (Octokit.prototype as any).rest.repos.compareCommitsWithBasehead = () => Promise.resolve(compareCommitsWithBaseheadValue);
             (Octokit.prototype as any).rest.repos.getCommit = () => Promise.resolve(getCommitValue);
+            (Octokit.prototype as any).rest.repos.listTags = () => Promise.resolve(listTags);
 
             await PrecedingTagAction();
             let failure = false;
@@ -169,9 +162,9 @@ describe("Fuzzing PrecedingTagAction", () => {
             (core as any).warning = vi.fn();
             (context.repo.owner as any) = undefined;
             (context.repo.repo as any) = undefined;
-            (Octokit.prototype as any).rest.git.listMatchingRefs = () => {throw new Error("Not implemented.");};
             (Octokit.prototype as any).rest.repos.compareCommitsWithBasehead = () => {throw new Error("Not implemented.");};
             (Octokit.prototype as any).rest.repos.getCommit = () => {throw new Error("Not implemented.");};
+            (Octokit.prototype as any).rest.repos.listTags = () => {throw new Error("Not implemented.");};
         }), {includeErrorInReport: true});
     });
 });

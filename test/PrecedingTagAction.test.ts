@@ -29,13 +29,13 @@ vi.mock("@actions/github", () => ({
 
 vi.mock("@octokit/rest", () => {
     const Octokit = vi.fn();
+    (Octokit as any).plugin = vi.fn().mockReturnValue(Octokit);
+    Octokit.prototype.paginate = async (x: any, ...args: any) => (await x(...args)).data;
     Octokit.prototype.rest = {
-        git: {
-            listMatchingRefs: vi.fn(() => Promise.reject())
-        },
         repos: {
             compareCommitsWithBasehead: vi.fn(() => Promise.reject()),
-            getCommit: vi.fn(() => Promise.reject())
+            getCommit: vi.fn(() => Promise.reject()),
+            listTags: vi.fn(() => Promise.reject())
         }
     };
 
@@ -44,7 +44,7 @@ vi.mock("@octokit/rest", () => {
 
 describe("PrecedingTagAction", () => {
     test("should fail with an unknown error if a promise rejects without an error", async () => {
-        (Octokit.prototype as Octokit).rest.git.listMatchingRefs = vi.fn(() => Promise.reject()) as any;
+        (Octokit.prototype as Octokit).rest.repos.listTags = vi.fn(() => Promise.reject()) as any;
         await PrecedingTagAction();
         expect(core.setFailed).toHaveBeenCalledExactlyOnceWith("An unknown error occurred.");
     });
