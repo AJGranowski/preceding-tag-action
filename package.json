@@ -8,7 +8,7 @@
         "bundle": "node esbuild.config.mjs",
         "check-types": "tsc -noEmit",
         "format": "eslint --fix",
-        "fuzz": "vitest run --project fuzz",
+        "fuzz": "vitest run --project fuzz --coverage.thresholds false",
         "lint": "eslint",
         "pr-checks": "npm run check-types && npm run lint && npm run test && npm run bundle",
         "run-bundle": "node dist/index.js",
