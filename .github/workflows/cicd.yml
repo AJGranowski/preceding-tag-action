@@ -167,6 +167,8 @@ jobs:
     - name: Upload Coverage
       if: ${{ matrix.script == 'test' }}
       uses: coverallsapp/github-action@648a8eb78e6d50909eff900e4ec85cab4524a45b # v2.3.6
+      with:
+        fail-on-error: false
 
     - name: Store Bundled Artifacts
       if: ${{ matrix.script == 'bundle' }}
