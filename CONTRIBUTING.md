@@ -4,7 +4,7 @@ Thanks for wanting to contribute!
 
 ### Did you find a bug?
 1. Check that [no one else has already reported the bug][bug-list-link].
-2. Open a [bug report][bug-issue-link]. Please include all of the requested information in the bug report template to give us the best chance of reproducing your issue.
+2. Open a [bug report][bug-issue-link]. Please include all of the requested information in the bug report template to give me the best chance of reproducing your issue.
 
 ### Do you have a change you would like merged?
 1. Complete the [PR Checklist][pull-request-template-checklist].
