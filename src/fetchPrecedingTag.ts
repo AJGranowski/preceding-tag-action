@@ -7,8 +7,8 @@ interface Options {
 }
 
 interface TagDifference {
-    tags: string[]
-    commitDifference: number
+    tags: string[];
+    commitDifference: number;
 }
 
 /**

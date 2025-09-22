@@ -5,17 +5,17 @@ import type { GitHubAPI } from "../src/GitHubAPI";
 import { fetchPrecedingTag } from "../src/fetchPrecedingTag";
 
 interface TestParameter {
-    tag1Author?: string,
-    tag1Committer?: string,
-    tag2Author?: string,
-    tag2Committer?: string
+    tag1Author?: string;
+    tag1Committer?: string;
+    tag2Author?: string;
+    tag2Committer?: string;
 }
 
 interface GenerateTestParameterSetOptions {
-    tag1Authors: (string | undefined)[],
-    tag1Committers: (string | undefined)[],
-    tag2Authors: (string | undefined)[],
-    tag2Committers: (string | undefined)[]
+    tag1Authors: (string | undefined)[];
+    tag1Committers: (string | undefined)[];
+    tag2Authors: (string | undefined)[];
+    tag2Committers: (string | undefined)[];
 }
 
 function generateTestParameterSet(options: GenerateTestParameterSetOptions): Set<TestParameter> {
