@@ -19,7 +19,7 @@ interface TagDifference {
  *
  * Will reject if the API is unavailable, or if the reference does not exist.
  */
-async function fetchPrecedingTag(githubAPI: GitHubAPI, head: GitRef, options?: Options): Promise<string | null> {
+async function fetchPrecedingTag(githubAPI: GitHubAPI, ref: GitRef, options?: Options): Promise<string | null> {
     const optionsWithDefaults = {
         filter: (string: string): boolean => string.length > 0,
         includeRef: false,
@@ -30,7 +30,7 @@ async function fetchPrecedingTag(githubAPI: GitHubAPI, head: GitRef, options?: O
     const tagDistances = await Promise.all(allTags.map(async (tag) => {
         return {
             tags: [tag],
-            commitDifference: await githubAPI.fetchCommitDifference(tag, head)
+            commitDifference: await githubAPI.fetchCommitDifference(tag, ref)
         };
     }));
 

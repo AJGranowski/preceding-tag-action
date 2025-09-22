@@ -9,7 +9,7 @@ import { GitHubAPI } from "./GitHubAPI";
 import { Input } from "./Input";
 
 // Do not retry if the retry time is longer than 62 minutes.
-const maxRetryTimeSeconds = 62 * 60;
+const MAX_RETRY_TIME_SECONDS = 62 * 60;
 
 async function main(): Promise<void> {
     const input: Input = new Input(core.getInput, core.getBooleanInput, core.warning, context);
@@ -25,8 +25,8 @@ async function main(): Promise<void> {
                 }
 
                 retryAfter = retryAfter + 10;
-                if (retryAfter > maxRetryTimeSeconds) {
-                    octokit.log.warn(`${logPrefix} Retry time (${retryAfter} seconds) exceeds the maximum retry time (${maxRetryTimeSeconds} seconds).`);
+                if (retryAfter > MAX_RETRY_TIME_SECONDS) {
+                    octokit.log.warn(`${logPrefix} Retry time (${retryAfter} seconds) exceeds the maximum retry time (${MAX_RETRY_TIME_SECONDS} seconds).`);
                     return false;
                 }
 
