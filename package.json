@@ -1,6 +1,5 @@
 {
     "name": "preceding-tag-action",
-    "description": "Finds the most recent tag matching the given pattern that is reachable from this commit.",
     "license": "MIT",
     "author": "AJ Granowski",
     "type": "module",
