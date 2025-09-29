@@ -14,9 +14,13 @@ updates:
 - package-ecosystem: "docker"
   directory: "/container-images/node/"
   multi-ecosystem-group: "infrastructure"
+  patterns:
+  - "*"
 - package-ecosystem: "github-actions"
   directory: "/"
   multi-ecosystem-group: "infrastructure"
+  patterns:
+  - "*"
 - package-ecosystem: "npm"
   directory: "/"
   groups:
