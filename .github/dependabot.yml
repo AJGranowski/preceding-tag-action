@@ -35,7 +35,7 @@ updates:
       - "vitest"
       - "vitest-mock-extended"
       - "@vitest/*"
-    open-pull-requests-limit: 1
-    schedule:
-      interval: "weekly"
-      day: "tuesday"
+  open-pull-requests-limit: 1
+  schedule:
+    interval: "weekly"
+    day: "tuesday"
