@@ -11,20 +11,30 @@ multi-ecosystem-groups:
       interval: "weekly"
 
 updates:
-  - package-ecosystem: "docker"
-    directory: "/container-images/node/"
-    multi-ecosystem-group: "infrastructure"
-  - package-ecosystem: "github-actions"
-    directory: "/"
-    multi-ecosystem-group: "infrastructure"
-  - package-ecosystem: "npm"
-    directory: "/"
-    groups:
-      eslint:
-        patterns:
-          - "eslint"
-          - "@eslint/*"
-          - "*-eslint"
+- package-ecosystem: "docker"
+  directory: "/container-images/node/"
+  multi-ecosystem-group: "infrastructure"
+- package-ecosystem: "github-actions"
+  directory: "/"
+  multi-ecosystem-group: "infrastructure"
+- package-ecosystem: "npm"
+  directory: "/"
+  groups:
+    eslint:
+      patterns:
+      - "@actions/*"
+      - "@octokit/*"
+      - "*-eslint"
+    actions-toolkit:
+      patterns:
+      - "eslint"
+      - "@eslint/*"
+      - "*-eslint"
+    vitest:
+      patterns:
+      - "vitest"
+      - "vitest-mock-extended"
+      - "@vitest/*"
     open-pull-requests-limit: 1
     schedule:
       interval: "weekly"
