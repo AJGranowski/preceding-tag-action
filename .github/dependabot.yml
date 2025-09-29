@@ -4,26 +4,42 @@
 # https://docs.github.com/code-security/dependabot/dependabot-version-updates/configuration-options-for-the-dependabot.yml-file
 
 version: 2
+
+multi-ecosystem-groups:
+  infrastructure:
+    schedule:
+      interval: "weekly"
+
 updates:
-  - package-ecosystem: "docker"
-    directory: "/container-images/node/"
-    labels: []
-    schedule:
-      interval: "weekly"
-  - package-ecosystem: "github-actions"
-    directory: "/"
-    labels: []
-    schedule:
-      interval: "weekly"
-  - package-ecosystem: "npm"
-    directory: "/"
-    groups:
-      eslint:
-        patterns:
-          - "@eslint/js"
-          - "eslint"
-    labels: []
-    open-pull-requests-limit: 10
-    schedule:
-      interval: "weekly"
-      day: "tuesday"
+- package-ecosystem: "docker"
+  directory: "/container-images/node/"
+  multi-ecosystem-group: "infrastructure"
+  patterns:
+  - "*"
+- package-ecosystem: "github-actions"
+  directory: "/"
+  multi-ecosystem-group: "infrastructure"
+  patterns:
+  - "*"
+- package-ecosystem: "npm"
+  directory: "/"
+  groups:
+    eslint:
+      patterns:
+      - "@actions/*"
+      - "@octokit/*"
+      - "*-eslint"
+    actions-toolkit:
+      patterns:
+      - "eslint"
+      - "@eslint/*"
+      - "*-eslint"
+    vitest:
+      patterns:
+      - "vitest"
+      - "vitest-mock-extended"
+      - "@vitest/*"
+  open-pull-requests-limit: 1
+  schedule:
+    interval: "weekly"
+    day: "tuesday"
