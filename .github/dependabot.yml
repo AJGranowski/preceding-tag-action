@@ -24,12 +24,11 @@ updates:
 - package-ecosystem: "npm"
   directory: "/"
   groups:
-    eslint:
+    actions-toolkit:
       patterns:
       - "@actions/*"
       - "@octokit/*"
-      - "*-eslint"
-    actions-toolkit:
+    eslint:
       patterns:
       - "eslint"
       - "@eslint/*"
