@@ -113,6 +113,7 @@ describe("Fuzzing PrecedingTagAction", () => {
                 status: fc.constant(200),
                 url: fc.webUrl(),
                 data: fc.record({
+                    sha: fc.string(),
                     commit: fc.record({
                         author: fc.option(fc.record({
                             date: fc.date({noInvalidDate: true}).chain((x: any) => fc.constant(x.toISOString()))
