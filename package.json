@@ -11,7 +11,7 @@
         "fuzz": "vitest run --project fuzz --coverage.thresholds false",
         "lint": "eslint",
         "pr-checks": "npm run check-types && npm run lint && npm run test && npm run bundle",
-        "run-bundle": "node dist/index.js",
+        "run-bundle": "GITHUB_REPOSITORY=AJGranowski/preceding-tag-action node dist/index.js",
         "test": "vitest run --project unit"
     },
     "dependencies": {
