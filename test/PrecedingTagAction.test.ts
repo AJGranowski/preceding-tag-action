@@ -119,11 +119,20 @@ describe("PrecedingTagAction", () => {
             "token": ""
         }[key]);
         (core as any).getBooleanInput = () => false;
+        (Octokit.prototype as Octokit).rest.repos.getCommit = vi.fn((x) => ({
+            data: {
+                sha: `${x}-sha`
+            }
+        })) as any;
         (Octokit.prototype as Octokit).rest.repos.listTags = vi.fn(() => Promise.resolve({
             data: []
         })) as any;
 
         await PrecedingTagAction();
+        for (const call of (core.setFailed as any).mock.calls) {
+            throw call[0];
+        }
+
         const outputs = Object.fromEntries((core.setOutput as any).mock.calls);
         expect(outputs.tag.toString()).toBe("some-default-tag");
         expect(outputs["tag-found"].toString()).toBe("false");

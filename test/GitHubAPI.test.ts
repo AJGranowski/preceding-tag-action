@@ -50,12 +50,24 @@ describe("GitHubAPI", () => {
 
     describe("fetchAllTags", () => {
         test("should forward tags returned from the GitHub API", async () => {
-            const expectedTags = ["tag1", "tag2", "tag3"];
+            const expectedTags = [{
+                name: "tag1",
+                sha: randomString()
+            },
+            {
+                name: "tag2",
+                sha: randomString()
+            },
+            {
+                name: "tag3",
+                sha: randomString()
+            }];
+
             const response = {
                 data: expectedTags.map((tag) => ({
-                    name: tag,
+                    name: tag.name,
                     commit: {
-                        sha: randomString()
+                        sha: tag.sha
                     }
                 }))
             };
