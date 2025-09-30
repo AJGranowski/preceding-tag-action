@@ -4,6 +4,7 @@ import { Octokit } from "@octokit/rest";
 import { retry } from "@octokit/plugin-retry";
 import { throttling } from "@octokit/plugin-throttling";
 
+import { tagCache } from "./OctokitPluginTagCache";
 import { fetchPrecedingTag } from "./fetchPrecedingTag";
 import { GitHubAPI } from "./GitHubAPI";
 import { Input } from "./Input";
@@ -15,7 +16,7 @@ const MAX_RETRY_TIME_SECONDS = 62 * 60;
 async function main(): Promise<void> {
     const input: Input = new Input(core.getInput, core.getBooleanInput, core.warning, context);
     input.validateInputs();
-    const octokit: Octokit = new (Octokit.plugin(retry, throttling))({
+    const octokit: Octokit = new (Octokit.plugin(retry, tagCache, throttling))({
         auth: input.getToken() != null ? `token ${input.getToken()}` : undefined,
         throttle: {
             onRateLimit: (retryAfter, options, octokit, retryCount): boolean => {
