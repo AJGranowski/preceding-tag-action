@@ -7,6 +7,7 @@ import { throttling } from "@octokit/plugin-throttling";
 import { fetchPrecedingTag } from "./fetchPrecedingTag";
 import { GitHubAPI } from "./GitHubAPI";
 import { Input } from "./Input";
+import type { Tag } from "./types/Tag";
 
 // Do not retry if the retry time is longer than 62 minutes.
 const MAX_RETRY_TIME_SECONDS = 62 * 60;
@@ -43,7 +44,7 @@ async function main(): Promise<void> {
     });
 
     const githubAPI = new GitHubAPI(octokit, input.getRepository());
-    const precedingTag = await fetchPrecedingTag(githubAPI, input.getRef(), {
+    const precedingTag: Tag | null = await fetchPrecedingTag(githubAPI, input.getRef(), {
         filter: input.getFilter(),
         includeRef: input.getIncludeRef()
     });
@@ -52,7 +53,7 @@ async function main(): Promise<void> {
         core.setOutput("tag", input.getDefaultTag());
         core.setOutput("tag-found", false);
     } else {
-        core.setOutput("tag", precedingTag);
+        core.setOutput("tag", precedingTag.name);
         core.setOutput("tag-found", true);
     }
 }

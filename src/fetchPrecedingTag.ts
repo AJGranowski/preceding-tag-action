@@ -1,5 +1,6 @@
 import type { GitHubAPI } from "./GitHubAPI";
 import type { GitRef } from "./types/GitRef";
+import type { Tag } from "./types/Tag";
 
 interface Options {
     filter?: (string: string) => boolean;
@@ -7,7 +8,7 @@ interface Options {
 }
 
 interface TagDifference {
-    tags: string[];
+    tags: Tag[];
     commitDifference: number;
 }
 
@@ -19,18 +20,19 @@ interface TagDifference {
  *
  * Will reject if the API is unavailable, or if the reference does not exist.
  */
-async function fetchPrecedingTag(githubAPI: GitHubAPI, ref: GitRef, options?: Options): Promise<string | null> {
+async function fetchPrecedingTag(githubAPI: GitHubAPI, ref: GitRef, options?: Options): Promise<Tag | null> {
     const optionsWithDefaults = {
         filter: (string: string): boolean => string.length > 0,
         includeRef: false,
         ...options
     } satisfies Required<Options>;
 
+    const sha = await githubAPI.fetchCommitSHA(ref);
     const allTags = await githubAPI.fetchAllTags(optionsWithDefaults.filter);
     const tagDistances = await Promise.all(allTags.map(async (tag) => {
         return {
             tags: [tag],
-            commitDifference: await githubAPI.fetchCommitDifference(tag, ref)
+            commitDifference: await githubAPI.fetchCommitDifference(tag.sha, sha)
         };
     }));
 
@@ -73,7 +75,7 @@ async function fetchPrecedingTag(githubAPI: GitHubAPI, ref: GitRef, options?: Op
     const commitDates = await Promise.all(precedingTag.tags.map(async (tag) => {
         return {
             tag: tag,
-            commitDate: await githubAPI.fetchCommitDate(tag)
+            commitDate: await githubAPI.fetchCommitDate(tag.sha)
         };
     }));
 

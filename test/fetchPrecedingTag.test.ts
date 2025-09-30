@@ -3,6 +3,7 @@ import { mock } from "vitest-mock-extended";
 
 import type { GitHubAPI } from "../src/GitHubAPI";
 import { fetchPrecedingTag } from "../src/fetchPrecedingTag";
+import type { Tag } from "../src/types/Tag";
 
 interface TestParameter {
     tag1Author?: string;
@@ -52,6 +53,10 @@ function makeFetchCommitDifferenceProcedure(target: string, differences: Record<
     };
 }
 
+function randomString(): string {
+    return Math.floor(Math.random() * Number.MAX_SAFE_INTEGER).toString();
+}
+
 describe("fetchPrecedingTag", () => {
     test("should return null if the repo has no tags", async () => {
         const mockGithubAPI = mock<GitHubAPI>({
@@ -62,9 +67,22 @@ describe("fetchPrecedingTag", () => {
     });
 
     test("should compare each tag against the target ref", async () => {
-        const tags = ["tag1", "tag2", "tag3"];
+        const tags = [{
+            name: "tag1",
+            sha: randomString()
+        },
+        {
+            name: "tag2",
+            sha: randomString()
+        },
+        {
+            name: "tag3",
+            sha: randomString()
+        }];
+
         const mockGithubAPI = mock<GitHubAPI>({
-            fetchAllTags: () => Promise.resolve(tags)
+            fetchAllTags: () => Promise.resolve(tags),
+            fetchCommitSHA: (x) => Promise.resolve(x)
         });
 
         await fetchPrecedingTag(mockGithubAPI, "HEAD");
@@ -80,28 +98,44 @@ describe("fetchPrecedingTag", () => {
             }
         }
 
-        expect(nonHeadArgs).containSubset(tags);
-        expect(tags).containSubset(nonHeadArgs);
+        const tagSHAs = tags.map((x) => x.sha);
+        expect(nonHeadArgs).containSubset(tagSHAs);
+        expect(tagSHAs).containSubset(nonHeadArgs);
     });
 
     test("should return the closest preceding tag", async () => {
         const mockGithubAPI = mock<GitHubAPI>({
-            fetchAllTags: () => Promise.resolve(["tag1", "tag2", "tag3"])
+            fetchAllTags: () => Promise.resolve([{
+                name: "tag1",
+                sha: "tag1-sha"
+            },
+            {
+                name: "tag2",
+                sha: "tag2-sha"
+            },
+            {
+                name: "tag3",
+                sha: "tag3-sha"
+            }]),
+            fetchCommitSHA: (x) => Promise.resolve(x)
         });
 
         mockGithubAPI.fetchCommitDifference.mockImplementation(makeFetchCommitDifferenceProcedure("HEAD", {
-            "tag1": 3,
-            "tag2": 2,
-            "tag3": -1
+            "tag1-sha": 3,
+            "tag2-sha": 2,
+            "tag3-sha": -1
         }));
 
-        expect(await fetchPrecedingTag(mockGithubAPI, "HEAD")).toBe("tag2");
+        expect(await fetchPrecedingTag(mockGithubAPI, "HEAD")).toStrictEqual({
+            name: "tag2",
+            sha: "tag2-sha"
+        });
     });
 
     describe("same commit difference, different dates", () => {
         const olderDate = "2025-09-09T06:23:06Z";
         const earlierDate = "2025-09-10T03:37:12Z";
-        const tests = new Map<TestParameter, string>();
+        const tests = new Map<TestParameter, Tag>();
         let tag1WinsSet = new Set<TestParameter>();
         let tag2WinsSet = new Set<TestParameter>();
 
@@ -148,11 +182,17 @@ describe("fetchPrecedingTag", () => {
         }));
 
         for (const testParameter of tag1WinsSet.values()) {
-            tests.set(testParameter, "tag1");
+            tests.set(testParameter, {
+                name: "tag1",
+                sha: "tag1-sha"
+            });
         }
 
         for (const testParameter of tag2WinsSet.values()) {
-            tests.set(testParameter, "tag2");
+            tests.set(testParameter, {
+                name: "tag2",
+                sha: "tag2-sha"
+            });
         }
 
         for (const testEntry of tests.entries()) {
@@ -160,37 +200,53 @@ describe("fetchPrecedingTag", () => {
             const expectedResult = testEntry[1];
             test(`should return ${expectedResult} with ${JSON.stringify(testParameters)}`, async () => {
                 const mockGithubAPI = mock<GitHubAPI>({
-                    fetchAllTags: () => Promise.resolve(["tag1", "tag2"])
+                    fetchAllTags: () => Promise.resolve([{
+                        name: "tag1",
+                        sha: "tag1-sha"
+                    },
+                    {
+                        name: "tag2",
+                        sha: "tag2-sha"
+                    }]),
+                    fetchCommitSHA: (x) => Promise.resolve(x)
                 });
 
                 const commitDates = {
-                    "tag1": {
+                    "tag1-sha": {
                         author: testParameters.tag1Author,
                         committer: testParameters.tag1Committer
                     },
-                    "tag2": {
+                    "tag2-sha": {
                         author: testParameters.tag2Author,
                         committer: testParameters.tag2Committer
                     }
                 };
 
                 mockGithubAPI.fetchCommitDifference.mockResolvedValue(1);
-                mockGithubAPI.fetchCommitDate.mockImplementation((tag) => {
-                    if (!(tag in commitDates)) {
+                mockGithubAPI.fetchCommitDate.mockImplementation((tagSha) => {
+                    if (!(tagSha in commitDates)) {
                         return Promise.reject();
                     }
 
-                    return Promise.resolve(commitDates[tag as keyof typeof commitDates]);
+                    return Promise.resolve(commitDates[tagSha as keyof typeof commitDates]);
                 });
 
-                expect(await fetchPrecedingTag(mockGithubAPI, "HEAD")).toBe(expectedResult);
+                expect(await fetchPrecedingTag(mockGithubAPI, "HEAD")).toStrictEqual(expectedResult);
             });
         }
     });
 
     test("should return non-null for equivalent tags", async () => {
         const mockGithubAPI = mock<GitHubAPI>({
-            fetchAllTags: () => Promise.resolve(["tag1", "tag2"])
+            fetchAllTags: () => Promise.resolve([{
+                name: "tag1",
+                sha: randomString()
+            },
+            {
+                name: "tag2",
+                sha: randomString()
+            }]),
+            fetchCommitSHA: (x) => Promise.resolve(x)
         });
 
         mockGithubAPI.fetchCommitDifference.mockResolvedValue(3);
@@ -201,29 +257,59 @@ describe("fetchPrecedingTag", () => {
 
     test("should not include tags pointing to this ref if includeRef is false", async () => {
         const mockGithubAPI = mock<GitHubAPI>({
-            fetchAllTags: () => Promise.resolve(["tag1", "tag2", "tag3"])
+            fetchAllTags: () => Promise.resolve([{
+                name: "tag1",
+                sha: "tag1-sha"
+            },
+            {
+                name: "tag2",
+                sha: "tag2-sha"
+            },
+            {
+                name: "tag3",
+                sha: "tag3-sha"
+            }]),
+            fetchCommitSHA: (x) => Promise.resolve(x)
         });
 
         mockGithubAPI.fetchCommitDifference.mockImplementation(makeFetchCommitDifferenceProcedure("HEAD", {
-            "tag1": -1,
-            "tag2": 0,
-            "tag3": 1
+            "tag1-sha": -1,
+            "tag2-sha": 0,
+            "tag3-sha": 1
         }));
 
-        expect(await fetchPrecedingTag(mockGithubAPI, "HEAD")).toBe("tag3");
+        expect(await fetchPrecedingTag(mockGithubAPI, "HEAD")).toStrictEqual({
+            name: "tag3",
+            sha: "tag3-sha"
+        });
     });
 
     test("should include tags pointing to this ref if includeRef is true", async () => {
         const mockGithubAPI = mock<GitHubAPI>({
-            fetchAllTags: () => Promise.resolve(["tag1", "tag2", "tag3"])
+            fetchAllTags: () => Promise.resolve([{
+                name: "tag1",
+                sha: "tag1-sha"
+            },
+            {
+                name: "tag2",
+                sha: "tag2-sha"
+            },
+            {
+                name: "tag3",
+                sha: "tag3-sha"
+            }]),
+            fetchCommitSHA: (x) => Promise.resolve(x)
         });
 
         mockGithubAPI.fetchCommitDifference.mockImplementation(makeFetchCommitDifferenceProcedure("HEAD", {
-            "tag1": -1,
-            "tag2": 0,
-            "tag3": 1
+            "tag1-sha": -1,
+            "tag2-sha": 0,
+            "tag3-sha": 1
         }));
 
-        expect(await fetchPrecedingTag(mockGithubAPI, "HEAD", {includeRef: true})).toBe("tag2");
+        expect(await fetchPrecedingTag(mockGithubAPI, "HEAD", {includeRef: true})).toStrictEqual({
+            name: "tag2",
+            sha: "tag2-sha"
+        });
     });
 });

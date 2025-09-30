@@ -3,6 +3,7 @@ import type { Octokit } from "@octokit/rest";
 import type { CommitDate } from "./types/CommitDate";
 import type { GitRef } from "./types/GitRef";
 import type { Repository } from "./types/Repository";
+import type { Tag } from "./types/Tag";
 
 const MAX_TAGS: number = 1000;
 
@@ -20,16 +21,19 @@ class GitHubAPI {
      *
      * Will reject if the API is unavailable.
      */
-    async fetchAllTags(filter: (string: string) => boolean): Promise<string[]> {
+    async fetchAllTags(filter: (string: string) => boolean): Promise<Tag[]> {
         let totalTags = 0;
         // https://docs.github.com/en/rest/repos/repos?apiVersion=2022-11-28#list-repository-tags
-        const allTags = await this.octokit.paginate(this.octokit.rest.repos.listTags, {
+        const allTags: Tag[] = await this.octokit.paginate(this.octokit.rest.repos.listTags, {
             owner: this.repo.owner,
             repo: this.repo.repo,
             per_page: 100 // max
         }, (response, done) => {
             const result = response.data.filter((object) => object.commit.sha.length > 0 && filter(object.name))
-                .map((object) => object.name);
+                .map((object) => ({
+                    name: object.name,
+                    sha: object.commit.sha
+                }));
 
             totalTags += result.length;
             if (totalTags >= MAX_TAGS) {
@@ -75,6 +79,19 @@ class GitHubAPI {
         }
 
         return this.parseCommitDifference(response);
+    }
+
+    async fetchCommitSHA(ref: GitRef): Promise<string> {
+        // https://docs.github.com/en/rest/commits/commits?apiVersion=2022-11-28#get-a-commit
+        const response = await this.octokit.rest.repos.getCommit({
+            owner: this.repo.owner,
+            repo: this.repo.repo,
+            ref: ref,
+            page: 1,
+            per_page: 1
+        });
+
+        return response.data.sha;
     }
 
     /**
