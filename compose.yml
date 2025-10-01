@@ -33,6 +33,13 @@ services:
         target: "/tmp/npm-cache"
         bind:
           create_host_path: true
+      
+      # Bind the action cache.
+      - type: "bind"
+        source: "~/.cache/preceding-tag-action"
+        target: "/tmp/.cache/preceding-tag-action"
+        bind:
+          create_host_path: true
 
       # Use volumes for intermediate directories (improves performance on Windows)
       - type: "volume"
