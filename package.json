@@ -17,9 +17,9 @@
     "dependencies": {
         "@actions/core": "^1.11.1",
         "@actions/github": "^6.0.1",
-        "@octokit/plugin-retry": "^8.0.1",
-        "@octokit/plugin-throttling": "^11.0.1",
-        "@octokit/rest": "^22.0.0"
+        "@octokit/plugin-retry": "^8.0.3",
+        "@octokit/plugin-throttling": "^11.0.3",
+        "@octokit/rest": "^22.0.1"
     },
     "devDependencies": {
         "@types/node": "^24.6.0",
