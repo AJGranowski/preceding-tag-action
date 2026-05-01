@@ -8,6 +8,7 @@ import { ETagRequestCacheDB } from "./ETagRequestCacheDB";
 
 interface OctokitPluginRequestCacheOptions {
     enable?: boolean;
+    requestCache?: ETagRequestCacheDB
 }
 
 interface OctokitPluginRequestCacheReturn {
@@ -67,6 +68,7 @@ function hashRequestParameters(requestParameters: RequestParameters): string {
 export function requestCache(octokit: Octokit, options: OctokitPluginRequestCacheOptions | any): OctokitPluginRequestCacheReturn {
     const optionsWithDefaults = {
         enable: true,
+        requestCache: new ETagRequestCacheDB(),
         ...options
     } satisfies Required<OctokitPluginRequestCacheOptions>;
 
@@ -78,10 +80,8 @@ export function requestCache(octokit: Octokit, options: OctokitPluginRequestCach
         };
     }
 
-    const requestCache = new ETagRequestCacheDB();
-
     octokit.hook.before("request", async (options) => {
-        if (!(await requestCache.isOpen())) {
+        if (!(await optionsWithDefaults.requestCache.isOpen())) {
             return;
         }
 
@@ -92,14 +92,14 @@ export function requestCache(octokit: Octokit, options: OctokitPluginRequestCach
         }
 
         const requestHash = hashRequestParameters(options);
-        const eTag = await requestCache.matchETag(requestHash);
+        const eTag = await optionsWithDefaults.requestCache.matchETag(requestHash);
         if (eTag != null) {
             options.headers["If-None-Match"] = eTag;
         }
     });
 
     octokit.hook.after("request", async (response, options) => {
-        if (!(await requestCache.isOpen())) {
+        if (!(await optionsWithDefaults.requestCache.isOpen())) {
             return;
         }
 
@@ -111,17 +111,17 @@ export function requestCache(octokit: Octokit, options: OctokitPluginRequestCach
 
         if (response.headers.etag != null) {
             const requestHash = hashRequestParameters(options);
-            requestCache.put(requestHash, response.headers.etag, response, Date.now());
+            optionsWithDefaults.requestCache.put(requestHash, response.headers.etag, response, Date.now());
         }
     });
 
     octokit.hook.error("request", async (error: any) => {
-        if (!(await requestCache.isOpen())) {
+        if (!(await optionsWithDefaults.requestCache.isOpen())) {
             return;
         }
 
         if (error.status === 304 && error.response != null && error.response.headers != null && error.response.headers.etag != null) {
-            const cachedResponse = await requestCache.matchResponse(error.response.headers.etag);
+            const cachedResponse = await optionsWithDefaults.requestCache.matchResponse(error.response.headers.etag);
             if (cachedResponse != null) {
                 return cachedResponse.response;
             }
@@ -133,10 +133,10 @@ export function requestCache(octokit: Octokit, options: OctokitPluginRequestCach
     return {
         async loadCache(key: string): Promise<void> {
             await actionsCache.restoreCache([pathJoin(CACHE_DIR, "*")], key);
-            await requestCache.open();
+            await optionsWithDefaults.requestCache.open();
         },
         async saveCache(key: string): Promise<void> {
-            await requestCache.close();
+            await optionsWithDefaults.requestCache.close();
             await actionsCache.saveCache([pathJoin(CACHE_DIR, "*")], key);
         }
     };
