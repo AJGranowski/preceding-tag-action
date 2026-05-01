@@ -10,6 +10,7 @@
         "noUnusedLocals": true,
         "resolveJsonModule": true,
         "rootDir": "./",
+        "skipLibCheck": true,
         "strictBindCallApply": true,
         "strictFunctionTypes": true,
         "strictNullChecks": true,

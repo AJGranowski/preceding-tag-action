@@ -63,6 +63,8 @@ describe("PrecedingTagAction", () => {
         (core as any).warning = vi.fn();
         (context.repo.owner as any) = undefined;
         (context.repo.repo as any) = undefined;
+        (Octokit.prototype as any).loadCache = () => Promise.resolve();
+        (Octokit.prototype as any).saveCache = () => Promise.resolve();
         (Octokit.prototype as any).rest.repos.compareCommitsWithBasehead = () => {throw new Error("Not implemented.");};
         (Octokit.prototype as any).rest.repos.getCommit = () => {throw new Error("Not implemented.");};
         (Octokit.prototype as any).rest.repos.listTags = () => {throw new Error("Not implemented.");};
