@@ -28,7 +28,6 @@ class ETagRequestCacheDB {
      * Delete invalidated SHAs and cascade deletions to foreign keys.
      */
     public async close(): Promise<void> {
-        console.log("request_response: ", this.db.prepare("SELECT * FROM request_response").all());
         this.db.close();
     }
 

@@ -5,7 +5,7 @@ import type { GitRef } from "./types/GitRef";
 import type { Repository } from "./types/Repository";
 import type { Tag } from "./types/Tag";
 
-const MAX_TAGS: number = 5;
+const MAX_TAGS: number = 100;
 
 class GitHubAPI {
     private readonly octokit: Octokit;

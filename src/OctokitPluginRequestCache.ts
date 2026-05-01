@@ -81,6 +81,10 @@ export function requestCache(octokit: Octokit, options: OctokitPluginRequestCach
     const requestCache = new ETagRequestCacheDB();
 
     octokit.hook.before("request", async (options) => {
+        if (!(await requestCache.isOpen())) {
+            return;
+        }
+
         let cacheControl = options.headers["cache-control"];
         cacheControl = cacheControl == null ? "" : cacheControl.toString();
         if (cacheControl.includes("no-cache")) {
@@ -95,14 +99,16 @@ export function requestCache(octokit: Octokit, options: OctokitPluginRequestCach
     });
 
     octokit.hook.after("request", async (response, options) => {
+        if (!(await requestCache.isOpen())) {
+            return;
+        }
+
         let cacheControl = options.headers["cache-control"];
         cacheControl = cacheControl == null ? "" : cacheControl.toString();
         if (cacheControl.includes("no-store")) {
             return;
         }
 
-        console.log(response, options);
-        console.log("------------------");
         if (response.headers.etag != null) {
             const requestHash = hashRequestParameters(options);
             requestCache.put(requestHash, response.headers.etag, response, Date.now());
@@ -110,8 +116,10 @@ export function requestCache(octokit: Octokit, options: OctokitPluginRequestCach
     });
 
     octokit.hook.error("request", async (error: any) => {
-        console.log(error);
-        console.log("==================");
+        if (!(await requestCache.isOpen())) {
+            return;
+        }
+
         if (error.status === 304 && error.response != null && error.response.headers != null && error.response.headers.etag != null) {
             const cachedResponse = await requestCache.matchResponse(error.response.headers.etag);
             if (cachedResponse != null) {
