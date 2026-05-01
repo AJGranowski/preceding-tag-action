@@ -32,22 +32,8 @@ class ETagRequestCacheDB {
         this.db.close();
     }
 
-    /**
-     * Insert a network request & response.
-     */
-    public async put(requestHash: string, eTag: string, response: object, timestampZMS: number): Promise<void> {
-        const pruneExisting = this.db.prepare("DELETE FROM request_response WHERE request_hash=? OR etag=?");
-        const statement = this.db.prepare("INSERT INTO request_response (request_hash, etag, response, timestamp_z_ms) VALUES (?, ?, ?, ?)");
-        pruneExisting.run(requestHash, eTag);
-        statement.run(requestHash, eTag, JSON.stringify(response), Math.round(timestampZMS));
-    }
-
-    /**
-     * Open the database, initialize tables, and unmark all SHAs previously marked as tags.
-     */
-    public async open(): Promise<void> {
-        this.db.open();
-        this.initialize();
+    public async isOpen(): Promise<boolean> {
+        return this.db.isOpen;
     }
 
     /**
@@ -79,6 +65,24 @@ class ETagRequestCacheDB {
             timestampZMS: this.sqlOutputValueToInteger(result["timestamp_z_ms"])!,
             response: JSON.parse(result["response"].toString())
         };
+    }
+
+    /**
+     * Open the database, initialize tables, and unmark all SHAs previously marked as tags.
+     */
+    public async open(): Promise<void> {
+        this.db.open();
+        this.initialize();
+    }
+
+    /**
+     * Insert a network request & response.
+     */
+    public async put(requestHash: string, eTag: string, response: object, timestampZMS: number): Promise<void> {
+        const pruneExisting = this.db.prepare("DELETE FROM request_response WHERE request_hash=? OR etag=?");
+        const statement = this.db.prepare("INSERT INTO request_response (request_hash, etag, response, timestamp_z_ms) VALUES (?, ?, ?, ?)");
+        pruneExisting.run(requestHash, eTag);
+        statement.run(requestHash, eTag, JSON.stringify(response), Math.round(timestampZMS));
     }
 
     /**
