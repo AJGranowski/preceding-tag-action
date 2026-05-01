@@ -1,5 +1,5 @@
 import {
-    beforeAll,
+    beforeEach,
     describe,
     expect,
     test
@@ -10,7 +10,7 @@ import { ETagRequestCacheDB } from "../src/ETagRequestCacheDB";
 
 describe("ETagRequestCacheDB", () => {
     let db: SQLiteDB;
-    beforeAll(() => {
+    beforeEach(() => {
         db = new SQLiteDB(":memory:", {open: false});
     });
 
