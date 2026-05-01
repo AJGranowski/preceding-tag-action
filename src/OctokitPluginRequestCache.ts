@@ -1,8 +1,10 @@
+import * as actionsCache from "@actions/cache";
 import { hash } from "crypto";
+import { join as pathJoin } from "path";
 import type { Octokit } from "@octokit/core";
 import type { RequestParameters } from "@octokit/types";
 
-import { RequestCacheDB } from "./ETagRequestCacheDB";
+import { ETagRequestCacheDB } from "./ETagRequestCacheDB";
 
 interface OctokitPluginRequestCacheOptions {
     enable?: boolean;
@@ -12,6 +14,8 @@ interface OctokitPluginRequestCacheReturn {
     loadCache: (key: string) => Promise<void>;
     saveCache: (key: string) => Promise<void>;
 }
+
+const CACHE_DIR = pathJoin("/", "tmp", ".cache", "preceding-tag-action");
 
 function mapObject(obj: Record<string, unknown>, callback: (key: string, value: unknown) => unknown): Record<string, unknown> {
     return Object.entries(obj).reduce((result, [key, value]: [string, any]) => {
@@ -74,7 +78,7 @@ export function requestCache(octokit: Octokit, options: OctokitPluginRequestCach
         };
     }
 
-    const cache = new RequestCacheDB();
+    const requestCache = new ETagRequestCacheDB();
 
     octokit.hook.before("request", async (options) => {
         let cacheControl = options.headers["cache-control"];
@@ -84,7 +88,7 @@ export function requestCache(octokit: Octokit, options: OctokitPluginRequestCach
         }
 
         const requestHash = hashRequestParameters(options);
-        const eTag = await cache.matchETag(requestHash);
+        const eTag = await requestCache.matchETag(requestHash);
         if (eTag != null) {
             options.headers["If-None-Match"] = eTag;
         }
@@ -101,7 +105,7 @@ export function requestCache(octokit: Octokit, options: OctokitPluginRequestCach
         console.log("------------------");
         if (response.headers.etag != null) {
             const requestHash = hashRequestParameters(options);
-            cache.put(requestHash, response.headers.etag, response, Date.now());
+            requestCache.put(requestHash, response.headers.etag, response, Date.now());
         }
     });
 
@@ -109,7 +113,7 @@ export function requestCache(octokit: Octokit, options: OctokitPluginRequestCach
         console.log(error);
         console.log("==================");
         if (error.status === 304 && error.response != null && error.response.headers != null && error.response.headers.etag != null) {
-            const cachedResponse = await cache.matchResponse(error.response.headers.etag);
+            const cachedResponse = await requestCache.matchResponse(error.response.headers.etag);
             if (cachedResponse != null) {
                 return cachedResponse.response;
             }
@@ -119,11 +123,13 @@ export function requestCache(octokit: Octokit, options: OctokitPluginRequestCach
     });
 
     return {
-        async loadCache(): Promise<void> {
-            await cache.open();
+        async loadCache(key: string): Promise<void> {
+            await actionsCache.restoreCache([pathJoin(CACHE_DIR, "*")], key);
+            await requestCache.open();
         },
-        async saveCache(): Promise<void> {
-            await cache.close();
+        async saveCache(key: string): Promise<void> {
+            await requestCache.close();
+            await actionsCache.saveCache([pathJoin(CACHE_DIR, "*")], key);
         }
     };
 }

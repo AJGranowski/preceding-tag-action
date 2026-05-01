@@ -17,7 +17,7 @@ const REQUEST_CACHE_FILE = "request-cache.sqlite3";
  * cache.close();
  * ```
  */
-class RequestCacheDB {
+class ETagRequestCacheDB {
     private readonly db: SQLiteDB;
 
     constructor(db = new SQLiteDB(pathJoin(CACHE_DIR, REQUEST_CACHE_FILE), {open: false})) {
@@ -115,4 +115,4 @@ class RequestCacheDB {
     }
 }
 
-export { RequestCacheDB };
+export { ETagRequestCacheDB };
