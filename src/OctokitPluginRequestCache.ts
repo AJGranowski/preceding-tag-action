@@ -9,8 +9,8 @@ interface OctokitPluginRequestCacheOptions {
 }
 
 interface OctokitPluginRequestCacheReturn {
-    loadCache: () => Promise<void>;
-    saveCache: () => Promise<void>;
+    loadCache: (key: string) => Promise<void>;
+    saveCache: (key: string) => Promise<void>;
 }
 
 function mapObject(obj: Record<string, unknown>, callback: (key: string, value: unknown) => unknown): Record<string, unknown> {
