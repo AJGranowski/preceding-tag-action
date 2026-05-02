@@ -145,6 +145,8 @@ describe("Fuzzing PrecedingTagAction", () => {
             (core as any).getBooleanInput = getBooleanInput;
             context.repo.owner = owner;
             context.repo.repo = repo;
+            (Octokit.prototype as any).loadCache = () => Promise.resolve();
+            (Octokit.prototype as any).saveCache = () => Promise.resolve();
             (Octokit.prototype as any).rest.repos.compareCommitsWithBasehead = () => Promise.resolve(compareCommitsWithBaseheadValue);
             (Octokit.prototype as any).rest.repos.getCommit = () => Promise.resolve(getCommitValue);
             (Octokit.prototype as any).rest.repos.listTags = () => Promise.resolve(listTags);
@@ -180,6 +182,8 @@ describe("Fuzzing PrecedingTagAction", () => {
             (core as any).warning = vi.fn();
             (context.repo.owner as any) = undefined;
             (context.repo.repo as any) = undefined;
+            (Octokit.prototype as any).loadCache = () => Promise.reject();
+            (Octokit.prototype as any).saveCache = () => Promise.reject();
             (Octokit.prototype as any).rest.repos.compareCommitsWithBasehead = () => {throw new Error("Not implemented.");};
             (Octokit.prototype as any).rest.repos.getCommit = () => {throw new Error("Not implemented.");};
             (Octokit.prototype as any).rest.repos.listTags = () => {throw new Error("Not implemented.");};
