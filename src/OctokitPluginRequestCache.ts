@@ -123,7 +123,7 @@ export function requestCache(octokit: Octokit, options: OctokitPluginRequestCach
             return;
         }
 
-        octokit.log.info(error);
+        console.log(error);
 
         if (error.status === 304 && error.response != null && error.response.headers != null && error.response.headers.etag != null) {
             const cachedResponse = await optionsWithDefaults.requestCache.matchResponse(error.response.headers.etag);
