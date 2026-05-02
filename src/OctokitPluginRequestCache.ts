@@ -1,6 +1,7 @@
 import * as actionsCache from "@actions/cache";
 import { hash } from "crypto";
 import { join as pathJoin } from "path";
+import { mkdir } from "fs/promises";
 import type { Octokit } from "@octokit/core";
 import type { RequestParameters } from "@octokit/types";
 
@@ -134,6 +135,7 @@ export function requestCache(octokit: Octokit, options: OctokitPluginRequestCach
 
     return {
         async loadCache(key: string): Promise<void> {
+            await mkdir(CACHE_DIR, {recursive: true});
             await optionsWithDefaults.actionsCache.restoreCache([pathJoin(CACHE_DIR, "*")], key);
             await optionsWithDefaults.requestCache.open();
         },
