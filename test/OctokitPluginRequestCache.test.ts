@@ -116,7 +116,7 @@ describe("OctokitPluginRequestCache", () => {
         });
 
         test("should not cache cache controlled requests", async () => {
-const octokit = mock<Octokit>({
+            const octokit = mock<Octokit>({
                 hook: {
                     after: vi.fn(),
                     before: vi.fn(),
