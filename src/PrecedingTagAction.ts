@@ -46,9 +46,10 @@ async function main(): Promise<void> {
     });
 
     const githubAPI = new GitHubAPI(octokit, input.getRepository());
-    const cacheKey = `preceding-tag-action-${await githubAPI.fetchCommitSHA(input.getRef())}`;
+    const restoreCacheKey = `preceding-tag-action-${await githubAPI.fetchCommitSHA(input.getRef())}`;
+    const primaryCacheKey = `${restoreCacheKey}-${input.cacheKeyFragment()}`;
 
-    await octokit.loadCache(cacheKey);
+    await octokit.loadCache(primaryCacheKey, restoreCacheKey);
     const precedingTag: Tag | null = await fetchPrecedingTag(githubAPI, input.getRef(), {
         filter: input.getFilter(),
         includeRef: input.getIncludeRef()
@@ -62,7 +63,7 @@ async function main(): Promise<void> {
         core.setOutput("tag-found", true);
     }
 
-    await octokit.saveCache(cacheKey);
+    await octokit.saveCache(primaryCacheKey);
 }
 
 export default async (): Promise<void> => {

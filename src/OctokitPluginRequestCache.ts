@@ -14,8 +14,8 @@ interface OctokitPluginRequestCacheOptions {
 }
 
 interface OctokitPluginRequestCacheReturn {
-    loadCache: (key: string) => Promise<void>;
-    saveCache: (key: string) => Promise<void>;
+    loadCache: (primaryKey: string, restoreKey: string) => Promise<void>;
+    saveCache: (primaryKey: string) => Promise<void>;
 }
 
 const CACHE_DIR = pathJoin("/", "tmp", ".cache", "preceding-tag-action");
@@ -127,8 +127,6 @@ export function requestCache(octokit: Octokit, options: OctokitPluginRequestCach
             return;
         }
 
-        console.log(error);
-
         if (error.status === 304 && error.response != null && error.response.headers != null && error.response.headers.etag != null) {
             const cachedResponse = await optionsWithDefaults.requestCache.matchResponse(error.response.headers.etag);
             if (cachedResponse != null) {
@@ -140,14 +138,14 @@ export function requestCache(octokit: Octokit, options: OctokitPluginRequestCach
     });
 
     return {
-        async loadCache(key: string): Promise<void> {
+        async loadCache(primaryKey: string, restoreKey: string): Promise<void> {
             await mkdir(CACHE_DIR, {recursive: true});
-            await optionsWithDefaults.actionsCache.restoreCache([pathJoin(CACHE_DIR, "*")], key);
+            await optionsWithDefaults.actionsCache.restoreCache([pathJoin(CACHE_DIR, "*")], primaryKey, [restoreKey]);
             await optionsWithDefaults.requestCache.open();
         },
-        async saveCache(key: string): Promise<void> {
+        async saveCache(primaryKey: string): Promise<void> {
             await optionsWithDefaults.requestCache.close();
-            await optionsWithDefaults.actionsCache.saveCache([pathJoin(CACHE_DIR, "*")], key);
+            await optionsWithDefaults.actionsCache.saveCache([pathJoin(CACHE_DIR, "*")], primaryKey);
         }
     };
 }

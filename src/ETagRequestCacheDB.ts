@@ -24,11 +24,11 @@ class ETagRequestCacheDB {
         this.db = db;
     }
 
-    public async close(): Promise<void> {
+    async close(): Promise<void> {
         this.db.close();
     }
 
-    public async isOpen(): Promise<boolean> {
+    async isOpen(): Promise<boolean> {
         return this.db.isOpen;
     }
 
@@ -36,7 +36,7 @@ class ETagRequestCacheDB {
      * Query the ETag related with the given request hash.
      * Returns null if an ETag does not exist.
      */
-    public async matchETag(requestHash: string): Promise<string | null> {
+    async matchETag(requestHash: string): Promise<string | null> {
         const statement = this.db.prepare("SELECT etag FROM request_response WHERE request_hash=? LIMIT 1");
         const result = statement.get(requestHash);
         if (result == null || result["etag"] == null) {
@@ -50,7 +50,7 @@ class ETagRequestCacheDB {
      * Query the cached response associated with the given ETag.
      * Returns null if a cached response does not exist.
      */
-    public async matchResponse(eTag: string): Promise<CachedResponse | null> {
+    async matchResponse(eTag: string): Promise<CachedResponse | null> {
         const statement = this.db.prepare("SELECT response, timestamp_z_ms FROM request_response WHERE etag=? LIMIT 1");
         const result = statement.get(eTag);
         if (result == null || result["response"] == null || result["timestamp_z_ms"] == null) {
@@ -66,7 +66,7 @@ class ETagRequestCacheDB {
     /**
      * Open the database and initialize tables.
      */
-    public async open(): Promise<void> {
+    async open(): Promise<void> {
         this.db.open();
         this.initialize();
     }
@@ -74,7 +74,7 @@ class ETagRequestCacheDB {
     /**
      * Insert a network request & response.
      */
-    public async put(requestHash: string, eTag: string, response: object, timestampZMS: number): Promise<void> {
+    async put(requestHash: string, eTag: string, response: object, timestampZMS: number): Promise<void> {
         const pruneExisting = this.db.prepare("DELETE FROM request_response WHERE request_hash=? OR etag=?");
         const statement = this.db.prepare("INSERT INTO request_response (request_hash, etag, response, timestamp_z_ms) VALUES (?, ?, ?, ?)");
         pruneExisting.run(requestHash, eTag);
