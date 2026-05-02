@@ -1,5 +1,6 @@
-import type { getBooleanInput, getInput, warning } from "@actions/core";
 import type { context } from "@actions/github";
+import type { getBooleanInput, getInput, warning } from "@actions/core";
+import { hash } from "crypto";
 
 import type { Repository } from "./types/Repository";
 
@@ -27,6 +28,17 @@ class Input {
         this.warning = warning;
 
         this.memoization = {};
+    }
+
+    /**
+     * Generate a cache key for inputs besides `ref` that affect tag search.
+     */
+    cacheKeyFragment(): string {
+        return hash("sha256", JSON.stringify({
+            repository: this.getInput("repository"),
+            regex: this.getInput("regex"),
+            "include-ref": this.getInput("include-ref")
+        }));
     }
 
     /**

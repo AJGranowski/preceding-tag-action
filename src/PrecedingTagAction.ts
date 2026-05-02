@@ -4,6 +4,7 @@ import { Octokit } from "@octokit/rest";
 import { retry } from "@octokit/plugin-retry";
 import { throttling } from "@octokit/plugin-throttling";
 
+import { requestCache } from "./OctokitPluginRequestCache";
 import { fetchPrecedingTag } from "./fetchPrecedingTag";
 import { GitHubAPI } from "./GitHubAPI";
 import { Input } from "./Input";
@@ -15,7 +16,8 @@ const MAX_RETRY_TIME_SECONDS = 62 * 60;
 async function main(): Promise<void> {
     const input: Input = new Input(core.getInput, core.getBooleanInput, core.warning, context);
     input.validateInputs();
-    const octokit: Octokit = new (Octokit.plugin(retry, throttling))({
+    const MyOctokit = Octokit.plugin(retry, requestCache, throttling);
+    const octokit = new MyOctokit({
         auth: input.getToken() != null ? `token ${input.getToken()}` : undefined,
         throttle: {
             onRateLimit: (retryAfter, options, octokit, retryCount): boolean => {
@@ -44,6 +46,10 @@ async function main(): Promise<void> {
     });
 
     const githubAPI = new GitHubAPI(octokit, input.getRepository());
+    const restoreCacheKey = `preceding-tag-action-${await githubAPI.fetchCommitSHA(input.getRef())}`;
+    const primaryCacheKey = `${restoreCacheKey}-${input.cacheKeyFragment()}`;
+
+    await octokit.loadCache(primaryCacheKey, restoreCacheKey);
     const precedingTag: Tag | null = await fetchPrecedingTag(githubAPI, input.getRef(), {
         filter: input.getFilter(),
         includeRef: input.getIncludeRef()
@@ -56,6 +62,8 @@ async function main(): Promise<void> {
         core.setOutput("tag", precedingTag.name);
         core.setOutput("tag-found", true);
     }
+
+    await octokit.saveCache(primaryCacheKey);
 }
 
 export default async (): Promise<void> => {

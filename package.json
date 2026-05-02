@@ -10,16 +10,19 @@
         "format": "eslint --fix",
         "fuzz": "vitest run --project fuzz --coverage.thresholds false",
         "lint": "eslint",
-        "pr-checks": "npm run check-types && npm run lint && npm run test && npm run bundle",
+        "pr-checks": "npm run check-types && npm run lint && npm run test && npm run bundle && npm run fuzz",
         "run-bundle": "GITHUB_REPOSITORY=AJGranowski/preceding-tag-action node dist/index.js",
         "test": "vitest run --project unit"
     },
     "dependencies": {
+        "@actions/cache": "^6.0.0",
         "@actions/core": "^1.11.1",
         "@actions/github": "^6.0.1",
+        "@octokit/core": "^7.0.3",
         "@octokit/plugin-retry": "^8.0.1",
         "@octokit/plugin-throttling": "^11.0.1",
-        "@octokit/rest": "^22.0.0"
+        "@octokit/rest": "^22.0.0",
+        "@octokit/types": "^14.1.0"
     },
     "devDependencies": {
         "@types/node": "^24.6.0",

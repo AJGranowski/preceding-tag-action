@@ -5,7 +5,7 @@ import type { GitRef } from "./types/GitRef";
 import type { Repository } from "./types/Repository";
 import type { Tag } from "./types/Tag";
 
-const MAX_TAGS: number = 1000;
+const MAX_TAGS: number = 100;
 
 class GitHubAPI {
     private readonly octokit: Octokit;
@@ -27,7 +27,7 @@ class GitHubAPI {
         const allTags: Tag[] = await this.octokit.paginate(this.octokit.rest.repos.listTags, {
             owner: this.repo.owner,
             repo: this.repo.repo,
-            per_page: 100 // max
+            per_page: Math.min(100, MAX_TAGS) // max
         }, (response, done) => {
             const result = response.data.filter((object) => object.commit.sha.length > 0 && filter(object.name))
                 .map((object) => ({
