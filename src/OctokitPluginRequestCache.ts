@@ -7,6 +7,7 @@ import type { RequestParameters } from "@octokit/types";
 import { ETagRequestCacheDB } from "./ETagRequestCacheDB";
 
 interface OctokitPluginRequestCacheOptions {
+    actionsCache: typeof actionsCache;
     enable?: boolean;
     requestCache?: ETagRequestCacheDB
 }
@@ -67,6 +68,7 @@ function hashRequestParameters(requestParameters: RequestParameters): string {
 
 export function requestCache(octokit: Octokit, options: OctokitPluginRequestCacheOptions | any): OctokitPluginRequestCacheReturn {
     const optionsWithDefaults = {
+        actionsCache: actionsCache,
         enable: true,
         requestCache: new ETagRequestCacheDB(),
         ...options
@@ -132,12 +134,12 @@ export function requestCache(octokit: Octokit, options: OctokitPluginRequestCach
 
     return {
         async loadCache(key: string): Promise<void> {
-            await actionsCache.restoreCache([pathJoin(CACHE_DIR, "*")], key);
+            await optionsWithDefaults.actionsCache.restoreCache([pathJoin(CACHE_DIR, "*")], key);
             await optionsWithDefaults.requestCache.open();
         },
         async saveCache(key: string): Promise<void> {
             await optionsWithDefaults.requestCache.close();
-            await actionsCache.saveCache([pathJoin(CACHE_DIR, "*")], key);
+            await optionsWithDefaults.actionsCache.saveCache([pathJoin(CACHE_DIR, "*")], key);
         }
     };
 }

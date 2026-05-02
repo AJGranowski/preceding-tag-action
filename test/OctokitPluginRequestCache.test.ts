@@ -15,8 +15,13 @@ import { ETagRequestCacheDB } from "../src/ETagRequestCacheDB";
 import { requestCache } from "../src/OctokitPluginRequestCache";
 
 describe("OctokitPluginRequestCache", () => {
+    let actionsCache: any;
     let requestCacheDB: ETagRequestCacheDB;
     beforeEach(() => {
+        actionsCache = {
+            saveCache: async () => {},
+            restoreCache: async () => {}
+        };
         requestCacheDB = new ETagRequestCacheDB(new SQLiteDB(":memory:", {open: false}));
     });
 
@@ -25,7 +30,7 @@ describe("OctokitPluginRequestCache", () => {
             hook: {} as any
         });
 
-        requestCache(octokit, {enable: true, requestCacheDB});
+        requestCache(octokit, {actionsCache: actionsCache, enable: false, requestCache: requestCacheDB});
     });
 
     test("plugin outputs exist", () => {
@@ -33,7 +38,7 @@ describe("OctokitPluginRequestCache", () => {
             hook: {} as any
         });
 
-        const outputs = requestCache(octokit, {enable: true, requestCacheDB});
+        const outputs = requestCache(octokit, {actionsCache: actionsCache, enable: true, requestCache: requestCacheDB});
         expect("loadCache" in outputs).toBe(true);
         expect("saveCache" in outputs).toBe(true);
     });
@@ -47,9 +52,57 @@ describe("OctokitPluginRequestCache", () => {
             } as any
         });
 
-        requestCache(octokit, {enable: true, requestCacheDB});
+        requestCache(octokit, {actionsCache: actionsCache, enable: true, requestCache: requestCacheDB});
         expect((octokit.hook.after as Mock).mock.lastCall![0]).toBe("request");
         expect((octokit.hook.before as Mock).mock.lastCall![0]).toBe("request");
         expect((octokit.hook.error as Mock).mock.lastCall![0]).toBe("request");
+    });
+
+    describe("cache", () => {
+        test("should recall cache", async () => {
+            const octokit = mock<Octokit>({
+                hook: {
+                    after: vi.fn(),
+                    before: vi.fn(),
+                    error: vi.fn()
+                } as any
+            });
+
+            const pluginOutputs = requestCache(octokit, {actionsCache: actionsCache, enable: true, requestCache: requestCacheDB});
+            const after = (octokit.hook.after as Mock).mock.lastCall![1];
+            const before = (octokit.hook.before as Mock).mock.lastCall![1];
+            const error = (octokit.hook.error as Mock).mock.lastCall![1];
+
+            const request = {
+                baseUrl: "url",
+                headers: {}
+            };
+
+            const normalResponse = {
+                status: 200,
+                headers: {
+                    etag: "etag"
+                },
+                data: "data"
+            };
+
+            const etagResponse = {
+                status: 304,
+                response: {
+                    headers: normalResponse.headers
+                }
+            };
+
+            await pluginOutputs.loadCache("key");
+
+            await before(request);
+            await after(normalResponse, request);
+            await before(request);
+            const result = await error(etagResponse);
+
+            expect(result.data).toBe("data");
+
+            await pluginOutputs.saveCache("key");
+        });
     });
 });
