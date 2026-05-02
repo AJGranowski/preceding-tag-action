@@ -8,7 +8,7 @@ import type { RequestParameters } from "@octokit/types";
 import { ETagRequestCacheDB } from "./ETagRequestCacheDB";
 
 interface OctokitPluginRequestCacheOptions {
-    actionsCache: typeof actionsCache;
+    actionsCache?: typeof actionsCache;
     enable?: boolean;
     requestCache?: ETagRequestCacheDB
 }
@@ -72,7 +72,7 @@ export function requestCache(octokit: Octokit, options: OctokitPluginRequestCach
         actionsCache: actionsCache,
         enable: true,
         requestCache: new ETagRequestCacheDB(),
-        ...options
+        ...options as OctokitPluginRequestCacheOptions
     } satisfies Required<OctokitPluginRequestCacheOptions>;
 
     // Early return if disabled
@@ -112,7 +112,7 @@ export function requestCache(octokit: Octokit, options: OctokitPluginRequestCach
             return;
         }
 
-        if (response.headers.etag != null) {
+        if (response.headers.etag != null && response != null) {
             const requestHash = hashRequestParameters(options);
             optionsWithDefaults.requestCache.put(requestHash, response.headers.etag, response, Date.now());
         }
@@ -122,6 +122,8 @@ export function requestCache(octokit: Octokit, options: OctokitPluginRequestCach
         if (!(await optionsWithDefaults.requestCache.isOpen())) {
             return;
         }
+
+        octokit.log.info(error);
 
         if (error.status === 304 && error.response != null && error.response.headers != null && error.response.headers.etag != null) {
             const cachedResponse = await optionsWithDefaults.requestCache.matchResponse(error.response.headers.etag);
