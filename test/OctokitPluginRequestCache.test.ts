@@ -91,7 +91,7 @@ describe("OctokitPluginRequestCache", () => {
             const normalResponse = {
                 status: 200,
                 headers: {
-                    etag: "etag"
+                    etag: '"etag"'
                 },
                 data: "data"
             };
@@ -139,7 +139,7 @@ describe("OctokitPluginRequestCache", () => {
             const normalResponse = {
                 status: 200,
                 headers: {
-                    etag: "etag"
+                    etag: '"etag"'
                 },
                 data: "data"
             };
