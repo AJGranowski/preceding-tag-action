@@ -5,7 +5,7 @@ export default defineConfig({
         coverage: {
             enabled: true,
             include: ["src/**/*"],
-            reporter: ["lcov", "text"],
+            reporter: ["html", "lcov", "text"],
             thresholds: {
                 branches: 60,
                 statements: 60,
