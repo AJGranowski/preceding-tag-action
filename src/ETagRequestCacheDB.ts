@@ -24,9 +24,6 @@ class ETagRequestCacheDB {
         this.db = db;
     }
 
-    /**
-     * Delete invalidated SHAs and cascade deletions to foreign keys.
-     */
     public async close(): Promise<void> {
         this.db.close();
     }
@@ -67,7 +64,7 @@ class ETagRequestCacheDB {
     }
 
     /**
-     * Open the database, initialize tables, and unmark all SHAs previously marked as tags.
+     * Open the database and initialize tables.
      */
     public async open(): Promise<void> {
         this.db.open();
