@@ -112,9 +112,13 @@ export function requestCache(octokit: Octokit, options: OctokitPluginRequestCach
             return;
         }
 
-        if (response.headers.etag != null && response != null) {
-            const requestHash = hashRequestParameters(options);
-            optionsWithDefaults.requestCache.put(requestHash, response.headers.etag, response, Date.now());
+        if (response.headers.etag != null) {
+            const etagMatcher = response.headers.etag.match(/("[^"]+")/);
+            if (etagMatcher != null && etagMatcher[1] != null) {
+                const etag = etagMatcher[1];
+                const requestHash = hashRequestParameters(options);
+                optionsWithDefaults.requestCache.put(requestHash, etag, response, Date.now());
+            }
         }
     });
 
