@@ -75,7 +75,17 @@ describe("OctokitPluginRequestCache", () => {
 
             const request = {
                 baseUrl: "url",
-                headers: {}
+                headers: {
+                    "ignored header": "ignored data",
+                    accept: "text/html"
+                },
+                mediaType: {
+                    format: "text/html",
+                    "ignored key": "more ignored data"
+                },
+                request: {
+                    "all of this is ignored": "none of it matters"
+                }
             };
 
             const normalResponse = {
@@ -101,6 +111,52 @@ describe("OctokitPluginRequestCache", () => {
             const result = await error(etagResponse);
 
             expect(result.data).toBe("data");
+
+            await pluginOutputs.saveCache("key");
+        });
+
+        test("should not cache cache controlled requests", async () => {
+const octokit = mock<Octokit>({
+                hook: {
+                    after: vi.fn(),
+                    before: vi.fn(),
+                    error: vi.fn()
+                } as any
+            });
+
+            const pluginOutputs = requestCache(octokit, {actionsCache: actionsCache, enable: true, requestCache: requestCacheDB});
+            const after = (octokit.hook.after as Mock).mock.lastCall![1];
+            const before = (octokit.hook.before as Mock).mock.lastCall![1];
+            const error = (octokit.hook.error as Mock).mock.lastCall![1];
+
+            const request = {
+                baseUrl: "url",
+                headers: {
+                    "cache-control": "no-cache,no-store"
+                }
+            };
+
+            const normalResponse = {
+                status: 200,
+                headers: {
+                    etag: "etag"
+                },
+                data: "data"
+            };
+
+            const etagResponse = {
+                status: 304,
+                response: {
+                    headers: normalResponse.headers
+                }
+            };
+
+            await pluginOutputs.loadCache("key");
+
+            await before(request);
+            await after(normalResponse, request);
+            await before(request);
+            await expect(error(etagResponse)).rejects.toThrowError();
 
             await pluginOutputs.saveCache("key");
         });
