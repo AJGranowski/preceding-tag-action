@@ -103,7 +103,7 @@ describe("OctokitPluginRequestCache", () => {
                 }
             };
 
-            await pluginOutputs.loadCache("key");
+            await pluginOutputs.loadCache("key", "key");
 
             await before(request);
             await after(normalResponse, request);
@@ -151,7 +151,7 @@ describe("OctokitPluginRequestCache", () => {
                 }
             };
 
-            await pluginOutputs.loadCache("key");
+            await pluginOutputs.loadCache("key", "key");
 
             await before(request);
             await after(normalResponse, request);
