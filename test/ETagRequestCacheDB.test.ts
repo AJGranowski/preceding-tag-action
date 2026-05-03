@@ -3,9 +3,11 @@ import {
     beforeEach,
     describe,
     expect,
-    test
+    test,
+    vi
 } from "vitest";
 import { DatabaseSync as SQLiteDB } from "node:sqlite";
+import { mock } from "vitest-mock-extended";
 
 import { ETagRequestCacheDB } from "../src/ETagRequestCacheDB";
 
@@ -60,5 +62,23 @@ describe("ETagRequestCacheDB", () => {
         db.close();
         expect(db.isOpen).toBe(false);
         expect(await cache.isOpen()).toBe(false);
+    });
+
+    test("should parse string numbers from database output", async () => {
+        const statement = {
+            get: vi.fn()
+        };
+
+        db = mock<SQLiteDB>({
+            prepare: () => statement as any
+        });
+
+        const cache = new ETagRequestCacheDB(db);
+        statement.get.mockReturnValue({
+            response: "{}",
+            timestamp_z_ms: "1"
+        });
+
+        expect((await cache.matchResponse(""))?.timestampZMS).toBe(1);
     });
 });

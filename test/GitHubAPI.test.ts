@@ -238,5 +238,35 @@ describe("GitHubAPI", () => {
             const githubAPI = new GitHubAPI(octokit, defaultRepo);
             await expect(githubAPI.fetchCommitDifference("ref1", "ref2")).rejects.toThrowError();
         });
+
+        test("should return NaN diff is too large", async () => {
+            const response = {
+                status: 422,
+                request: {},
+                response: {
+                    data: {
+                        message: "Server Error: Sorry, this diff is taking too long to generate."
+                    }
+                }
+            };
+
+            const octokit = mock<Octokit>({
+                rest: {
+                    repos: {
+                        compareCommitsWithBasehead: (() => Promise.reject(response)) as any
+                    }
+                },
+                log: {
+                    debug: () => {},
+                    error: () => {},
+                    info: () => {},
+                    warn: () => {}
+                }
+            });
+
+            const githubAPI = new GitHubAPI(octokit, defaultRepo);
+            const difference = await githubAPI.fetchCommitDifference("ref1", "ref2");
+            expect(difference).toBeNaN();
+        });
     });
 });
