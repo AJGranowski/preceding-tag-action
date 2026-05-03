@@ -81,6 +81,9 @@ class GitHubAPI {
         return this.parseCommitDifference(response);
     }
 
+    /**
+     * Returns the SHA of some reference.
+     */
     async fetchCommitSHA(ref: GitRef): Promise<string> {
         // https://docs.github.com/en/rest/commits/commits?apiVersion=2022-11-28#get-a-commit
         const response = await this.octokit.rest.repos.getCommit({

@@ -61,6 +61,6 @@ Although this project publishes version tags, I strongly recommend [pinning this
 [latest-release-link]: https://github.com/AJGranowski/preceding-tag-action/releases/latest
 [ossf-best-practices-badge]: https://www.bestpractices.dev/projects/11154/badge
 [ossf-best-practices-link]: https://www.bestpractices.dev/projects/11154
-[ossf-scorecard-badge]: https://api.securityscorecards.dev/projects/github.com/AJGranowski/preceding-tag-action/badge
-[ossf-scorecard-link]: https://securityscorecards.dev/viewer/?uri=github.com/AJGranowski/preceding-tag-action
+[ossf-scorecard-badge]: https://api.scorecard.dev/projects/github.com/AJGranowski/preceding-tag-action/badge
+[ossf-scorecard-link]: https://scorecard.dev/viewer/?uri=github.com/AJGranowski/preceding-tag-action
 [security-sha-pinning-link]: https://docs.github.com/en/actions/reference/security/secure-use#using-third-party-actions

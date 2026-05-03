@@ -24,10 +24,17 @@ class ETagRequestCacheDB {
         this.db = db;
     }
 
+    /**
+     * Close the database.
+     */
     async close(): Promise<void> {
         this.db.close();
     }
 
+    /**
+     * Check if the database is open.
+     * The database needs to be open to perform most actions.
+     */
     async isOpen(): Promise<boolean> {
         return this.db.isOpen;
     }
