@@ -20,7 +20,8 @@ describe("OctokitPluginRequestCache", () => {
     beforeEach(() => {
         actionsCache = {
             saveCache: async () => {},
-            restoreCache: async () => {}
+            restoreCache: async () => {},
+            isFeatureAvailable: () => true
         };
         requestCacheDB = new ETagRequestCacheDB(new SQLiteDB(":memory:", {open: false}));
     });
@@ -39,8 +40,8 @@ describe("OctokitPluginRequestCache", () => {
         });
 
         const outputs = requestCache(octokit, {actionsCache: actionsCache, enable: true, requestCache: requestCacheDB});
-        expect("loadCache" in outputs).toBe(true);
-        expect("saveCache" in outputs).toBe(true);
+        expect(Object.hasOwn(outputs, "loadCache")).toBe(true);
+        expect(Object.hasOwn(outputs, "saveCache")).toBe(true);
     });
 
     test("request hooks attached", () => {
