@@ -3,7 +3,7 @@ import { hash } from "crypto";
 import { join as pathJoin } from "path";
 import { mkdir } from "fs/promises";
 import type { Octokit } from "@octokit/core";
-import type { RequestParameters } from "@octokit/types";
+import type { OctokitResponse, RequestParameters } from "@octokit/types";
 
 import { ETagRequestCacheDB } from "./ETagRequestCacheDB";
 
@@ -67,6 +67,14 @@ function hashRequestParameters(requestParameters: RequestParameters): string {
     return hash("sha256", JSON.stringify(objectToHash));
 }
 
+function isNotModified(error: any): boolean {
+    return error.status === 304 && error.response != null && error.response.headers != null && error.response.headers.etag != null;
+}
+
+function isSuccessResponse(response: OctokitResponse<any, any>): boolean {
+    return response.status >= 200 && response.status < 300;
+}
+
 export function requestCache(octokit: Octokit, options: OctokitPluginRequestCacheOptions | any): OctokitPluginRequestCacheReturn {
     const optionsWithDefaults = {
         actionsCache: actionsCache,
@@ -84,13 +92,9 @@ export function requestCache(octokit: Octokit, options: OctokitPluginRequestCach
     }
 
     octokit.hook.before("request", async (options) => {
-        if (!(await optionsWithDefaults.requestCache.isOpen())) {
-            return;
-        }
-
         let cacheControl = options.headers["cache-control"];
         cacheControl = cacheControl == null ? "" : cacheControl.toString();
-        if (cacheControl.includes("no-cache")) {
+        if (!(await optionsWithDefaults.requestCache.isOpen()) || cacheControl.includes("no-cache")) {
             return;
         }
 
@@ -102,24 +106,21 @@ export function requestCache(octokit: Octokit, options: OctokitPluginRequestCach
     });
 
     octokit.hook.after("request", async (response, options) => {
-        if (!(await optionsWithDefaults.requestCache.isOpen())) {
-            return;
-        }
-
         let cacheControl = options.headers["cache-control"];
         cacheControl = cacheControl == null ? "" : cacheControl.toString();
-        if (cacheControl.includes("no-store")) {
+        if (!(await optionsWithDefaults.requestCache.isOpen()) || cacheControl.includes("no-store")) {
             return;
         }
 
-        if (response.headers.etag != null) {
-            const etagMatcher = response.headers.etag.match(/("[^"]+")/);
-            if (etagMatcher != null && etagMatcher[1] != null) {
-                const etag = etagMatcher[1];
-                const requestHash = hashRequestParameters(options);
-                optionsWithDefaults.requestCache.put(requestHash, etag, response, Date.now());
-            }
+        if (!isSuccessResponse(response)) {
+            return;
         }
+
+        if (response.headers.etag == null || response.headers.etag.length === 0) {
+            return;
+        }
+
+        optionsWithDefaults.requestCache.put(hashRequestParameters(options), response.headers.etag, response, Date.now());
     });
 
     octokit.hook.error("request", async (error: any) => {
@@ -127,25 +128,32 @@ export function requestCache(octokit: Octokit, options: OctokitPluginRequestCach
             return;
         }
 
-        if (error.status === 304 && error.response != null && error.response.headers != null && error.response.headers.etag != null) {
-            const cachedResponse = await optionsWithDefaults.requestCache.matchResponse(error.response.headers.etag);
-            if (cachedResponse != null) {
-                return cachedResponse.response;
-            }
+        if (!isNotModified(error)) {
+            throw error;
         }
 
-        throw error;
+        const cachedResponse = await optionsWithDefaults.requestCache.matchResponse(error.response.headers.etag);
+        if (cachedResponse == null) {
+            throw new AggregateError([error], "Cache miss");
+        }
+
+        return cachedResponse.response;
     });
 
     return {
         async loadCache(primaryKey: string, restoreKey: string): Promise<void> {
             await mkdir(CACHE_DIR, {recursive: true});
-            await optionsWithDefaults.actionsCache.restoreCache([pathJoin(CACHE_DIR, "*")], primaryKey, [restoreKey]);
+            if (optionsWithDefaults.actionsCache.isFeatureAvailable()) {
+                await optionsWithDefaults.actionsCache.restoreCache([pathJoin(CACHE_DIR, "*")], primaryKey, [restoreKey]);
+            }
+
             await optionsWithDefaults.requestCache.open();
         },
         async saveCache(primaryKey: string): Promise<void> {
             await optionsWithDefaults.requestCache.close();
-            await optionsWithDefaults.actionsCache.saveCache([pathJoin(CACHE_DIR, "*")], primaryKey);
+            if (optionsWithDefaults.actionsCache.isFeatureAvailable()) {
+                await optionsWithDefaults.actionsCache.saveCache([pathJoin(CACHE_DIR, "*")], primaryKey);
+            }
         }
     };
 }

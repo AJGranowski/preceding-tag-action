@@ -50,18 +50,18 @@ jobs:
         name: bundle
         path: ./
 
-    - name: Run Local Action
-      id: preceding-tag-local
-      uses: ./
+    - name: Run Published Action
+      id: preceding-tag-published
+      uses: AJGranowski/preceding-tag-action@3ea16c855a3573cfdf360430e863419213205de9 # v1.1.4
       with:
         include-ref: ${{ matrix.include-ref }}
         ref: ${{ matrix.ref }}
         regex: ${{ matrix.regex }}
         repository: ${{ matrix.repository }}
 
-    - name: Run Published Action
-      id: preceding-tag-published
-      uses: AJGranowski/preceding-tag-action@3ea16c855a3573cfdf360430e863419213205de9 # v1.1.4
+    - name: Run Local Action
+      id: preceding-tag-local
+      uses: ./
       with:
         include-ref: ${{ matrix.include-ref }}
         ref: ${{ matrix.ref }}

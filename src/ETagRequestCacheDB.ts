@@ -58,7 +58,7 @@ class ETagRequestCacheDB {
      * Returns null if a cached response does not exist.
      */
     async matchResponse(eTag: string): Promise<CachedResponse | null> {
-        const statement = this.db.prepare("SELECT response, timestamp_z_ms FROM request_response WHERE etag=? LIMIT 1");
+        const statement = this.db.prepare("SELECT response, timestamp_z_ms FROM request_response WHERE etag IN (?1, 'W/' || ?1) LIMIT 1");
         const result = statement.get(eTag);
         if (result == null || result["response"] == null || result["timestamp_z_ms"] == null) {
             return null;
@@ -82,7 +82,7 @@ class ETagRequestCacheDB {
      * Insert a network request & response.
      */
     async put(requestHash: string, eTag: string, response: object, timestampZMS: number): Promise<void> {
-        const pruneExisting = this.db.prepare("DELETE FROM request_response WHERE request_hash=? OR etag=?");
+        const pruneExisting = this.db.prepare("DELETE FROM request_response WHERE request_hash=? OR etag IN (?2, 'W/' || ?2)");
         const statement = this.db.prepare("INSERT INTO request_response (request_hash, etag, response, timestamp_z_ms) VALUES (?, ?, ?, ?)");
         pruneExisting.run(requestHash, eTag);
         statement.run(requestHash, eTag, JSON.stringify(response), Math.round(timestampZMS));
@@ -97,7 +97,7 @@ class ETagRequestCacheDB {
             "request_hash TEXT UNIQUE NOT NULL," +
             "etag TEXT UNIQUE NOT NULL," +
             "response TEXT NOT NULL," +
-            "timestamp_z_ms INTEGER," +
+            "timestamp_z_ms INTEGER NOT NULL," +
             "PRIMARY KEY (request_hash, etag)" +
             ") STRICT"
         );
