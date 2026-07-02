@@ -62,11 +62,11 @@ jobs:
             - ".github/workflows/integration-tests.yml"
             - ".github/workflows/regression-tests.yml"
 
-    - name: Check for \#skip-auto-release
+    - name: Check for !skip-auto-release
       id: commit-comment
       run: |
         case "$(git show -s --format=%b "$GITHUB_REF")" in
-          *#skip-auto-release*) echo 'skip-auto-release=true' >> "$GITHUB_OUTPUT";;
+          *!skip-auto-release*) echo 'skip-auto-release=true' >> "$GITHUB_OUTPUT";;
         esac
 
     - name: Release Source Files Changed
