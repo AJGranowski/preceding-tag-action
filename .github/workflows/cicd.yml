@@ -26,7 +26,7 @@ jobs:
 
     steps:
     - name: Harden Runner
-      uses: step-security/harden-runner@ab7a9404c0f3da075243ca237b5fac12c98deaa5 # v2.19.3
+      uses: step-security/harden-runner@9af89fc71515a100421586dfdb3dc9c984fbf411 # v2.19.4
       with:
         disable-sudo: true
         egress-policy: block
@@ -35,7 +35,7 @@ jobs:
           github.com:443
 
     - name: Checkout
-      uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
 
     - name: Check for Tag
       id: tag-check
@@ -106,7 +106,7 @@ jobs:
 
     steps:
     - name: Harden Runner
-      uses: step-security/harden-runner@ab7a9404c0f3da075243ca237b5fac12c98deaa5 # v2.19.3
+      uses: step-security/harden-runner@9af89fc71515a100421586dfdb3dc9c984fbf411 # v2.19.4
       with:
         disable-sudo: true
         egress-policy: block
@@ -122,7 +122,7 @@ jobs:
           release-assets.githubusercontent.com:443
     
     - name: Checkout
-      uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
 
     - name: Validate Compose File
       run: docker compose --file compose.yml config --quiet
@@ -130,18 +130,18 @@ jobs:
     # https://docs.docker.com/build/ci/github-actions/cache/#github-cache
     - name: Set up Docker CLI
       id: setup-buildx-action
-      uses: docker/setup-buildx-action@4d04d5d9486b7bd6fa91e7baf45bbb4f8b9deedd # v4.0.0
+      uses: docker/setup-buildx-action@bb05f3f5519dd87d3ba754cc423b652a5edd6d2c # v4.2.0
       with:
         name: ci
 
     - name: Docker Cache
-      uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
+      uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
       with:
         path: /tmp/buildkit-cache
         key: buildkit-${{ runner.os }}-${{ hashFiles('./container-images/**') }}
 
     - name: Build Docker images
-      uses: docker/bake-action@a66e1c87e2eca0503c343edf1d208c716d54b8a8 # v7.1.0
+      uses: docker/bake-action@d3418bd7d0e9324001bca92fa8ba175ea7e6dc9b # v7.3.0
       with:
         allow: |
           network.host
@@ -153,7 +153,7 @@ jobs:
         source: .
 
     - name: NPM Cache
-      uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
+      uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
       with:
         path: "~/.npm"
         key: npm-${{ runner.os }}-${{ hashFiles('./package-lock.json') }}
@@ -215,7 +215,7 @@ jobs:
     if: ${{ github.ref == 'refs/heads/main' && needs.workflow-filter.outputs.run-check-release-files == 'true' }}
     steps:
     - name: Harden Runner
-      uses: step-security/harden-runner@ab7a9404c0f3da075243ca237b5fac12c98deaa5 # v2.19.3
+      uses: step-security/harden-runner@9af89fc71515a100421586dfdb3dc9c984fbf411 # v2.19.4
       with:
         disable-sudo: true
         egress-policy: block
@@ -224,7 +224,7 @@ jobs:
 
     - name: Checkout Latest Release
       if: ${{ needs.workflow-filter.outputs.latest-release-tag != '' }}
-      uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
       with:
         ref: ${{ needs.workflow-filter.outputs.latest-release-tag }}
 
@@ -259,7 +259,7 @@ jobs:
     if: ${{ github.ref == 'refs/heads/main' && needs.check-release-files.outputs.changed == 'true' }}
     steps:
     - name: Harden Runner
-      uses: step-security/harden-runner@ab7a9404c0f3da075243ca237b5fac12c98deaa5 # v2.19.3
+      uses: step-security/harden-runner@9af89fc71515a100421586dfdb3dc9c984fbf411 # v2.19.4
       with:
         disable-sudo: true
         egress-policy: block
@@ -339,7 +339,7 @@ jobs:
     if: ${{ startsWith(github.ref, 'refs/tags/release-') && needs.workflow-filter.outputs.run-release-bump != 'true' }}
     steps:
     - name: Harden Runner
-      uses: step-security/harden-runner@ab7a9404c0f3da075243ca237b5fac12c98deaa5 # v2.19.3
+      uses: step-security/harden-runner@9af89fc71515a100421586dfdb3dc9c984fbf411 # v2.19.4
       with:
         disable-sudo: true
         egress-policy: block
@@ -384,7 +384,7 @@ jobs:
           core.setOutput("tag", vTag.substring("refs/tags/".length));
 
     - name: Checkout
-      uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
     
     - name: Download Bundled Artifacts
       uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
@@ -412,7 +412,7 @@ jobs:
     if: ${{ startsWith(github.ref, 'refs/tags/release-') }}
     steps:
     - name: Harden Runner
-      uses: step-security/harden-runner@ab7a9404c0f3da075243ca237b5fac12c98deaa5 # v2.19.3
+      uses: step-security/harden-runner@9af89fc71515a100421586dfdb3dc9c984fbf411 # v2.19.4
       with:
         disable-sudo: true
         egress-policy: block
@@ -473,7 +473,7 @@ jobs:
         regex: ${{ env.RELEASE_REGEX }}
 
     - name: Checkout
-      uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
       with:
         ref: main
 
