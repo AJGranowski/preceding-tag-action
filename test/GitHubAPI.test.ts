@@ -48,7 +48,7 @@ describe("GitHubAPI", () => {
         });
     });
 
-    describe("fetchAllTags", () => {
+    describe("fetchTags", () => {
         test("should forward tags returned from the GitHub API", async () => {
             const expectedTags = [{
                 name: "tag1",
@@ -76,6 +76,10 @@ describe("GitHubAPI", () => {
                 return mapper(await fn(args), () => {});
             };
 
+            paginate.iterator = async function* (fn: any, args: any): AsyncIterable<any> {
+                yield await fn(args);
+            };
+
             const octokit = mock<Octokit>({
                 log: {
                     debug: () => {}
@@ -89,7 +93,7 @@ describe("GitHubAPI", () => {
             });
 
             const githubAPI = new GitHubAPI(octokit, defaultRepo);
-            const tags = await githubAPI.fetchAllTags(() => true);
+            const tags = await Array.fromAsync(githubAPI.fetchTags(() => true));
             expect(tags).containSubset(expectedTags);
             expect(expectedTags).containSubset(tags);
         });

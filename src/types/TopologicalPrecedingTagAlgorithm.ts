@@ -8,7 +8,7 @@ interface TopologicalPrecedingTagAlgorithm {
      * 1. Preceding tags cannot have a tag in their descendant graph.
      * 2. Preceding tags must all share a minimum traversal distance from the starting commit.
      */
-    (headCommitSHA: string, tags: Iterable<Tag>, githubAPI: GitHubAPI): Iterable<Tag>
+    (headCommitSHA: string, tags: Iterable<Tag>, includeHeadCommitSHA: boolean, githubAPI: GitHubAPI): Promise<Iterable<Tag>>
 }
 
 export type { TopologicalPrecedingTagAlgorithm };
