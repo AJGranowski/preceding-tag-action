@@ -75,5 +75,14 @@ describe("IteratorUtilities", () => {
 
             expect(actual).toEqual(expected);
         });
+
+        test("[2, 1, 0] ▼ sum + index", () => {
+            const callbackfn = (prev: number, next: number, index: number) => prev + next + index;
+            const input = [2, 1, 0];
+            const expected = input.reduce(callbackfn);
+            const actual = IteratorUtilities.reduce(input, callbackfn);
+
+            expect(actual).toEqual(expected);
+        });
     });
 });
