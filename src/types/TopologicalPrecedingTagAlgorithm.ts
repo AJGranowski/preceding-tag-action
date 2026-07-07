@@ -7,6 +7,7 @@ interface TopologicalPrecedingTagAlgorithm {
      * A preceding tag is a tag that meets the following definitions:
      * 1. Preceding tags cannot have a tag in their descendant graph.
      * 2. Preceding tags must all share a minimum traversal distance from the starting commit.
+     * 3. Preceding tags cannot point to `headCommitSHA` if `includeHeadCommitSHA` is false.
      */
     (headCommitSHA: string, tags: Iterable<Tag>, includeHeadCommitSHA: boolean, githubAPI: GitHubAPI): Promise<Iterable<Tag>>
 }
