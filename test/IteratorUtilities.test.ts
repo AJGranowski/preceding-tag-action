@@ -37,9 +37,9 @@ describe("IteratorUtilities", () => {
             expect(actual).toEqual(expected);
         });
 
-        test("[1, 9, 3, 8] => matchesIndex", () => {
+        test("[0, 9, 2, 8] => matchesIndex", () => {
             const predicate = (x: number, i: number) => x === i;
-            const input = [1, 2, 3, 4];
+            const input = [0, 9, 2, 8];
             const expected = input.filter(predicate);
             const actual = [...IteratorUtilities.filter(input, predicate)];
 
