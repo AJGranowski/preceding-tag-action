@@ -11,7 +11,7 @@ interface Node<T> {
 
 class LazyGitHubGraph<T extends NotUndefined> {
     private readonly githubAPI: GitHubAPI;
-    private readonly defaultNodeData: T;
+    private readonly defaultDataFn: () => T;
 
     /**
      * Directional graph data.
@@ -24,9 +24,9 @@ class LazyGitHubGraph<T extends NotUndefined> {
      */
     private requestedNodes: Set<string>;
 
-    constructor(githubAPI: GitHubAPI, defaultNodeData: T) {
+    constructor(githubAPI: GitHubAPI, defaultDataFn: () => T) {
         this.githubAPI = githubAPI;
-        this.defaultNodeData = defaultNodeData;
+        this.defaultDataFn = defaultDataFn;
         this.nodes = new Map();
         this.requestedNodes = new Set();
     }
@@ -42,7 +42,7 @@ class LazyGitHubGraph<T extends NotUndefined> {
         this.nodes.set(commitSHA, {
             allParentsKnown: parents != null && allParentsKnown === true,
             parents: parents != null ? parents : new Set(),
-            data: arguments.length >= 2 ? data! : structuredClone(this.defaultNodeData)
+            data: arguments.length >= 2 ? data! : this.defaultDataFn()
         });
     }
 
