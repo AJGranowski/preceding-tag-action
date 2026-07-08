@@ -1,7 +1,7 @@
 import type { GitHubAPI } from "./GitHubAPI";
 import type { Tag } from "./types/Tag";
 import type { TopologicalPrecedingTagAlgorithm } from "./types/TopologicalPrecedingTagAlgorithm";
-import { IteratorUtilities } from "./IteratorUtilities";
+import { AsyncIteratorUtilities } from "./AsyncIteratorUtilities";
 
 interface TagDifference {
     tags: Tag[];
@@ -9,14 +9,15 @@ interface TagDifference {
 }
 
 // eslint-disable-next-line max-len
-const comparePrecedingTagAlgorithm: TopologicalPrecedingTagAlgorithm = async (headCommitSHA: string, tags: Iterable<Tag>, includeHeadCommitSHA: boolean, githubAPI: GitHubAPI) => {
-    const tagDistances = await Promise.all(IteratorUtilities.map(tags, async (tag) => {
+const comparePrecedingTagAlgorithm: TopologicalPrecedingTagAlgorithm = async (headCommitSHA: string, tags: Iterable<Tag> | AsyncIterable<Tag>, includeHeadCommitSHA: boolean, githubAPI: GitHubAPI): Promise<Iterable<Tag>> => {
+    const asyncIterable = AsyncIteratorUtilities.map(tags, async (tag) => {
         return {
             tags: [tag],
             commitDifference: await githubAPI.fetchCommitDifference(tag.sha, headCommitSHA)
         };
-    }));
+    });
 
+    const tagDistances = await Promise.all(await Array.fromAsync(asyncIterable));
     const precedingTag = tagDistances
         .filter((x) => {
             if (isNaN(x.commitDifference)) {
