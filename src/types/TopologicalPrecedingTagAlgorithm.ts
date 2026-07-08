@@ -9,8 +9,7 @@ interface TopologicalPrecedingTagAlgorithm {
      * 2. Preceding tags must all share a minimum traversal distance from the starting commit.
      * 3. Preceding tags cannot point to `headCommitSHA` if `includeHeadCommitSHA` is false.
      */
-    // eslint-disable-next-line max-len
-    (headCommitSHA: string, tags: Iterable<Tag> | AsyncIterable<Tag>, includeHeadCommitSHA: boolean, githubAPI: GitHubAPI): Promise<Iterable<Tag>>
+    (headCommitSHA: string, tags: Iterable<Tag>, includeHeadCommitSHA: boolean, githubAPI: GitHubAPI): Promise<Iterable<Tag>>
 }
 
 export type { TopologicalPrecedingTagAlgorithm };
