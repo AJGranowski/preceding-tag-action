@@ -44,6 +44,10 @@ vi.mock("@octokit/rest", () => {
         return mapper(await fn(args), () => {});
     };
 
+    Octokit.prototype.paginate.iterator = async function* (fn: any, args: any): AsyncIterable<any> {
+        yield await fn(args);
+    };
+
     Octokit.prototype.rest = {
         repos: {
             compareCommitsWithBasehead: undefined,

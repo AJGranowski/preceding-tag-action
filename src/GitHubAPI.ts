@@ -21,31 +21,32 @@ class GitHubAPI {
      *
      * Will reject if the API is unavailable.
      */
-    async fetchAllTags(filter: (string: string) => boolean): Promise<Tag[]> {
+    async *fetchTags(filter: (string: string) => boolean): AsyncIterable<Tag> {
         let totalTags = 0;
         // https://docs.github.com/en/rest/repos/repos?apiVersion=2022-11-28#list-repository-tags
-        const allTags: Tag[] = await this.octokit.paginate(this.octokit.rest.repos.listTags, {
+        const pageIterator = this.octokit.paginate.iterator(this.octokit.rest.repos.listTags, {
             owner: this.repo.owner,
             repo: this.repo.repo,
             per_page: Math.min(100, MAX_TAGS) // max
-        }, (response, done) => {
+        });
+
+        for await (const response of pageIterator) {
             const result = response.data.filter((object) => object.commit.sha.length > 0 && filter(object.name))
                 .map((object) => ({
                     name: object.name,
                     sha: object.commit.sha
                 }));
 
-            totalTags += result.length;
-            if (totalTags >= MAX_TAGS) {
-                this.octokit.log.warn(`Total tag limit reached in request ${response.url}. (${totalTags} >= ${MAX_TAGS})`);
-                done();
+            for (const tag of result) {
+                totalTags++;
+                if (totalTags >= MAX_TAGS) {
+                    this.octokit.log.warn(`Total tag limit reached in request ${response.url}. (${totalTags} >= ${MAX_TAGS})`);
+                    return;
+                }
+
+                yield tag;
             }
-
-            return result;
-        });
-
-        this.octokit.log.debug(`${allTags.length} tags fetched.`);
-        return allTags;
+        }
     }
 
     /**

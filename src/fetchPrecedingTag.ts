@@ -2,14 +2,11 @@ import type { GitHubAPI } from "./GitHubAPI";
 import type { GitRef } from "./types/GitRef";
 import type { Tag } from "./types/Tag";
 
+import { comparePrecedingTagAlgorithm } from "./comparePrecedingTagAlgorithm";
+
 interface Options {
     filter?: (string: string) => boolean;
     includeRef?: boolean;
-}
-
-interface TagDifference {
-    tags: Tag[];
-    commitDifference: number;
 }
 
 /**
@@ -28,51 +25,16 @@ async function fetchPrecedingTag(githubAPI: GitHubAPI, ref: GitRef, options?: Op
     } satisfies Required<Options>;
 
     const sha = await githubAPI.fetchCommitSHA(ref);
-    const allTags = await githubAPI.fetchAllTags(optionsWithDefaults.filter);
-    const tagDistances = await Promise.all(allTags.map(async (tag) => {
-        return {
-            tags: [tag],
-            commitDifference: await githubAPI.fetchCommitDifference(tag.sha, sha)
-        };
-    }));
+    const allTags = await Array.fromAsync(githubAPI.fetchTags(optionsWithDefaults.filter));
+    const precedingTags = [...await comparePrecedingTagAlgorithm(sha, allTags, optionsWithDefaults.includeRef, githubAPI)];
 
-    const precedingTag = tagDistances
-        .filter((x) => {
-            if (isNaN(x.commitDifference)) {
-                return false;
-            }
-
-            if (optionsWithDefaults.includeRef) {
-                return x.commitDifference >= 0;
-            }
-
-            return x.commitDifference > 0;
-        })
-        .reduce((prev: TagDifference | null, next: TagDifference) => {
-            if (prev == null) {
-                return next;
-            }
-
-            const nextMinusPrev = Math.abs(next.commitDifference) - Math.abs(prev.commitDifference);
-            if (nextMinusPrev < 0) {
-                return next;
-            } else if (nextMinusPrev > 0) {
-                return prev;
-            }
-
-            return {
-                tags: prev.tags.concat(next.tags),
-                commitDifference: prev.commitDifference
-            };
-        }, null);
-
-    if (precedingTag == null || precedingTag.tags.length === 0) {
+    if (precedingTags.length === 0) {
         return null;
-    } else if (precedingTag.tags.length === 1) {
-        return precedingTag.tags[0];
+    } else if (precedingTags.length === 1) {
+        return precedingTags[0];
     }
 
-    const commitDates = await Promise.all(precedingTag.tags.map(async (tag) => {
+    const commitDates = await Promise.all(precedingTags.map(async (tag) => {
         return {
             tag: tag,
             commitDate: await githubAPI.fetchCommitDate(tag.sha)
