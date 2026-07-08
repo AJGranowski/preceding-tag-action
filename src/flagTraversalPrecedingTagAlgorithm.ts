@@ -9,6 +9,16 @@ interface QueueEntry {
     flags: number;
 }
 
+function countBits(n: number): number {
+    let result = 0;
+    while (n !== 0) {
+        n &= (n - 1);
+        result++;
+    }
+
+    return result;
+}
+
 const SEEN_FLAG = 1;
 const FLAG_OFFSET = 1;
 
@@ -90,6 +100,34 @@ const flagTraversalPrecedingTagAlgorithm: TopologicalPrecedingTagAlgorithm = asy
             });
         }
     }
+
+    let lowestFlagCount = null;
+    let lowestDepth = null;
+    let precedingTags: Tag[] = [];
+    for (const commit of g.getCommits()) {
+        if (commit.data.depth == null || commit.data.tag == null) {
+            continue;
+        }
+
+        const flagCount = countBits(commit.data.flags);
+        const tagObject: Tag = {
+            sha: commit.commitSHA,
+            name: commit.data.tag
+        }
+
+        if (lowestFlagCount == null || flagCount < lowestFlagCount) {
+            lowestFlagCount = flagCount;
+            lowestDepth = commit.data.depth;
+            precedingTags = [tagObject];
+        } else if (flagCount === lowestFlagCount && (lowestDepth == null || commit.data.depth < lowestDepth)) {
+            lowestDepth = commit.data.depth;
+            precedingTags = [tagObject];
+        } else if (flagCount === lowestFlagCount && commit.data.depth === lowestDepth) {
+            precedingTags.push(tagObject);
+        }
+    }
+
+    return precedingTags;
 };
 
 export { flagTraversalPrecedingTagAlgorithm };

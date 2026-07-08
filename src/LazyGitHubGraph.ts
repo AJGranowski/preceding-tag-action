@@ -5,8 +5,9 @@ type NotUndefined = {} | null;
 
 interface Node<T> {
     allParentsKnown: boolean;
-    parents: Set<string>;
+    commitSHA: string
     data: T;
+    parents: Set<string>;
 }
 
 class LazyGitHubGraph<T extends NotUndefined> {
@@ -41,8 +42,9 @@ class LazyGitHubGraph<T extends NotUndefined> {
 
         this.nodes.set(commitSHA, {
             allParentsKnown: parents != null && allParentsKnown === true,
-            parents: parents != null ? parents : new Set(),
-            data: arguments.length >= 2 ? data! : this.defaultDataFn()
+            commitSHA: commitSHA,
+            data: arguments.length >= 2 ? data! : this.defaultDataFn(),
+            parents: parents != null ? parents : new Set()
         });
     }
 
@@ -56,6 +58,13 @@ class LazyGitHubGraph<T extends NotUndefined> {
         }
 
         return this.nodes.get(commitSHA)!.data;
+    }
+
+    /** 
+     * @returns An iterator over all of the nodes of this graph in no particular order
+     */
+    getCommits(): Iterable<Node<T>> {
+        return this.nodes.values();
     }
 
     /**
