@@ -59,6 +59,14 @@ class LazyGitHubGraph<T extends NotUndefined> {
     }
 
     /**
+     * @returns True if this node exists in the graph.
+     */
+    hasCommit(commitSHA: string): boolean {
+        this.fetchCommit(commitSHA, 1);
+        return this.nodes.has(commitSHA);
+    }
+
+    /**
      * @returns The parent edges of this node. Returns an empty iterable if this node does not exist.
      */
     parents(commitSHA: string): Iterable<string> {
