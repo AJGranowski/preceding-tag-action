@@ -79,7 +79,7 @@ class LazyGitHubGraph<T extends NotUndefined> {
     /**
      * @returns An iterator over all of the nodes of this graph in no particular order
      */
-    getCommits(): Iterable<Node<T>> {
+    getCommits(): IteratorObject<Node<T>> {
         return this.nodes.values();
     }
 

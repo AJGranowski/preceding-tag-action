@@ -35,7 +35,7 @@ describe("LazyGitHubGraph", () => {
         });
     });
 
-    describe("hasCommit()", () => {
+    describe("hasCommit", () => {
         test("should return false for a commit that does not exist in the graph", () => {
             const g = new LazyGitHubGraph(mock<GitHubAPI>({}), () => null);
             expect(g.hasCommit("commit")).toBe(false);
@@ -45,6 +45,22 @@ describe("LazyGitHubGraph", () => {
             const g = new LazyGitHubGraph(mock<GitHubAPI>({}), () => null);
             g.addCommit("commit");
             expect(g.hasCommit("commit")).toBe(true);
+        });
+    });
+
+    describe("getCommits", () => {
+        test("should return nothing if the graph has no nodes", () => {
+            const g = new LazyGitHubGraph(mock<GitHubAPI>({}), () => null);
+            expect([...g.getCommits()]).toEqual([]);
+        });
+
+        test("should return all nodes if the graph has nodes", () => {
+            const g = new LazyGitHubGraph(mock<GitHubAPI>({}), () => null);
+            g.addCommit("a");
+            g.addCommit("b");
+            g.addCommit("c");
+
+            expect([...g.getCommits().map((x) => x.commitSHA)]).to.have.same.members(["a", "b", "c"]);
         });
     });
 });
