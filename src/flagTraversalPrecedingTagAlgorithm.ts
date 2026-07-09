@@ -27,7 +27,7 @@ const MAX_COMMITS = 30;
 const MIN_BATCH_SIZE = 30;
 
 // eslint-disable-next-line max-len, complexity
-const flagTraversalPrecedingTagAlgorithm: TopologicalPrecedingTagAlgorithm = async (headCommitSHA: string, tags: Iterable<Tag>, includeHeadCommitSHA: boolean, githubAPI: GitHubAPI): Promise<Iterable<Tag>> => {
+const flagTraversalPrecedingTagAlgorithm: TopologicalPrecedingTagAlgorithm = async (headCommitSHA: string, tags: IteratorObject<Tag>, includeHeadCommitSHA: boolean, githubAPI: GitHubAPI): Promise<IteratorObject<Tag>> => {
     const g = new LazyGitHubGraph(githubAPI, () => ({
         flags: 0 as number,
         depth: null as number | null,
@@ -119,7 +119,7 @@ const flagTraversalPrecedingTagAlgorithm: TopologicalPrecedingTagAlgorithm = asy
             continue;
         }
 
-        const tags: Iterable<Tag> = commit.data.tags.values().map((tag) => ({
+        const tags: IteratorObject<Tag> = commit.data.tags.values().map((tag) => ({
             name: tag,
             sha: commit.commitSHA
         }));
@@ -137,7 +137,7 @@ const flagTraversalPrecedingTagAlgorithm: TopologicalPrecedingTagAlgorithm = asy
         }
     }
 
-    return precedingCommits;
+    return precedingCommits.values();
 };
 
 export { flagTraversalPrecedingTagAlgorithm };

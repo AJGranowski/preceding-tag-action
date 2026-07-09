@@ -27,8 +27,8 @@ async function fetchPrecedingTag(githubAPI: GitHubAPI, ref: GitRef, options?: Op
 
     const sha = await githubAPI.fetchCommitSHA(ref);
     const allTags = await Array.fromAsync(githubAPI.fetchTags(optionsWithDefaults.filter));
-    const precedingTags = [...await comparePrecedingTagAlgorithm(sha, allTags, optionsWithDefaults.includeRef, githubAPI)];
-    //const precedingTags = [...await flagTraversalPrecedingTagAlgorithm(sha, allTags, optionsWithDefaults.includeRef, githubAPI)];
+    const precedingTags = [...await comparePrecedingTagAlgorithm(sha, allTags.values(), optionsWithDefaults.includeRef, githubAPI)];
+    //const precedingTags = [...await flagTraversalPrecedingTagAlgorithm(sha, allTags.values(), optionsWithDefaults.includeRef, githubAPI)];
 
     if (precedingTags.length === 0) {
         return null;

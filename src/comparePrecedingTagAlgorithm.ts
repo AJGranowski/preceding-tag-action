@@ -1,7 +1,6 @@
 import type { GitHubAPI } from "./GitHubAPI";
 import type { Tag } from "./types/Tag";
 import type { TopologicalPrecedingTagAlgorithm } from "./types/TopologicalPrecedingTagAlgorithm";
-import { IteratorUtilities } from "./IteratorUtilities";
 
 interface TagDifference {
     tags: Tag[];
@@ -9,15 +8,15 @@ interface TagDifference {
 }
 
 // eslint-disable-next-line max-len
-const comparePrecedingTagAlgorithm: TopologicalPrecedingTagAlgorithm = async (headCommitSHA: string, tags: Iterable<Tag>, includeHeadCommitSHA: boolean, githubAPI: GitHubAPI): Promise<Iterable<Tag>> => {
-    const tagDistances = IteratorUtilities.map(tags, async (tag) => {
+const comparePrecedingTagAlgorithm: TopologicalPrecedingTagAlgorithm = async (headCommitSHA: string, tags: IteratorObject<Tag>, includeHeadCommitSHA: boolean, githubAPI: GitHubAPI): Promise<IteratorObject<Tag>> => {
+    const tagDistances = tags.map(async (tag) => {
         return {
             tags: [tag],
             commitDifference: await githubAPI.fetchCommitDifference(tag.sha, headCommitSHA)
         };
     });
 
-    const filteredTagDistances = IteratorUtilities.filter(await Promise.all(tagDistances), (x) => {
+    const filteredTagDistances = (await Promise.all(tagDistances)).filter((x) => {
         if (isNaN(x.commitDifference)) {
             return false;
         }
@@ -29,7 +28,7 @@ const comparePrecedingTagAlgorithm: TopologicalPrecedingTagAlgorithm = async (he
         return x.commitDifference > 0;
     });
 
-    const precedingTag = IteratorUtilities.reduce(filteredTagDistances, (prev: TagDifference | null, next: TagDifference) => {
+    const precedingTag = filteredTagDistances.reduce((prev: TagDifference | null, next: TagDifference) => {
         if (prev == null) {
             return next;
         }
@@ -48,9 +47,9 @@ const comparePrecedingTagAlgorithm: TopologicalPrecedingTagAlgorithm = async (he
     }, null);
 
     if (precedingTag == null) {
-        return [];
+        return [].values();
     } else {
-        return precedingTag.tags;
+        return precedingTag.tags.values();
     }
 };
 

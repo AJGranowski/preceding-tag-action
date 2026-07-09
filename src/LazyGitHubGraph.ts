@@ -86,19 +86,19 @@ class LazyGitHubGraph<T extends NotUndefined> {
     /**
      * @returns The parent edges of this node. Returns an empty iterable if this node does not exist.
      */
-    getParents(commitSHA: string, fetch?: 0): Iterable<string>
-    getParents(commitSHA: string, fetch: number): Promise<Iterable<string>>
-    getParents(commitSHA: string, fetch: number = 0): Promise<Iterable<string>> | Iterable<string> {
+    getParents(commitSHA: string, fetch?: 0): IteratorObject<string>
+    getParents(commitSHA: string, fetch: number): Promise<IteratorObject<string>>
+    getParents(commitSHA: string, fetch: number = 0): Promise<IteratorObject<string>> | IteratorObject<string> {
         if (fetch > 0) {
             return this.fetchCommits(commitSHA, fetch)
                 .then(() => this.getParents(commitSHA, 0));
         }
 
         if (!this.nodes.has(commitSHA)) {
-            return [];
+            return [].values();
         }
 
-        return this.nodes.get(commitSHA)!.parents;
+        return this.nodes.get(commitSHA)!.parents.values();
     }
 
     /**

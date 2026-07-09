@@ -19,7 +19,7 @@ interface GenerateTestParameterSetOptions {
     tag2Committers: (string | undefined)[];
 }
 
-async function* iterableToAsyncIterable<T>(iterable: Iterable<T>): AsyncIterable<T> {
+async function* iterableToAsyncGenerator<T>(iterable: Iterable<T>): AsyncGenerator<T> {
     for (const item of iterable) {
         yield item;
     }
@@ -66,7 +66,7 @@ function randomString(): string {
 describe("fetchPrecedingTag", () => {
     test("should return null if the repo has no tags", async () => {
         const mockGithubAPI = mock<GitHubAPI>({
-            fetchTags: () => iterableToAsyncIterable([])
+            fetchTags: () => iterableToAsyncGenerator([])
         });
 
         expect(await fetchPrecedingTag(mockGithubAPI, "HEAD")).toBeNull();
@@ -87,7 +87,7 @@ describe("fetchPrecedingTag", () => {
         }];
 
         const mockGithubAPI = mock<GitHubAPI>({
-            fetchTags: () => iterableToAsyncIterable(tags),
+            fetchTags: () => iterableToAsyncGenerator(tags),
             fetchCommitSHA: (x) => Promise.resolve(x)
         });
 
@@ -111,7 +111,7 @@ describe("fetchPrecedingTag", () => {
 
     test("should return the closest preceding tag", async () => {
         const mockGithubAPI = mock<GitHubAPI>({
-            fetchTags: () => iterableToAsyncIterable([{
+            fetchTags: () => iterableToAsyncGenerator([{
                 name: "tag1",
                 sha: "tag1-sha"
             },
@@ -206,7 +206,7 @@ describe("fetchPrecedingTag", () => {
             const expectedResult = testEntry[1];
             test(`should return ${expectedResult} with ${JSON.stringify(testParameters)}`, async () => {
                 const mockGithubAPI = mock<GitHubAPI>({
-                    fetchTags: () => iterableToAsyncIterable([{
+                    fetchTags: () => iterableToAsyncGenerator([{
                         name: "tag1",
                         sha: "tag1-sha"
                     },
@@ -244,7 +244,7 @@ describe("fetchPrecedingTag", () => {
 
     test("should return non-null for equivalent tags", async () => {
         const mockGithubAPI = mock<GitHubAPI>({
-            fetchTags: () => iterableToAsyncIterable([{
+            fetchTags: () => iterableToAsyncGenerator([{
                 name: "tag1",
                 sha: randomString()
             },
@@ -263,7 +263,7 @@ describe("fetchPrecedingTag", () => {
 
     test("should not include tags pointing to this ref if includeRef is false", async () => {
         const mockGithubAPI = mock<GitHubAPI>({
-            fetchTags: () => iterableToAsyncIterable([{
+            fetchTags: () => iterableToAsyncGenerator([{
                 name: "tag1",
                 sha: "tag1-sha"
             },
@@ -292,7 +292,7 @@ describe("fetchPrecedingTag", () => {
 
     test("should include tags pointing to this ref if includeRef is true", async () => {
         const mockGithubAPI = mock<GitHubAPI>({
-            fetchTags: () => iterableToAsyncIterable([{
+            fetchTags: () => iterableToAsyncGenerator([{
                 name: "tag1",
                 sha: "tag1-sha"
             },

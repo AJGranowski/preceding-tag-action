@@ -31,7 +31,7 @@ class GitHubAPI {
      *
      * Will reject if the API is unavailable.
      */
-    async *fetchTags(filter: (string: string) => boolean): AsyncIterable<Tag> {
+    async *fetchTags(filter: (string: string) => boolean): AsyncGenerator<Tag> {
         let totalTags = 0;
         // https://docs.github.com/en/rest/repos/repos?apiVersion=2022-11-28#list-repository-tags
         const pageIterator = this.octokit.paginate.iterator(this.octokit.rest.repos.listTags, {
@@ -63,7 +63,7 @@ class GitHubAPI {
      * Begin fetching bached ancestor commits from a starting SHA.
      */
     // eslint-disable-next-line complexity
-    async *fetchCommitList(commitSHA: string, batchSize: number = 30): AsyncIterable<CommitListItem> {
+    async *fetchCommitList(commitSHA: string, batchSize: number = 30): AsyncGenerator<CommitListItem> {
         // https://docs.github.com/en/rest/commits/commits#list-commits
         const pageIterator = this.octokit.paginate.iterator(this.octokit.rest.repos.listCommits, {
             owner: this.repo.owner,
@@ -93,6 +93,8 @@ class GitHubAPI {
                 };
             }
         }
+
+        return;
     }
 
     /**
