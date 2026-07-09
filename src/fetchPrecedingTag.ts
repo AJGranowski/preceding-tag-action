@@ -3,6 +3,7 @@ import type { GitRef } from "./types/GitRef";
 import type { Tag } from "./types/Tag";
 
 import { comparePrecedingTagAlgorithm } from "./comparePrecedingTagAlgorithm";
+//import { flagTraversalPrecedingTagAlgorithm } from "./flagTraversalPrecedingTagAlgorithm";
 
 interface Options {
     filter?: (string: string) => boolean;
@@ -27,6 +28,7 @@ async function fetchPrecedingTag(githubAPI: GitHubAPI, ref: GitRef, options?: Op
     const sha = await githubAPI.fetchCommitSHA(ref);
     const allTags = await Array.fromAsync(githubAPI.fetchTags(optionsWithDefaults.filter));
     const precedingTags = [...await comparePrecedingTagAlgorithm(sha, allTags, optionsWithDefaults.includeRef, githubAPI)];
+    //const precedingTags = [...await flagTraversalPrecedingTagAlgorithm(sha, allTags, optionsWithDefaults.includeRef, githubAPI)];
 
     if (precedingTags.length === 0) {
         return null;

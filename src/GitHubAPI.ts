@@ -1,6 +1,7 @@
 import type { Octokit } from "@octokit/rest";
 
 import type { CommitDate } from "./types/CommitDate";
+import type { CommitListItem } from "./types/CommitListItem";
 import type { GitRef } from "./types/GitRef";
 import type { Repository } from "./types/Repository";
 import type { Tag } from "./types/Tag";
@@ -45,6 +46,42 @@ class GitHubAPI {
                 }
 
                 yield tag;
+            }
+        }
+    }
+
+    /**
+     * Begin fetching bached ancestor commits from a starting SHA.
+     */
+    // eslint-disable-next-line complexity
+    async *fetchCommitList(commitSHA: string, batchSize: number = 30): AsyncIterable<CommitListItem> {
+        // https://docs.github.com/en/rest/commits/commits#list-commits
+        const pageIterator = this.octokit.paginate.iterator(this.octokit.rest.repos.listCommits, {
+            owner: this.repo.owner,
+            repo: this.repo.repo,
+            sha: commitSHA,
+            per_page: Math.min(100, batchSize)
+        });
+
+        let isFirst = true;
+        for await (const commitListResponse of pageIterator) {
+            if (isFirst) {
+                isFirst = false;
+                if (commitListResponse.data.length === 0 || commitListResponse.data[0].sha !== commitSHA) {
+                    // eslint-disable-next-line max-len
+                    throw new Error(`Expected requested SHA (${commitSHA}) to appear as the first result in the response, but got ${commitListResponse.data[0]?.sha} instead.`);
+                }
+            }
+
+            for (const item of commitListResponse.data) {
+                yield {
+                    sha: item.sha,
+                    commitDate: {
+                        author: item.commit.author?.date,
+                        committer: item.commit.committer?.date
+                    },
+                    parentSHAs: item.parents == null ? [] : item.parents.map((x) => x.sha)
+                };
             }
         }
     }
