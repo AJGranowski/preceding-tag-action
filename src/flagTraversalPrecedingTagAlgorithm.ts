@@ -23,7 +23,8 @@ const SEEN_FLAG = 1;
 const FLAG_OFFSET = 1;
 
 const MAX_TAGS = 4;
-const MAX_COMMITS = 100;
+const MAX_COMMITS = 30;
+const MIN_BATCH_SIZE = 30;
 
 // eslint-disable-next-line max-len, complexity
 const flagTraversalPrecedingTagAlgorithm: TopologicalPrecedingTagAlgorithm = async (headCommitSHA: string, tags: Iterable<Tag>, includeHeadCommitSHA: boolean, githubAPI: GitHubAPI): Promise<Iterable<Tag>> => {
@@ -60,12 +61,16 @@ const flagTraversalPrecedingTagAlgorithm: TopologicalPrecedingTagAlgorithm = asy
         let depth = element.depth;
         let flags = element.flags;
 
+        const batchSize = tag_to_flags.size === 0 ?
+            LazyGitHubGraph.MAX_FETCH_SIZE :
+            Math.max(MIN_BATCH_SIZE, Math.min(LazyGitHubGraph.MAX_FETCH_SIZE, seen_commits / tag_to_flags.size));
+
         // Skip invalid commits
-        if (!(await g.hasCommit(commitSHA, true))) {
+        if (!(await g.hasCommit(commitSHA, batchSize))) {
             continue;
         }
 
-        const data = (await g.getCommit(commitSHA, true))!;
+        const data = (await g.getCommit(commitSHA, batchSize))!;
 
         // Skip visited commits
         if (data.flags === flags) {
@@ -89,14 +94,14 @@ const flagTraversalPrecedingTagAlgorithm: TopologicalPrecedingTagAlgorithm = asy
         }
 
         if (data.tags.size > 0) {
-            if (tag_to_flags.has(commitSHA)) {
-                flags |= tag_to_flags.get(commitSHA);
-            } else {
+            if (!tag_to_flags.has(commitSHA)) {
                 tag_to_flags.set(commitSHA, 1 << (tag_to_flags.size + FLAG_OFFSET));
             }
+
+            flags |= tag_to_flags.get(commitSHA);
         }
 
-        for (const parent of await g.getParents(commitSHA)) {
+        for (const parent of await g.getParents(commitSHA, batchSize)) {
             q.push({
                 commitSHA: parent,
                 depth: depth + 1,
@@ -107,33 +112,32 @@ const flagTraversalPrecedingTagAlgorithm: TopologicalPrecedingTagAlgorithm = asy
 
     let lowestFlagCount = null;
     let lowestDepth = null;
-    let precedingCommits: any[] = [];
+    let precedingCommits: Tag[] = [];
     for (const commit of g.getCommits()) {
-        if (commit.data.depth == null || commit.data.tags.size === 0) {
+        // eslint-disable-next-line max-len
+        if (commit.data.depth == null || commit.data.tags.size === 0 || (commit.data.flags & SEEN_FLAG) !== SEEN_FLAG || (!includeHeadCommitSHA && commit.commitSHA === headCommitSHA)) {
             continue;
         }
+
+        const tags: Iterable<Tag> = commit.data.tags.values().map((tag) => ({
+            name: tag,
+            sha: commit.commitSHA
+        }));
 
         const flagCount = countBits(commit.data.flags);
         if (lowestFlagCount == null || flagCount < lowestFlagCount) {
             lowestFlagCount = flagCount;
             lowestDepth = commit.data.depth;
-            precedingCommits = [commit];
+            precedingCommits = [...tags];
         } else if (flagCount === lowestFlagCount && (lowestDepth == null || commit.data.depth < lowestDepth)) {
             lowestDepth = commit.data.depth;
-            precedingCommits = [commit];
+            precedingCommits = [...tags];
         } else if (flagCount === lowestFlagCount && commit.data.depth === lowestDepth) {
-            precedingCommits.push(commit);
+            precedingCommits.push(...tags);
         }
     }
 
-    console.log(precedingCommits.length);
-    for (const a of precedingCommits) {
-        console.log(a.commitSHA, a.data.tags.values());
-    }
-
-    throw new Error("STOP HERE. NOW.");
-
-    return [];
+    return precedingCommits;
 };
 
 export { flagTraversalPrecedingTagAlgorithm };

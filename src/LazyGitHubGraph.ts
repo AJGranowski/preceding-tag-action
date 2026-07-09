@@ -1,4 +1,4 @@
-import type { GitHubAPI } from "./GitHubAPI";
+import { GitHubAPI } from "./GitHubAPI";
 
 // eslint-disable-next-line @typescript-eslint/no-empty-object-type
 type NotUndefined = {} | null;
@@ -11,6 +11,8 @@ interface Node<T> {
 }
 
 class LazyGitHubGraph<T extends NotUndefined> {
+    public static readonly MAX_FETCH_SIZE = GitHubAPI.MAX_BATCH_SIZE.fetchCommitList;
+
     private readonly githubAPI: GitHubAPI;
     private readonly defaultDataFn: () => T;
 
@@ -48,12 +50,12 @@ class LazyGitHubGraph<T extends NotUndefined> {
         });
     }
 
-    getCommit(commitSHA: string, fetch?: false): T | undefined
-    async getCommit(commitSHA: string, fetch: true): Promise<T | undefined>
-    getCommit(commitSHA: string, fetch: boolean = false): Promise<T | undefined> | T | undefined {
-        if (fetch) {
-            return this.fetchCommits(commitSHA, 1)
-                .then(() => this.getCommit(commitSHA, false));
+    getCommit(commitSHA: string, fetch?: 0): T | undefined
+    getCommit(commitSHA: string, fetch: number): Promise<T | undefined>
+    getCommit(commitSHA: string, fetch: number = 0): Promise<T | undefined> | T | undefined {
+        if (fetch > 0) {
+            return this.fetchCommits(commitSHA, fetch)
+                .then(() => this.getCommit(commitSHA, 0));
         }
 
         if (!this.nodes.has(commitSHA)) {
@@ -63,12 +65,12 @@ class LazyGitHubGraph<T extends NotUndefined> {
         return this.nodes.get(commitSHA)!.data;
     }
 
-    hasCommit(commitSHA: string, fetch?: false): boolean
-    async hasCommit(commitSHA: string, fetch: true): Promise<boolean>
-    hasCommit(commitSHA: string, fetch: boolean = false): Promise<boolean> | boolean {
-        if (fetch) {
-            return this.fetchCommits(commitSHA, 1)
-                .then(() => this.hasCommit(commitSHA, false));
+    hasCommit(commitSHA: string, fetch?: 0): boolean
+    hasCommit(commitSHA: string, fetch: number): Promise<boolean>
+    hasCommit(commitSHA: string, fetch: number = 0): Promise<boolean> | boolean {
+        if (fetch > 0) {
+            return this.fetchCommits(commitSHA, fetch)
+                .then(() => this.hasCommit(commitSHA, 0));
         }
 
         return this.nodes.has(commitSHA);
@@ -84,8 +86,14 @@ class LazyGitHubGraph<T extends NotUndefined> {
     /**
      * @returns The parent edges of this node. Returns an empty iterable if this node does not exist.
      */
-    async getParents(commitSHA: string): Promise<Iterable<string>> {
-        await this.fetchCommits(commitSHA, 10);
+    getParents(commitSHA: string, fetch?: 0): Iterable<string>
+    getParents(commitSHA: string, fetch: number): Promise<Iterable<string>>
+    getParents(commitSHA: string, fetch: number = 0): Promise<Iterable<string>> | Iterable<string> {
+        if (fetch > 0) {
+            return this.fetchCommits(commitSHA, fetch)
+                .then(() => this.getParents(commitSHA, 0));
+        }
+
         if (!this.nodes.has(commitSHA)) {
             return [];
         }
@@ -100,10 +108,15 @@ class LazyGitHubGraph<T extends NotUndefined> {
         if (!this.requestedNodes.has(commitSHA) && (!this.nodes.has(commitSHA) || !this.nodes.get(commitSHA)!.allParentsKnown)) {
             let counter = 0;
             for await (const result of this.githubAPI.fetchCommitList(commitSHA, batchSize)) {
+                let data = this.defaultDataFn();
+                if (this.nodes.has(result.sha)) {
+                    data = this.nodes.get(result.sha)!.data;
+                }
+
                 this.nodes.set(result.sha, {
                     allParentsKnown: true,
                     commitSHA: result.sha,
-                    data: this.defaultDataFn(),
+                    data: data,
                     parents: new Set(result.parentSHAs)
                 });
 

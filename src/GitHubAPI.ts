@@ -8,7 +8,16 @@ import type { Tag } from "./types/Tag";
 
 const MAX_TAGS: number = 100;
 
+type MaxBatchSizeType<T> = {
+    readonly [K in keyof T]?: T[K] extends ((...args: any[]) => any) ? number : never;
+};
+
 class GitHubAPI {
+    public static readonly MAX_BATCH_SIZE = Object.freeze({
+        fetchCommitList: 100,
+        fetchTags: 100
+    }) satisfies MaxBatchSizeType<GitHubAPI>;
+
     private readonly octokit: Octokit;
     private readonly repo: Repository;
 
@@ -28,7 +37,7 @@ class GitHubAPI {
         const pageIterator = this.octokit.paginate.iterator(this.octokit.rest.repos.listTags, {
             owner: this.repo.owner,
             repo: this.repo.repo,
-            per_page: Math.min(100, MAX_TAGS) // max
+            per_page: Math.min(GitHubAPI.MAX_BATCH_SIZE.fetchTags, MAX_TAGS) // max
         });
 
         for await (const response of pageIterator) {
@@ -60,7 +69,7 @@ class GitHubAPI {
             owner: this.repo.owner,
             repo: this.repo.repo,
             sha: commitSHA,
-            per_page: Math.min(100, batchSize)
+            per_page: Math.min(GitHubAPI.MAX_BATCH_SIZE.fetchCommitList, batchSize)
         });
 
         let isFirst = true;
