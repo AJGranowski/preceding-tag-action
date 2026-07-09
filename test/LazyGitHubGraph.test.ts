@@ -9,6 +9,19 @@ function randomString(): string {
 }
 
 describe("LazyGitHubGraph", () => {
+    describe("getCommit", () => {
+        test("should return undefined if node does not exist in the graph", () => {
+            const g = new LazyGitHubGraph(mock<GitHubAPI>({}), () => null);
+            expect(g.getCommit("does not exist")).to.be.undefined;
+        });
+
+        test("should return something if node does exist in the graph", () => {
+            const g = new LazyGitHubGraph(mock<GitHubAPI>({}), () => null);
+            g.addCommit("commit");
+            expect(g.getCommit("commit")).to.not.be.undefined;
+        });
+    });
+
     describe("node data", () => {
         test("added nodes with no data should return default data", () => {
             const expected = randomString();
