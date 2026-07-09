@@ -136,7 +136,7 @@ describe("LazyGitHubGraph", () => {
             githubAPI = mock<GitHubAPI>();
         });
 
-        test("should fetch commits if there is no local copy", async () => {
+        test("hasCommit should fetch commits if there is no local copy", async () => {
             githubAPI.fetchCommitList.mockReturnValue(iterableToAsyncGenerator([
                 {
                     sha: "might exist",
@@ -149,6 +149,21 @@ describe("LazyGitHubGraph", () => {
             expect(g.hasCommit("might exist", 0)).toBe(false);
             expect(await g.hasCommit("might exist", 1)).toBe(true);
             expect(g.hasCommit("might exist", 0)).toBe(true);
+        });
+
+        test("getCommit should fetch commits if there is no local copy", async () => {
+            githubAPI.fetchCommitList.mockReturnValue(iterableToAsyncGenerator([
+                {
+                    sha: "might exist",
+                    commitDate: {},
+                    parentSHAs: []
+                }
+            ]));
+
+            const g = new LazyGitHubGraph(githubAPI, () => "data");
+            expect(g.getCommit("might exist", 0)).toBe(undefined);
+            expect(await g.getCommit("might exist", 1)).toBe("data");
+            expect(g.getCommit("might exist", 0)).toBe("data");
         });
 
         test("should fetch commits if there's a local copy with unknown parents", async () => {
