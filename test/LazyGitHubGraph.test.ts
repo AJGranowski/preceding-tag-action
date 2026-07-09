@@ -34,4 +34,17 @@ describe("LazyGitHubGraph", () => {
             expect(g.getCommit("abc")!.data).toBe("else");
         });
     });
+
+    describe("hasCommit()", () => {
+        test("should return false for a commit that does not exist in the graph", () => {
+            const g = new LazyGitHubGraph(mock<GitHubAPI>({}), () => null);
+            expect(g.hasCommit("commit")).toBe(false);
+        });
+
+        test("should return true for a commit that does exist in the graph", () => {
+            const g = new LazyGitHubGraph(mock<GitHubAPI>({}), () => null);
+            g.addCommit("commit");
+            expect(g.hasCommit("commit")).toBe(true);
+        });
+    });
 });
