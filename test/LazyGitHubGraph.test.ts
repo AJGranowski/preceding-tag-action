@@ -1,5 +1,12 @@
-import { describe, expect, test } from "vitest";
+import {
+    beforeEach,
+    describe,
+    expect,
+    test
+} from "vitest";
+
 import { mock } from "vitest-mock-extended";
+import type { MockProxy } from "vitest-mock-extended";
 import type { GitHubAPI } from "../src/GitHubAPI";
 
 import { LazyGitHubGraph } from "../src/LazyGitHubGraph";
@@ -8,7 +15,21 @@ function randomString(): string {
     return Math.floor(Math.random() * Number.MAX_SAFE_INTEGER).toString();
 }
 
+async function* iterableToAsyncGenerator<T>(iterable: Iterable<T>): AsyncGenerator<T> {
+    for (const item of iterable) {
+        yield item;
+    }
+}
+
 describe("LazyGitHubGraph", () => {
+    describe("addCommit", () => {
+        test("should throw error if adding a commit that already exists in the graph", () => {
+            const g = new LazyGitHubGraph(mock<GitHubAPI>({}), () => null);
+            g.addCommit("commit");
+            expect(() => g.addCommit("commit")).toThrowError();
+        });
+    });
+
     describe("getCommit", () => {
         test("should return undefined if commit does not exist in the graph", () => {
             const g = new LazyGitHubGraph(mock<GitHubAPI>({}), () => null);
@@ -105,6 +126,45 @@ describe("LazyGitHubGraph", () => {
             g.addCommit("c", null, new Set(["a", "b"]), false);
 
             expect([...g.getParents("c")]).to.have.same.members(["a", "b"]);
+        });
+    });
+
+    describe("fetch", () => {
+        let githubAPI: MockProxy<GitHubAPI>;
+
+        beforeEach(() => {
+            githubAPI = mock<GitHubAPI>();
+        });
+
+        test("should fetch commits if there is no local copy", async () => {
+            githubAPI.fetchCommitList.mockReturnValue(iterableToAsyncGenerator([
+                {
+                    sha: "might exist",
+                    commitDate: {},
+                    parentSHAs: []
+                }
+            ]));
+
+            const g = new LazyGitHubGraph(githubAPI, () => null);
+            expect(g.hasCommit("might exist", 0)).toBe(false);
+            expect(await g.hasCommit("might exist", 1)).toBe(true);
+            expect(g.hasCommit("might exist", 0)).toBe(true);
+        });
+
+        test("should fetch commits if there's a local copy with unknown parents", async () => {
+            githubAPI.fetchCommitList.mockReturnValue(iterableToAsyncGenerator([
+                {
+                    sha: "unknown parents",
+                    commitDate: {},
+                    parentSHAs: ["a", "b", "c"]
+                }
+            ]));
+
+            const g = new LazyGitHubGraph(githubAPI, () => null);
+            g.addCommit("unknown parents");
+            expect([...g.getParents("unknown parents", 0)]).toEqual([]);
+            expect([...await g.getParents("unknown parents", 1)]).to.have.same.members(["a", "b", "c"]);
+            expect([...g.getParents("unknown parents", 0)]).to.have.same.members(["a", "b", "c"]);
         });
     });
 });
