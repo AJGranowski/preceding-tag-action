@@ -61,7 +61,7 @@ describe("fetchPrecedingTag", () => {
 
     test("should return null if no tags were found", async () => {
         githubAPI.fetchTags.mockReturnValue(iterableToAsyncGenerator([]));
-        expect(await fetchPrecedingTag(githubAPI, "HEAD", () => Promise.resolve([].values()))).toBeNull();
+        expect(await fetchPrecedingTag(githubAPI, {} as any, "HEAD", () => Promise.resolve([].values()))).toBeNull();
     });
 
     describe("multiple candidates, different dates", () => {
@@ -156,7 +156,7 @@ describe("fetchPrecedingTag", () => {
                 ];
 
                 const algo = () => Promise.resolve(algoReturn.values());
-                expect(await fetchPrecedingTag(githubAPI, "HEAD", algo)).to.deep.include(expectedResult);
+                expect(await fetchPrecedingTag(githubAPI, {} as any, "HEAD", algo)).to.deep.include(expectedResult);
             });
         }
     });

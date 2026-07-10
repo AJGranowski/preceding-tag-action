@@ -123,6 +123,9 @@ describe("PrecedingTagAction", () => {
             "default-tag": "some-default-tag",
             "regex": "",
             "include-ref": "false",
+            "limit-tags": "100",
+            "limit-traversal-commits": "1000",
+            "limit-traversal-tags": "6",
             "ref": "",
             "repository": "owner/repo",
             "token": ""

@@ -151,6 +151,9 @@ describe("Input", () => {
                 input.getDefaultTag();
                 input.getFilter();
                 input.getIncludeRef();
+                input.getLimitTags();
+                input.getLimitTraversalCommits();
+                input.getLimitTraversalTags();
                 input.getRef();
                 input.getRepository();
                 input.getToken();

@@ -68,6 +68,9 @@ describe("Fuzzing PrecedingTagAction", () => {
                 "default-tag": fc.string(),
                 "regex": fc.stringMatching(/^\w*$/),
                 "include-ref": fc.constantFrom("", "true", "false", "string"),
+                "limit-tags": fc.integer({min: 0, max: 10000}).map((x) => x.toString()),
+                "limit-traversal-commits": fc.integer({min: 0, max: 10000}).map((x) => x.toString()),
+                "limit-traversal-tags": fc.integer({min: 0, max: 29}).map((x) => x.toString()),
                 "ref": fc.string(),
                 "repository": fc.stringMatching(/^\w+\/\w+$/),
                 "token": fc.string()

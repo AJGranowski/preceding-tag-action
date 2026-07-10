@@ -18,6 +18,18 @@ inputs:
     description: If true, include tags pointing to `ref` as candidates.
     default: "false"
     required: false
+  limit-tags:
+    description: Tag fetch limit. Only tags matching `regex` count towards this limit. Increasing this may produce a more accurate result when `ref` is very far away from `HEAD`.
+    default: "100"
+    required: false
+  limit-traversal-commits:
+    description: The commit traversal limit while searching for a preceding tag.
+    default: "1000"
+    required: false
+  limit-traversal-tags:
+    description: The tag traversal limit while searching for a preceding tag. Behaves similar to `--candidates`` on `git describe`.
+    default: "6"
+    required: false
   ref:
     description: The branch, tag, or SHA to find the preceding tag from.
     default: ${{ github.sha }}

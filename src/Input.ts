@@ -48,6 +48,9 @@ class Input {
         this.getDefaultTag();
         this.getFilter();
         this.getIncludeRef();
+        this.getLimitTags();
+        this.getLimitTraversalCommits();
+        this.getLimitTraversalTags();
         this.getRef();
         this.getRepository();
         this.getToken();
@@ -104,6 +107,60 @@ class Input {
         }
 
         return this.memoization.getIncludeRef;
+    }
+
+    /**
+     * Return the tag fetch limit, defaults to 200.
+     */
+    getLimitTags(): number {
+        if (this.memoization.getLimitTags != null) {
+            return this.memoization.getLimitTags;
+        }
+
+        const inputString = this.getInput("limit-tags");
+        if (inputString.length === 0) {
+            this.memoization.getLimitTags = 100;
+        } else {
+            this.memoization.getLimitTags = parseInt(inputString);
+        }
+
+        return this.memoization.getLimitTags;
+    }
+
+    /**
+     * Return the commit traversal limit if it exists, or undefined.
+     */
+    getLimitTraversalCommits(): number | undefined {
+        if (Object.hasOwn(this.memoization, "getLimitTraversalCommits")) {
+            return this.memoization.getLimitTraversalCommits;
+        }
+
+        const inputString = this.getInput("limit-traversal-commits");
+        if (inputString.length === 0) {
+            this.memoization.getLimitTraversalCommits = undefined;
+        } else {
+            this.memoization.getLimitTraversalCommits = parseInt(inputString);
+        }
+
+        return this.memoization.getLimitTraversalCommits;
+    }
+
+    /**
+     * Return the tag traversal limit if it exists, or undefined.
+     */
+    getLimitTraversalTags(): number | undefined {
+        if (Object.hasOwn(this.memoization, "getLimitTraversalTags")) {
+            return this.memoization.getLimitTraversalTags;
+        }
+
+        const inputString = this.getInput("limit-traversal-tags");
+        if (inputString.length === 0) {
+            this.memoization.getLimitTraversalTags = undefined;
+        } else {
+            this.memoization.getLimitTraversalTags = parseInt(inputString);
+        }
+
+        return this.memoization.getLimitTraversalTags;
     }
 
     /**

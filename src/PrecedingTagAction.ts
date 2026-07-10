@@ -52,8 +52,12 @@ async function main(): Promise<void> {
     const primaryCacheKey = `${restoreCacheKey}-${input.cacheKeyFragment()}`;
 
     await octokit.loadCache(primaryCacheKey, restoreCacheKey);
-    const precedingTagAlgo: TopologicalPrecedingTagAlgorithm = makeFlagTraversalPrecedingTagAlgorithm();
-    const precedingTag: Tag | null = await fetchPrecedingTag(githubAPI, input.getRef(), precedingTagAlgo, {
+    const precedingTagAlgo: TopologicalPrecedingTagAlgorithm = makeFlagTraversalPrecedingTagAlgorithm(
+        input.getLimitTraversalCommits(),
+        input.getLimitTraversalTags()
+    );
+
+    const precedingTag: Tag | null = await fetchPrecedingTag(githubAPI, octokit.log, input.getRef(), precedingTagAlgo, {
         filter: input.getFilter(),
         includeRef: input.getIncludeRef()
     });

@@ -3,10 +3,14 @@ import type { GitRef } from "./types/GitRef";
 import type { DateTag } from "./types/DateTag";
 import type { Tag } from "./types/Tag";
 import type { TopologicalPrecedingTagAlgorithm } from "./types/TopologicalPrecedingTagAlgorithm";
+import type { Octokit } from "@octokit/rest";
+
+type Octokit_log = Octokit["log"];
 
 interface Options {
     filter?: (string: string) => boolean;
     includeRef?: boolean;
+    maxTags?: number;
 }
 
 /**
@@ -18,15 +22,26 @@ interface Options {
  * Will reject if the API is unavailable, or if the reference does not exist.
  */
 // eslint-disable-next-line max-len
-async function fetchPrecedingTag(githubAPI: GitHubAPI, ref: GitRef, precedingTagAlgo: TopologicalPrecedingTagAlgorithm, options?: Options): Promise<Tag | null> {
+async function fetchPrecedingTag(githubAPI: GitHubAPI, log: Octokit_log, ref: GitRef, precedingTagAlgo: TopologicalPrecedingTagAlgorithm, options?: Options): Promise<Tag | null> {
     const optionsWithDefaults = {
         filter: (string: string): boolean => string.length > 0,
         includeRef: false,
+        maxTags: 100,
         ...options
     } satisfies Required<Options>;
 
     const sha = await githubAPI.fetchCommitSHA(ref);
-    const allTags = await Array.fromAsync(githubAPI.fetchTags(optionsWithDefaults.filter));
+    const allTags = [];
+    let count = 0;
+    for await (const tag of githubAPI.fetchTags(optionsWithDefaults.filter)) {
+        allTags.push(tag);
+        count++;
+        if (count >= optionsWithDefaults.maxTags) {
+            log.warn(`Tag fetch limit reached. (${count} >= ${optionsWithDefaults.maxTags})`);
+            break;
+        }
+    }
+
     const precedingTags: DateTag[] = [...await precedingTagAlgo(sha, allTags.values(), optionsWithDefaults.includeRef, githubAPI)];
 
     if (precedingTags.length === 0) {

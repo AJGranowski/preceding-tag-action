@@ -6,8 +6,6 @@ import type { GitRef } from "./types/GitRef";
 import type { Repository } from "./types/Repository";
 import type { Tag } from "./types/Tag";
 
-const MAX_TAGS: number = 100;
-
 type MaxBatchSizeType<T> = {
     readonly [K in keyof T]?: T[K] extends ((...args: any[]) => any) ? number : never;
 };
@@ -31,13 +29,12 @@ class GitHubAPI {
      *
      * Will reject if the API is unavailable.
      */
-    async *fetchTags(filter: (string: string) => boolean): AsyncGenerator<Tag> {
-        let totalTags = 0;
+    async *fetchTags(filter: (string: string) => boolean, batchSize: number = 100): AsyncGenerator<Tag> {
         // https://docs.github.com/en/rest/repos/repos?apiVersion=2022-11-28#list-repository-tags
         const pageIterator = this.octokit.paginate.iterator(this.octokit.rest.repos.listTags, {
             owner: this.repo.owner,
             repo: this.repo.repo,
-            per_page: Math.min(GitHubAPI.MAX_BATCH_SIZE.fetchTags, MAX_TAGS) // max
+            per_page: Math.min(GitHubAPI.MAX_BATCH_SIZE.fetchTags, batchSize) // max
         });
 
         for await (const response of pageIterator) {
@@ -48,12 +45,6 @@ class GitHubAPI {
                 }));
 
             for (const tag of result) {
-                totalTags++;
-                if (totalTags >= MAX_TAGS) {
-                    this.octokit.log.warn(`Total tag limit reached in request ${response.url}. (${totalTags} >= ${MAX_TAGS})`);
-                    return;
-                }
-
                 yield tag;
             }
         }
