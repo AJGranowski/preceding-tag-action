@@ -76,7 +76,7 @@ describe("GitHubAPI", () => {
                 return mapper(await fn(args), () => {});
             };
 
-            paginate.iterator = async function* (fn: any, args: any): AsyncIterable<any> {
+            paginate.iterator = async function* (fn: any, args: any): AsyncGenerator<any> {
                 yield await fn(args);
             };
 

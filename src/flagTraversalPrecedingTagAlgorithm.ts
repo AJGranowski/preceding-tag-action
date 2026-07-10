@@ -41,7 +41,9 @@ const makeFlagTraversalPrecedingTagAlgorithm = (traversalCommitsLimit: number = 
         }));
 
         g.addCommit(headCommitSHA);
+        let noTags = true;
         for (const tag of tags) {
+            noTags = false;
             if (g.hasCommit(tag.sha)) {
                 g.getCommit(tag.sha)!.tags.add(tag.name);
             } else {
@@ -52,6 +54,11 @@ const makeFlagTraversalPrecedingTagAlgorithm = (traversalCommitsLimit: number = 
                     commitDate: undefined
                 });
             }
+        }
+
+        // Don't search if there's nothing to search for
+        if (noTags) {
+            return [].values();
         }
 
         const tag_to_flags = new Map();

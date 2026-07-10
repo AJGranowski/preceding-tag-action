@@ -44,7 +44,7 @@ vi.mock("@octokit/rest", () => {
         return mapper(await fn(args), () => {});
     };
 
-    Octokit.prototype.paginate.iterator = async function* (fn: any, args: any): AsyncIterable<any> {
+    Octokit.prototype.paginate.iterator = async function* (fn: any, args: any): AsyncGenerator<any> {
         yield await fn(args);
     };
 
@@ -75,6 +75,28 @@ describe("Fuzzing PrecedingTagAction", () => {
             fc.func(fc.boolean()), // getBooleanInput
             fc.string(), // owner
             fc.string(), // repo
+            fc.record({ // listCommits
+                headers: fc.object(),
+                status: fc.constant(200),
+                url: fc.webUrl(),
+                data: fc.array(
+                    fc.record({
+                        sha: fc.string(),
+                        commit: fc.record({
+                            author: fc.option(fc.record({
+                                date: fc.date({noInvalidDate: true}).chain((x: any) => fc.constant(x.toISOString()))
+                            })),
+                            committer: fc.option(fc.record({
+                                date: fc.date({noInvalidDate: true}).chain((x: any) => fc.constant(x.toISOString()))
+                            }))
+                        }),
+                        parents: fc.array(fc.record({
+                            sha: fc.string()
+                        }))
+                    }),
+                    {minLength: 1}
+                )
+            }),
             fc.record({ // listTags
                 headers: fc.object(),
                 status: fc.constant(200),
@@ -135,6 +157,7 @@ describe("Fuzzing PrecedingTagAction", () => {
             getBooleanInput: any,
             owner: any,
             repo: any,
+            listCommits: any,
             listTags: any,
             compareCommitsWithBaseheadValue: any,
             getCommitValue: any) => { // eslint-disable-line max-params
@@ -153,6 +176,15 @@ describe("Fuzzing PrecedingTagAction", () => {
             (Octokit.prototype as any).saveCache = () => Promise.resolve();
             (Octokit.prototype as any).rest.repos.compareCommitsWithBasehead = () => Promise.resolve(compareCommitsWithBaseheadValue);
             (Octokit.prototype as any).rest.repos.getCommit = () => Promise.resolve(getCommitValue);
+            (Octokit.prototype as any).rest.repos.listCommits = (params: any) => {
+                // When requesting with a sha, the first entry of a successful response will always be the commit of that SHA.
+                if (Object.hasOwn(params, "sha")) {
+                    listCommits.data[0].sha = params.sha;
+                }
+
+                return Promise.resolve(listCommits);
+            };
+
             (Octokit.prototype as any).rest.repos.listTags = () => Promise.resolve(listTags);
 
             await PrecedingTagAction();
@@ -190,6 +222,7 @@ describe("Fuzzing PrecedingTagAction", () => {
             (Octokit.prototype as any).saveCache = () => Promise.reject();
             (Octokit.prototype as any).rest.repos.compareCommitsWithBasehead = () => {throw new Error("Not implemented.");};
             (Octokit.prototype as any).rest.repos.getCommit = () => {throw new Error("Not implemented.");};
+            (Octokit.prototype as any).rest.repos.listCommits = () => {throw new Error("Not implemented.");};
             (Octokit.prototype as any).rest.repos.listTags = () => {throw new Error("Not implemented.");};
         }), {includeErrorInReport: true});
     });
