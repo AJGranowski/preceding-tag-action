@@ -163,7 +163,7 @@ class Input {
      * Return the token if it exists, or undefined.
      */
     getToken(): string | undefined {
-        if ("getToken" in this.memoization) {
+        if (Object.hasOwn(this.memoization, "getToken")) {
             return this.memoization.getToken;
         }
 

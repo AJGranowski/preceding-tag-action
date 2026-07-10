@@ -163,7 +163,7 @@ describe("Fuzzing PrecedingTagAction", () => {
             getCommitValue: any) => { // eslint-disable-line max-params
 
             (core as any).getInput = vi.fn().mockImplementation((key) => {
-                if (key in getInput) {
+                if (Object.hasOwn(getInput, key)) {
                     return getInput[key];
                 }
 
