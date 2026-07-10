@@ -1,4 +1,5 @@
 import type { GitHubAPI } from "./GitHubAPI";
+import type { DateTag } from "./types/DateTag";
 import type { Tag } from "./types/Tag";
 import type { TopologicalPrecedingTagAlgorithm } from "./types/TopologicalPrecedingTagAlgorithm";
 
@@ -8,7 +9,7 @@ interface TagDifference {
 }
 
 // eslint-disable-next-line max-len
-const comparePrecedingTagAlgorithm: TopologicalPrecedingTagAlgorithm = async (headCommitSHA: string, tags: IteratorObject<Tag>, includeHeadCommitSHA: boolean, githubAPI: GitHubAPI): Promise<IteratorObject<Tag>> => {
+const comparePrecedingTagAlgorithm: TopologicalPrecedingTagAlgorithm = async (headCommitSHA: string, tags: IteratorObject<Tag>, includeHeadCommitSHA: boolean, githubAPI: GitHubAPI): Promise<IteratorObject<DateTag>> => {
     const tagDistances = tags.map(async (tag) => {
         return {
             tags: [tag],
@@ -48,9 +49,12 @@ const comparePrecedingTagAlgorithm: TopologicalPrecedingTagAlgorithm = async (he
 
     if (precedingTag == null) {
         return [].values();
-    } else {
-        return precedingTag.tags.values();
     }
+
+    return (await Promise.all(precedingTag.tags.map(async (tag: Tag): Promise<DateTag> => ({
+        ...tag,
+        commitDate: await githubAPI.fetchCommitDate(tag.sha)
+    })))).values();
 };
 
 export { comparePrecedingTagAlgorithm };

@@ -5,7 +5,7 @@ type NotUndefined = {} | null;
 
 interface Node<T> {
     allParentsKnown: boolean;
-    commitSHA: string
+    commitSHA: string;
     data: T;
     parents: Set<string>;
 }
@@ -104,6 +104,7 @@ class LazyGitHubGraph<T extends NotUndefined> {
     /**
      * Optionally fetch nodes
      */
+    // eslint-disable-next-line complexity
     private async fetchCommits(commitSHA: string, batchSize: number): Promise<void> {
         if (!this.requestedNodes.has(commitSHA) && (!this.nodes.has(commitSHA) || !this.nodes.get(commitSHA)!.allParentsKnown)) {
             let counter = 0;
@@ -111,6 +112,10 @@ class LazyGitHubGraph<T extends NotUndefined> {
                 let data = this.defaultDataFn();
                 if (this.nodes.has(result.sha)) {
                     data = this.nodes.get(result.sha)!.data;
+                }
+
+                if (data != null && typeof data === "object") {
+                    (data as any)["commitDate"] = result.commitDate;
                 }
 
                 this.nodes.set(result.sha, {

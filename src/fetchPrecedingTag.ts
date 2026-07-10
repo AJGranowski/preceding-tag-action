@@ -1,5 +1,6 @@
 import type { GitHubAPI } from "./GitHubAPI";
 import type { GitRef } from "./types/GitRef";
+import type { DateTag } from "./types/DateTag";
 import type { Tag } from "./types/Tag";
 import type { TopologicalPrecedingTagAlgorithm } from "./types/TopologicalPrecedingTagAlgorithm";
 
@@ -26,7 +27,7 @@ async function fetchPrecedingTag(githubAPI: GitHubAPI, ref: GitRef, precedingTag
 
     const sha = await githubAPI.fetchCommitSHA(ref);
     const allTags = await Array.fromAsync(githubAPI.fetchTags(optionsWithDefaults.filter));
-    const precedingTags = [...await precedingTagAlgo(sha, allTags.values(), optionsWithDefaults.includeRef, githubAPI)];
+    const precedingTags: DateTag[] = [...await precedingTagAlgo(sha, allTags.values(), optionsWithDefaults.includeRef, githubAPI)];
 
     if (precedingTags.length === 0) {
         return null;
@@ -34,14 +35,7 @@ async function fetchPrecedingTag(githubAPI: GitHubAPI, ref: GitRef, precedingTag
         return precedingTags[0];
     }
 
-    const commitDates = await Promise.all(precedingTags.map(async (tag) => {
-        return {
-            tag: tag,
-            commitDate: await githubAPI.fetchCommitDate(tag.sha)
-        };
-    }));
-
-    return commitDates.reduce((prev, next) => {
+    return precedingTags.reduce((prev, next) => {
         let compareNextPrev = nullableDateComparator(next.commitDate.committer, prev.commitDate.committer);
         if (compareNextPrev > 0) {
             return next;
@@ -58,7 +52,7 @@ async function fetchPrecedingTag(githubAPI: GitHubAPI, ref: GitRef, precedingTag
         }
 
         return prev;
-    }).tag;
+    });
 }
 
 /**

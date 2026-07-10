@@ -1,4 +1,6 @@
+import type { CommitDate } from "./types/CommitDate";
 import type { GitHubAPI } from "./GitHubAPI";
+import type { DateTag } from "./types/DateTag";
 import type { Tag } from "./types/Tag";
 import type { TopologicalPrecedingTagAlgorithm } from "./types/TopologicalPrecedingTagAlgorithm";
 import { LazyGitHubGraph } from "./LazyGitHubGraph";
@@ -30,11 +32,12 @@ const makeFlagTraversalPrecedingTagAlgorithm = (traversalCommitsLimit: number = 
     }
 
     // eslint-disable-next-line complexity
-    return async (headCommitSHA: string, tags: IteratorObject<Tag>, includeHeadCommitSHA: boolean, githubAPI: GitHubAPI): Promise<IteratorObject<Tag>> => {
+    return async (headCommitSHA: string, tags: IteratorObject<Tag>, includeHeadCommitSHA: boolean, githubAPI: GitHubAPI): Promise<IteratorObject<DateTag>> => {
         const g = new LazyGitHubGraph(githubAPI, () => ({
             flags: 0 as number,
             depth: null as number | null,
-            tags: new Set<string>()
+            tags: new Set<string>(),
+            commitDate: undefined as CommitDate | undefined
         }));
 
         g.addCommit(headCommitSHA);
@@ -45,7 +48,8 @@ const makeFlagTraversalPrecedingTagAlgorithm = (traversalCommitsLimit: number = 
                 g.addCommit(tag.sha, {
                     flags: 0,
                     depth: null,
-                    tags: new Set([tag.name])
+                    tags: new Set([tag.name]),
+                    commitDate: undefined
                 });
             }
         }
@@ -115,16 +119,17 @@ const makeFlagTraversalPrecedingTagAlgorithm = (traversalCommitsLimit: number = 
 
         let lowestFlagCount = null;
         let lowestDepth = null;
-        let precedingCommits: Tag[] = [];
+        let precedingCommits: DateTag[] = [];
         for (const commit of g.getCommits()) {
             // eslint-disable-next-line max-len
             if (commit.data.depth == null || commit.data.tags.size === 0 || (commit.data.flags & SEEN_FLAG) !== SEEN_FLAG || (!includeHeadCommitSHA && commit.commitSHA === headCommitSHA)) {
                 continue;
             }
 
-            const tags: IteratorObject<Tag> = commit.data.tags.values().map((tag) => ({
+            const tags: IteratorObject<DateTag> = commit.data.tags.values().map((tag) => ({
                 name: tag,
-                sha: commit.commitSHA
+                sha: commit.commitSHA,
+                commitDate: commit.data.commitDate == null ? {} : commit.data.commitDate
             }));
 
             const flagCount = countBits(commit.data.flags);
