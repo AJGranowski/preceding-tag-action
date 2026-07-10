@@ -3,9 +3,6 @@ import type { GitRef } from "./types/GitRef";
 import type { Tag } from "./types/Tag";
 import type { TopologicalPrecedingTagAlgorithm } from "./types/TopologicalPrecedingTagAlgorithm";
 
-import { comparePrecedingTagAlgorithm } from "./comparePrecedingTagAlgorithm";
-import { makeFlagTraversalPrecedingTagAlgorithm } from "./flagTraversalPrecedingTagAlgorithm";
-
 interface Options {
     filter?: (string: string) => boolean;
     includeRef?: boolean;
@@ -19,7 +16,8 @@ interface Options {
  *
  * Will reject if the API is unavailable, or if the reference does not exist.
  */
-async function fetchPrecedingTag(githubAPI: GitHubAPI, ref: GitRef, options?: Options): Promise<Tag | null> {
+// eslint-disable-next-line max-len
+async function fetchPrecedingTag(githubAPI: GitHubAPI, ref: GitRef, precedingTagAlgo: TopologicalPrecedingTagAlgorithm, options?: Options): Promise<Tag | null> {
     const optionsWithDefaults = {
         filter: (string: string): boolean => string.length > 0,
         includeRef: false,
@@ -28,12 +26,7 @@ async function fetchPrecedingTag(githubAPI: GitHubAPI, ref: GitRef, options?: Op
 
     const sha = await githubAPI.fetchCommitSHA(ref);
     const allTags = await Array.fromAsync(githubAPI.fetchTags(optionsWithDefaults.filter));
-
-    const precedingTagAlgos: Map<string, TopologicalPrecedingTagAlgorithm> = new Map();
-    precedingTagAlgos.set("compare", comparePrecedingTagAlgorithm);
-    precedingTagAlgos.set("flag traversal", makeFlagTraversalPrecedingTagAlgorithm());
-
-    const precedingTags = [...await precedingTagAlgos.get("compare")!(sha, allTags.values(), optionsWithDefaults.includeRef, githubAPI)];
+    const precedingTags = [...await precedingTagAlgo(sha, allTags.values(), optionsWithDefaults.includeRef, githubAPI)];
 
     if (precedingTags.length === 0) {
         return null;

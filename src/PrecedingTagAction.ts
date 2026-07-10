@@ -9,6 +9,9 @@ import { fetchPrecedingTag } from "./fetchPrecedingTag";
 import { GitHubAPI } from "./GitHubAPI";
 import { Input } from "./Input";
 import type { Tag } from "./types/Tag";
+import type { TopologicalPrecedingTagAlgorithm } from "./types/TopologicalPrecedingTagAlgorithm";
+import { comparePrecedingTagAlgorithm } from "./comparePrecedingTagAlgorithm";
+import { makeFlagTraversalPrecedingTagAlgorithm } from "./flagTraversalPrecedingTagAlgorithm";
 
 // Do not retry if the retry time is longer than 62 minutes.
 const MAX_RETRY_TIME_SECONDS = 62 * 60;
@@ -49,8 +52,12 @@ async function main(): Promise<void> {
     const restoreCacheKey = `preceding-tag-action-${await githubAPI.fetchCommitSHA(input.getRef())}`;
     const primaryCacheKey = `${restoreCacheKey}-${input.cacheKeyFragment()}`;
 
+    const precedingTagAlgos: Map<string, TopologicalPrecedingTagAlgorithm> = new Map();
+    precedingTagAlgos.set("compare", comparePrecedingTagAlgorithm);
+    precedingTagAlgos.set("flag traversal", makeFlagTraversalPrecedingTagAlgorithm());
+
     await octokit.loadCache(primaryCacheKey, restoreCacheKey);
-    const precedingTag: Tag | null = await fetchPrecedingTag(githubAPI, input.getRef(), {
+    const precedingTag: Tag | null = await fetchPrecedingTag(githubAPI, input.getRef(), precedingTagAlgos.get("compare")!, {
         filter: input.getFilter(),
         includeRef: input.getIncludeRef()
     });
