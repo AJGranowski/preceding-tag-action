@@ -39,7 +39,7 @@ inputs:
     default: ^.+$
     required: false
   repository:
-    description: Repository name with owner. For example, AJGranowski/preceding-tag-action
+    description: Repository name with owner. For example, `AJGranowski/preceding-tag-action`
     default: ${{ github.repository }}
     required: false
   token:
