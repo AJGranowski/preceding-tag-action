@@ -53,22 +53,6 @@ async function* iterableToAsyncGenerator<T>(iterable: Iterable<T>): AsyncGenerat
     }
 }
 
-function makeFetchCommitDifferenceProcedure(target: string, differences: Record<string, number>): (a: string, b: string) => Promise<number> {
-    return (a: string, b: string) => {
-        if (b === target) {
-            return Promise.resolve(differences[a] ?? NaN);
-        } else if (a === target) {
-            return Promise.resolve(-(differences[b] ?? NaN));
-        }
-
-        throw new Error(`Neither compared tags match the target tag ${target}`);
-    };
-}
-
-function randomString(): string {
-    return Math.floor(Math.random() * Number.MAX_SAFE_INTEGER).toString();
-}
-
 describe("fetchPrecedingTag", () => {
     let githubAPI: MockProxy<GitHubAPI>;
     beforeEach(() => {

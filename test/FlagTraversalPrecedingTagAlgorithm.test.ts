@@ -72,7 +72,7 @@ describe("FlagTraversalPrecedingTagAlgorithm", () => {
                 {sha: "0", commitDate: {}, parentSHAs: ["a1", "b1"]},
                 {sha: "a1", commitDate: {}, parentSHAs: []},
                 {sha: "b1", commitDate: {}, parentSHAs: ["b2"]},
-                {sha: "b2", commitDate: {}, parentSHAs: []},
+                {sha: "b2", commitDate: {}, parentSHAs: []}
             ]));
 
             const result = await flagTraversalPrecedingTagAlgorithm("0", tags.values(), true, githubAPI);
