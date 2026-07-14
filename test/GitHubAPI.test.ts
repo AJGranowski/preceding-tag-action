@@ -355,7 +355,7 @@ describe("GitHubAPI", () => {
             });
 
             const githubAPI = new GitHubAPI(octokit, defaultRepo);
-            expect(() => Array.fromAsync(githubAPI.fetchCommitList("sha1"))).rejects.toThrowError();
+            await expect(() => Array.fromAsync(githubAPI.fetchCommitList("sha1"))).rejects.toThrowError();
         });
     });
 });

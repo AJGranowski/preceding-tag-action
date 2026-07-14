@@ -4,6 +4,7 @@ import type { DateTag } from "./types/DateTag";
 import type { Tag } from "./types/Tag";
 import type { TopologicalPrecedingTagAlgorithm } from "./types/TopologicalPrecedingTagAlgorithm";
 import { LazyGitHubGraph } from "./LazyGitHubGraph";
+import { Queue } from "./Queue";
 
 interface QueueEntry {
     commitSHA: string;
@@ -63,14 +64,15 @@ const makeFlagTraversalPrecedingTagAlgorithm = (traversalCommitsLimit: number = 
 
         const tag_to_flags = new Map();
         let seen_commits = 0;
-        const q: QueueEntry[] = [{
+        const q = new Queue<QueueEntry>();
+        q.enqueue({
             commitSHA: headCommitSHA,
             depth: 0,
             flags: SEEN_FLAG
-        }];
+        });
 
-        while (q.length > 0) {
-            const element = q.shift()!;
+        while (q.hasItems()) {
+            const element = q.dequeue()!;
             const commitSHA = element.commitSHA;
             let depth = element.depth;
             let flags = element.flags;
@@ -79,15 +81,10 @@ const makeFlagTraversalPrecedingTagAlgorithm = (traversalCommitsLimit: number = 
                 LazyGitHubGraph.MAX_FETCH_SIZE :
                 Math.max(MIN_BATCH_SIZE, Math.min(LazyGitHubGraph.MAX_FETCH_SIZE, Math.round(2 * seen_commits / tag_to_flags.size)));
 
-            // Skip invalid commits
-            if (!(await g.hasCommit(commitSHA, batchSize))) {
-                continue;
-            }
-
             const data = (await g.getCommit(commitSHA, batchSize))!;
 
             // Skip visited commits
-            if (data.flags === flags) {
+            if ((data.flags & flags) === flags) {
                 continue;
             }
 
@@ -100,7 +97,9 @@ const makeFlagTraversalPrecedingTagAlgorithm = (traversalCommitsLimit: number = 
                 seen_commits++;
             }
 
-            data.flags |= flags;
+            flags |= data.flags;
+            data.flags = flags;
+
             if (data.depth == null) {
                 data.depth = depth;
             } else {
@@ -116,7 +115,7 @@ const makeFlagTraversalPrecedingTagAlgorithm = (traversalCommitsLimit: number = 
             }
 
             for (const parent of await g.getParents(commitSHA, batchSize)) {
-                q.push({
+                q.enqueue({
                     commitSHA: parent,
                     depth: depth + 1,
                     flags: flags
