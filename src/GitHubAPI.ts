@@ -53,7 +53,6 @@ class GitHubAPI {
     /**
      * Begin fetching bached ancestor commits from a starting SHA.
      */
-    // eslint-disable-next-line complexity
     async *fetchCommitList(commitSHA: string, batchSize: number = 30): AsyncGenerator<CommitListItem> {
         // https://docs.github.com/en/rest/commits/commits#list-commits
         const pageIterator = this.octokit.paginate.iterator(this.octokit.rest.repos.listCommits, {
@@ -67,21 +66,14 @@ class GitHubAPI {
         for await (const commitListResponse of pageIterator) {
             if (isFirst) {
                 isFirst = false;
-                if (commitListResponse.data.length === 0 || commitListResponse.data[0].sha !== commitSHA) {
+                if (!this.isValidListCommitsResponse(commitSHA, commitListResponse)) {
                     // eslint-disable-next-line max-len
                     throw new Error(`Expected requested SHA (${commitSHA}) to appear as the first result in the response, but got ${commitListResponse.data[0]?.sha} instead.`);
                 }
             }
 
             for (const item of commitListResponse.data) {
-                yield {
-                    sha: item.sha,
-                    commitDate: {
-                        author: item.commit.author?.date,
-                        committer: item.commit.committer?.date
-                    },
-                    parentSHAs: item.parents == null ? [] : item.parents.map((x) => x.sha)
-                };
+                yield this.listCommitsDataToCommitListItem(item);
             }
         }
 
@@ -159,9 +151,23 @@ class GitHubAPI {
     }
 
     /**
+     * @returns Remaps a listCommits entry into a CommitListItem
+     */
+    private listCommitsDataToCommitListItem(data: Awaited<ReturnType<Octokit["rest"]["repos"]["listCommits"]>>["data"][number]): CommitListItem {
+        return {
+            sha: data.sha,
+            commitDate: {
+                author: data.commit.author?.date,
+                committer: data.commit.committer?.date
+            },
+            parentSHAs: data.parents == null ? [] : data.parents.map((x) => x.sha)
+        };
+    }
+
+    /**
      * Return true if this error response is due to the compare diff taking too long to generate.
      */
-    isCompareDiffTooLargeError(error: any): boolean {
+    private isCompareDiffTooLargeError(error: any): boolean {
         if (error == null || error.status == null || error.request == null || error.response == null || error.response.data == null) {
             return false;
         }
@@ -173,10 +179,14 @@ class GitHubAPI {
         return false;
     }
 
+    private isValidListCommitsResponse(requestCommitSHA: string, response: Awaited<ReturnType<Octokit["rest"]["repos"]["listCommits"]>>): boolean {
+        return response.data.length > 0 && response.data[0].sha === requestCommitSHA;
+    }
+
     /**
      * Extract the commit difference from a compareCommitsWithBasehead response.
      */
-    parseCommitDifference(response: Awaited<ReturnType<Octokit["rest"]["repos"]["compareCommitsWithBasehead"]>>): number {
+    private parseCommitDifference(response: Awaited<ReturnType<Octokit["rest"]["repos"]["compareCommitsWithBasehead"]>>): number {
         switch (response.data.status) {
             case "ahead":
                 if (response.data.ahead_by < 0) {

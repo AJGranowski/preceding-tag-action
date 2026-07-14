@@ -145,7 +145,7 @@ const makeFlagTraversalPrecedingTagAlgorithm = (traversalCommitsLimit: number = 
                 lowestFlagCount = flagCount;
                 lowestDepth = commit.data.depth;
                 precedingCommits = [...tags];
-            } else if (flagCount === lowestFlagCount && (lowestDepth == null || commit.data.depth < lowestDepth)) {
+            } else if (flagCount === lowestFlagCount && (lowestDepth == null || commit.data.depth! < lowestDepth)) {
                 lowestDepth = commit.data.depth;
                 precedingCommits = [...tags];
             } else if (flagCount === lowestFlagCount && commit.data.depth === lowestDepth) {
