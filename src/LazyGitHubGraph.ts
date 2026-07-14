@@ -104,9 +104,8 @@ class LazyGitHubGraph<T extends NotUndefined> {
     /**
      * Optionally fetch nodes
      */
-    // eslint-disable-next-line complexity
     private async fetchCommits(commitSHA: string, batchSize: number): Promise<void> {
-        if (!this.requestedNodes.has(commitSHA) && (!this.nodes.has(commitSHA) || !this.nodes.get(commitSHA)!.allParentsKnown)) {
+        if (this.shouldFetchCommit(commitSHA)) {
             let counter = 0;
             for await (const result of this.githubAPI.fetchCommitList(commitSHA, batchSize)) {
                 let data = this.defaultDataFn();
@@ -133,6 +132,13 @@ class LazyGitHubGraph<T extends NotUndefined> {
 
             this.requestedNodes.add(commitSHA);
         }
+    }
+
+    /**
+     * @returns true if fetching this commit might be useful
+     */
+    private shouldFetchCommit(commitSHA: string): boolean {
+        return !this.requestedNodes.has(commitSHA) && (!this.nodes.has(commitSHA) || !this.nodes.get(commitSHA)!.allParentsKnown);
     }
 }
 
