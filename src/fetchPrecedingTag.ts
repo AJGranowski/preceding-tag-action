@@ -21,8 +21,13 @@ interface Options {
  *
  * Will reject if the API is unavailable, or if the reference does not exist.
  */
-// eslint-disable-next-line max-len
-async function fetchPrecedingTag(githubAPI: GitHubAPI, log: Octokit_log, ref: GitRef, precedingTagAlgo: TopologicalPrecedingTagAlgorithm, options?: Options): Promise<Tag | null> {
+async function fetchPrecedingTag(githubAPI: GitHubAPI,
+    log: Octokit_log,
+    ref: GitRef,
+    precedingTagAlgo:
+    TopologicalPrecedingTagAlgorithm,
+    options?: Options): Promise<Tag | null> {
+
     const optionsWithDefaults = {
         filter: (string: string): boolean => string.length > 0,
         includeRef: false,

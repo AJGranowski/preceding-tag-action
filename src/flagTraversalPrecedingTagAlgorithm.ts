@@ -127,8 +127,10 @@ const makeFlagTraversalPrecedingTagAlgorithm = (traversalCommitsLimit: number = 
         let lowestDepth = null;
         let precedingCommits: DateTag[] = [];
         for (const commit of g.getCommits()) {
-            // eslint-disable-next-line max-len
-            if (commit.data.depth == null || commit.data.tags.size === 0 || (commit.data.flags & SEEN_FLAG) !== SEEN_FLAG || (!includeHeadCommitSHA && commit.commitSHA === headCommitSHA)) {
+            const invalidCommit = commit.data.depth == null || (!includeHeadCommitSHA && commit.commitSHA === headCommitSHA);
+            const unseenCommit = (commit.data.flags & SEEN_FLAG) !== SEEN_FLAG;
+            const untaggedCommit = commit.data.tags.size === 0;
+            if (invalidCommit || unseenCommit || untaggedCommit) {
                 continue;
             }
 
