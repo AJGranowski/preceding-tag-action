@@ -104,6 +104,10 @@ function isTraversalLimitReached(seenCommits: number, seenTags: number, traversa
     return seenCommits >= traversalCommitsLimit || (seenTags >= traversalTagsLimit && seenCommits > 0);
 }
 
+/**
+ * Create a topological preceding tag algorithm that traverses some number of tags, and returns the shallowest tag with no tagged descendants.
+ * @throws Throws an error if the number of tags to traverse is too high.
+ */
 const makeFlagTraversalPrecedingTagAlgorithm = (traversalCommitsLimit: number = 200, traversalTagsLimit: number = 6): TopologicalPrecedingTagAlgorithm => {
     if (traversalTagsLimit > MAX_TAGS) {
         throw new Error(`The input tag traversal limit: ${traversalTagsLimit}, is larger than the maximum limit of ${MAX_TAGS})`);
