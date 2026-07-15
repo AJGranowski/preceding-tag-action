@@ -24,8 +24,7 @@ interface Options {
 async function fetchPrecedingTag(githubAPI: GitHubAPI,
     log: Octokit_log,
     ref: GitRef,
-    precedingTagAlgo:
-    TopologicalPrecedingTagAlgorithm,
+    precedingTagAlgo: TopologicalPrecedingTagAlgorithm,
     options?: Options): Promise<Tag | null> {
 
     const optionsWithDefaults = {
