@@ -2,6 +2,7 @@ import type { CommitDate } from "./types/CommitDate";
 import type { DateTag } from "./types/DateTag";
 import type { GitHubAPI } from "./GitHubAPI";
 import { LazyGitHubGraph } from "./LazyGitHubGraph";
+import type { LazyGitHubGraphNode } from "./LazyGitHubGraph";
 import { Queue } from "./Queue";
 import type { Tag } from "./types/Tag";
 import type { TopologicalPrecedingTagAlgorithm } from "./types/TopologicalPrecedingTagAlgorithm";
@@ -63,12 +64,12 @@ function calculateBatchSize(numberOfFoundTags: number, seenCommits: number): num
 /**
  * Given a traversed graph, find the tags with the lowest traversal flag count and shallowest depth.
  */
-// eslint-disable-next-line complexity
-function findPrecedingTags(graph: LazyGitHubGraph<GraphData>, headCommitSHA: string, includeHeadCommitSHA: boolean): IteratorObject<DateTag> {
+// eslint-disable-next-line complexity, max-len
+function findPrecedingTags(graphCommits: IteratorObject<LazyGitHubGraphNode<GraphData>>, headCommitSHA: string, includeHeadCommitSHA: boolean): IteratorObject<DateTag> {
     let lowestFlagCount = null;
     let lowestDepth = null;
     let precedingCommits: DateTag[] = [];
-    for (const commit of graph.getCommits()) {
+    for (const commit of graphCommits) {
         const invalidCommit = commit.data.depth == null || (!includeHeadCommitSHA && commit.commitSHA === headCommitSHA);
         const unseenCommit = (commit.data.flags & SEEN_FLAG) !== SEEN_FLAG;
         const untaggedCommit = commit.data.tags.size === 0;
@@ -191,7 +192,7 @@ const makeFlagTraversalPrecedingTagAlgorithm = (traversalCommitsLimit: number = 
         };
 
         await bfs(bfsInitialize, bfsTraversal);
-        return findPrecedingTags(graph, headCommitSHA, includeHeadCommitSHA);
+        return findPrecedingTags(graph.getCommits(), headCommitSHA, includeHeadCommitSHA);
     };
 };
 

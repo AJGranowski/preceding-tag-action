@@ -143,3 +143,4 @@ class LazyGitHubGraph<T extends NotUndefined> {
 }
 
 export { LazyGitHubGraph };
+export type { Node as LazyGitHubGraphNode };
