@@ -172,8 +172,7 @@ const makeFlagTraversalPrecedingTagAlgorithm = (traversalCommitsLimit: number = 
                 visitedCommits++;
             }
 
-            flags |= data.flags;
-            data.flags = flags;
+            data.flags = flags = data.flags | flags;
 
             if (data.depth == null) {
                 data.depth = depth;
