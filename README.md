@@ -48,7 +48,7 @@ Although this project publishes version tags, I strongly recommend [pinning this
 | `token`                   | String  | `${{ github.token }}`      | Personal access token (PAT) used to fetch the tags.                                                                                                               |
 | `limit-tags`              | Number  | `100`                      | Tag fetch limit. Only tags matching `regex` count towards this limit. Increasing this may produce a more accurate result when `ref` is very far away from `HEAD`. |
 | `limit-traversal-commits` | Number  | `1000`                     | The commit traversal limit while searching for a preceding tag.                                                                                                   |
-| `limit-traversal-tags`    | Number  | `6`                        | The tag traversal limit while searching for a preceding tag. Behaves similar to `--candidates`` on `git describe`.                                                |
+| `limit-traversal-tags`    | Number  | `6`                        | The tag traversal limit while searching for a preceding tag. Behaves similar to `--candidates` on `git describe`.                                                 |
 
 ## Outputs
 | Name        | Type    | Description                                                                            |

@@ -27,7 +27,7 @@ inputs:
     default: "1000"
     required: false
   limit-traversal-tags:
-    description: The tag traversal limit while searching for a preceding tag. Behaves similar to `--candidates`` on `git describe`.
+    description: The tag traversal limit while searching for a preceding tag. Behaves similar to `--candidates` on `git describe`.
     default: "6"
     required: false
   ref:
