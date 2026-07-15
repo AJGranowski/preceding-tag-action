@@ -1,11 +1,10 @@
 import * as actionsCache from "@actions/cache";
+import { ETagRequestCacheDB } from "./ETagRequestCacheDB";
 import { hash } from "crypto";
 import { join as pathJoin } from "path";
 import { mkdir } from "fs/promises";
 import type { Octokit } from "@octokit/core";
 import type { OctokitResponse, RequestParameters } from "@octokit/types";
-
-import { ETagRequestCacheDB } from "./ETagRequestCacheDB";
 
 interface OctokitPluginRequestCacheOptions {
     actionsCache?: typeof actionsCache;

@@ -5,14 +5,12 @@ import {
     test,
     vi
 } from "vitest";
+import { ETagRequestCacheDB } from "../src/ETagRequestCacheDB";
 import type { Mock } from "vitest";
 import { mock } from "vitest-mock-extended";
-
-import { DatabaseSync as SQLiteDB } from "node:sqlite";
 import type { Octokit } from "@octokit/rest";
-
-import { ETagRequestCacheDB } from "../src/ETagRequestCacheDB";
 import { requestCache } from "../src/OctokitPluginRequestCache";
+import { DatabaseSync as SQLiteDB } from "node:sqlite";
 
 describe("OctokitPluginRequestCache", () => {
     let actionsCache: any;

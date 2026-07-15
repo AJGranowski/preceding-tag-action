@@ -7,9 +7,8 @@ import {
     vi
 } from "vitest";
 import { DatabaseSync as SQLiteDB } from "node:sqlite";
-import { mock } from "vitest-mock-extended";
-
 import { ETagRequestCacheDB } from "../src/ETagRequestCacheDB";
+import { mock } from "vitest-mock-extended";
 
 describe("ETagRequestCacheDB", () => {
     let db: SQLiteDB;

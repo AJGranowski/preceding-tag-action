@@ -4,11 +4,10 @@ import {
     expect,
     test
 } from "vitest";
-
+import { fetchPrecedingTag } from "../src/fetchPrecedingTag";
+import type { GitHubAPI } from "../src/GitHubAPI";
 import { mock } from "vitest-mock-extended";
 import type { MockProxy } from "vitest-mock-extended";
-import type { GitHubAPI } from "../src/GitHubAPI";
-import { fetchPrecedingTag } from "../src/fetchPrecedingTag";
 import type { Tag } from "../src/types/Tag";
 
 interface TestParameter {

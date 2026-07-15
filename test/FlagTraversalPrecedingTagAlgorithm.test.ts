@@ -4,13 +4,11 @@ import {
     expect,
     test
 } from "vitest";
-
+import type { GitHubAPI } from "../src/GitHubAPI";
+import { makeFlagTraversalPrecedingTagAlgorithm } from "../src/flagTraversalPrecedingTagAlgorithm";
 import { mock } from "vitest-mock-extended";
 import type { MockProxy } from "vitest-mock-extended";
-import type { GitHubAPI } from "../src/GitHubAPI";
 import type { TopologicalPrecedingTagAlgorithm } from "../src/types/TopologicalPrecedingTagAlgorithm";
-
-import { makeFlagTraversalPrecedingTagAlgorithm } from "../src/flagTraversalPrecedingTagAlgorithm";
 
 async function* iterableToAsyncGenerator<T>(iterable: Iterable<T>): AsyncGenerator<T> {
     for (const item of iterable) {

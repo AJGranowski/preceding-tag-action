@@ -1,7 +1,6 @@
 import type { context } from "@actions/github";
 import type { getBooleanInput, getInput, warning } from "@actions/core";
 import { hash } from "crypto";
-
 import type { Repository } from "./types/Repository";
 
 type Core_getBooleanInput = typeof getBooleanInput;

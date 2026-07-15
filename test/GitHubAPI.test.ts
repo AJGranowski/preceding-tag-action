@@ -4,13 +4,10 @@ import {
     expect,
     test
 } from "vitest";
-
-import { mock } from "vitest-mock-extended";
-
-import type { Octokit } from "@octokit/rest";
-
 import type { CommitDate } from "../src/types/CommitDate";
 import { GitHubAPI } from "../src/GitHubAPI";
+import type { Octokit } from "@octokit/rest";
+import { mock } from "vitest-mock-extended";
 import type { Repository } from "../src/types/Repository";
 
 const defaultRepo = {

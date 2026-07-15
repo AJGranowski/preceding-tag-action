@@ -1,9 +1,9 @@
+import type { DateTag } from "./types/DateTag";
 import type { GitHubAPI } from "./GitHubAPI";
 import type { GitRef } from "./types/GitRef";
-import type { DateTag } from "./types/DateTag";
+import type { Octokit } from "@octokit/rest";
 import type { Tag } from "./types/Tag";
 import type { TopologicalPrecedingTagAlgorithm } from "./types/TopologicalPrecedingTagAlgorithm";
-import type { Octokit } from "@octokit/rest";
 
 type Octokit_log = Octokit["log"];
 

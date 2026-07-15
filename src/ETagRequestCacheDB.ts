@@ -1,8 +1,7 @@
+import type { CachedResponse } from "./types/CachedResponse";
+import { join as pathJoin } from "path";
 import { DatabaseSync as SQLiteDB } from "node:sqlite";
 import type { SQLOutputValue } from "node:sqlite";
-import { join as pathJoin } from "path";
-
-import type { CachedResponse } from "./types/CachedResponse";
 
 const CACHE_DIR = pathJoin("/", "tmp", ".cache", "preceding-tag-action");
 const REQUEST_CACHE_FILE = "request-cache.sqlite3";

@@ -1,16 +1,15 @@
-import * as core from "@actions/core";
 import { context } from "@actions/github";
-import { Octokit } from "@octokit/rest";
-import { retry } from "@octokit/plugin-retry";
-import { throttling } from "@octokit/plugin-throttling";
-
-import { requestCache } from "./OctokitPluginRequestCache";
+import * as core from "@actions/core";
 import { fetchPrecedingTag } from "./fetchPrecedingTag";
 import { GitHubAPI } from "./GitHubAPI";
 import { Input } from "./Input";
-import type { Tag } from "./types/Tag";
-import type { TopologicalPrecedingTagAlgorithm } from "./types/TopologicalPrecedingTagAlgorithm";
 import { makeFlagTraversalPrecedingTagAlgorithm } from "./flagTraversalPrecedingTagAlgorithm";
+import { Octokit } from "@octokit/rest";
+import { requestCache } from "./OctokitPluginRequestCache";
+import { retry } from "@octokit/plugin-retry";
+import type { Tag } from "./types/Tag";
+import { throttling } from "@octokit/plugin-throttling";
+import type { TopologicalPrecedingTagAlgorithm } from "./types/TopologicalPrecedingTagAlgorithm";
 
 // Do not retry if the retry time is longer than 62 minutes.
 const MAX_RETRY_TIME_SECONDS = 62 * 60;

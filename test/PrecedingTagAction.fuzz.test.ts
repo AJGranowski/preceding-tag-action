@@ -1,16 +1,13 @@
+import { context } from "@actions/github";
+import * as core from "@actions/core";
 import {
     describe,
     expect,
     test,
     vi
 } from "vitest";
-
 import * as fc from "fast-check";
-
-import * as core from "@actions/core";
-import { context } from "@actions/github";
 import { Octokit } from "@octokit/rest";
-
 import PrecedingTagAction from "../src/PrecedingTagAction";
 
 vi.mock("@actions/core", () => ({

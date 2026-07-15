@@ -1,8 +1,7 @@
-import type { Octokit } from "@octokit/rest";
-
 import type { CommitDate } from "./types/CommitDate";
 import type { CommitListItem } from "./types/CommitListItem";
 import type { GitRef } from "./types/GitRef";
+import type { Octokit } from "@octokit/rest";
 import type { Repository } from "./types/Repository";
 import type { Tag } from "./types/Tag";
 

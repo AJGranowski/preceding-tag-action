@@ -1,5 +1,5 @@
-import type { GitHubAPI } from "../GitHubAPI";
 import type { DateTag } from "./DateTag";
+import type { GitHubAPI } from "../GitHubAPI";
 import type { Tag } from "./Tag";
 
 interface TopologicalPrecedingTagAlgorithm {

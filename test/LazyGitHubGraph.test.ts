@@ -4,12 +4,10 @@ import {
     expect,
     test
 } from "vitest";
-
+import type { GitHubAPI } from "../src/GitHubAPI";
+import { LazyGitHubGraph } from "../src/LazyGitHubGraph";
 import { mock } from "vitest-mock-extended";
 import type { MockProxy } from "vitest-mock-extended";
-import type { GitHubAPI } from "../src/GitHubAPI";
-
-import { LazyGitHubGraph } from "../src/LazyGitHubGraph";
 
 function randomString(): string {
     return Math.floor(Math.random() * Number.MAX_SAFE_INTEGER).toString();

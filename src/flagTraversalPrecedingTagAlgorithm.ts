@@ -1,10 +1,10 @@
 import type { CommitDate } from "./types/CommitDate";
-import type { GitHubAPI } from "./GitHubAPI";
 import type { DateTag } from "./types/DateTag";
-import type { Tag } from "./types/Tag";
-import type { TopologicalPrecedingTagAlgorithm } from "./types/TopologicalPrecedingTagAlgorithm";
+import type { GitHubAPI } from "./GitHubAPI";
 import { LazyGitHubGraph } from "./LazyGitHubGraph";
 import { Queue } from "./Queue";
+import type { Tag } from "./types/Tag";
+import type { TopologicalPrecedingTagAlgorithm } from "./types/TopologicalPrecedingTagAlgorithm";
 
 interface GraphData {
     flags: number;

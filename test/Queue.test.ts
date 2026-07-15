@@ -4,7 +4,6 @@ import {
     expect,
     test
 } from "vitest";
-
 import { Queue } from "../src/Queue";
 
 describe("Queue", () => {
