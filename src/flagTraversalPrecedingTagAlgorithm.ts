@@ -77,6 +77,7 @@ function findPrecedingTags(graphCommits: IteratorObject<LazyGitHubGraphNode<Grap
             continue;
         }
 
+        const depth = commit.data.depth!;
         const tags: IteratorObject<DateTag> = commit.data.tags.values().map((tag) => ({
             name: tag,
             sha: commit.commitSHA,
@@ -86,12 +87,12 @@ function findPrecedingTags(graphCommits: IteratorObject<LazyGitHubGraphNode<Grap
         const flagCount = countBits(commit.data.flags);
         if (lowestFlagCount == null || flagCount < lowestFlagCount) {
             lowestFlagCount = flagCount;
-            lowestDepth = commit.data.depth;
+            lowestDepth = depth;
             precedingCommits = [...tags];
-        } else if (flagCount === lowestFlagCount && (lowestDepth == null || commit.data.depth! < lowestDepth)) {
-            lowestDepth = commit.data.depth;
+        } else if (flagCount === lowestFlagCount && (lowestDepth == null || depth < lowestDepth)) {
+            lowestDepth = depth;
             precedingCommits = [...tags];
-        } else if (flagCount === lowestFlagCount && commit.data.depth === lowestDepth) {
+        } else if (flagCount === lowestFlagCount && depth === lowestDepth) {
             precedingCommits.push(...tags);
         }
     }
