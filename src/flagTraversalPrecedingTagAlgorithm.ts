@@ -10,7 +10,7 @@ interface GraphData {
     flags: number;
     depth: number | null;
     tags: Set<string>;
-    commitDate: CommitDate | undefined;
+    commitDate?: CommitDate;
 }
 
 interface QueueEntry {
