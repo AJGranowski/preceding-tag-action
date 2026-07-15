@@ -21,6 +21,7 @@ interface QueueEntry {
 }
 
 function countBits(n: number): number {
+    n |= 0;
     let result = 0;
     while (n !== 0) {
         n &= (n - 1);
@@ -28,6 +29,12 @@ function countBits(n: number): number {
     }
 
     return result;
+}
+
+function* iteratorConcat<T>(...iterables: Iterable<T>[]): Generator<T> {
+    for (const iterable of iterables) {
+        yield* iterable;
+    }
 }
 
 const VISITED_FLAG = 1;
@@ -53,12 +60,12 @@ async function bfs<T>(root: T, traversal: (node: T) => Promise<IteratorObject<T>
 /**
  * Calculate the batch size for the next fetch
  */
-function calculateBatchSize(numberOfFoundTags: number, seenCommits: number): number {
+function calculateBatchSize(numberOfFoundTags: number, visitedCommits: number): number {
     if (numberOfFoundTags === 0) {
         return LazyGitHubGraph.MAX_FETCH_SIZE;
     }
 
-    return Math.max(MIN_BATCH_SIZE, Math.min(LazyGitHubGraph.MAX_FETCH_SIZE, Math.round(2 * seenCommits / numberOfFoundTags)));
+    return Math.max(MIN_BATCH_SIZE, Math.min(LazyGitHubGraph.MAX_FETCH_SIZE, Math.round(2 * visitedCommits / numberOfFoundTags)));
 }
 
 /**
@@ -66,12 +73,12 @@ function calculateBatchSize(numberOfFoundTags: number, seenCommits: number): num
  */
 // eslint-disable-next-line complexity, max-len
 function findPrecedingTags(graphCommits: IteratorObject<LazyGitHubGraphNode<GraphData>>, headCommitSHA: string, includeHeadCommitSHA: boolean): IteratorObject<DateTag> {
-    let best: {flagCount: number, depth: number, tags: DateTag[]} | null = null;
+    let best: {flagCount: number, depth: number, tags: Iterable<DateTag>} | null = null;
     for (const commit of graphCommits) {
         const invalidCommit = commit.data.depth == null || (!includeHeadCommitSHA && commit.commitSHA === headCommitSHA);
-        const unseenCommit = (commit.data.flags & VISITED_FLAG) !== VISITED_FLAG;
+        const unvisitedCommit = (commit.data.flags & VISITED_FLAG) !== VISITED_FLAG;
         const untaggedCommit = commit.data.tags.size === 0;
-        if (invalidCommit || unseenCommit || untaggedCommit) {
+        if (invalidCommit || unvisitedCommit || untaggedCommit) {
             continue;
         }
 
@@ -82,15 +89,15 @@ function findPrecedingTags(graphCommits: IteratorObject<LazyGitHubGraphNode<Grap
             commitDate: commit.data.commitDate == null ? {} : commit.data.commitDate
         }));
 
-        const flagCount = countBits(commit.data.flags);
+        const flagCount = countBits(commit.data.flags >>> FLAG_OFFSET);
         if (best == null || flagCount < best.flagCount || (flagCount === best.flagCount && depth < best.depth)) {
             best = {
                 flagCount: flagCount,
                 depth: depth,
-                tags: [...tags]
+                tags: tags
             };
         } else if (flagCount === best.flagCount && depth === best.depth) {
-            best.tags.push(...tags);
+            best.tags = iteratorConcat(best.tags, tags);
         }
     }
 
@@ -98,11 +105,11 @@ function findPrecedingTags(graphCommits: IteratorObject<LazyGitHubGraphNode<Grap
         return [].values();
     }
 
-    return best.tags.values();
+    return Iterator.from(best.tags);
 }
 
-function isTraversalLimitReached(seenCommits: number, seenTags: number, traversalCommitsLimit: number, traversalTagsLimit: number): boolean {
-    return seenCommits >= traversalCommitsLimit || (seenTags >= traversalTagsLimit && seenCommits > 0);
+function isTraversalLimitReached(visitedCommits: number, visitedTags: number, traversalCommitsLimit: number, traversalTagsLimit: number): boolean {
+    return visitedCommits >= traversalCommitsLimit || (visitedTags >= traversalTagsLimit && visitedCommits > 0);
 }
 
 /**
@@ -117,9 +124,7 @@ const makeFlagTraversalPrecedingTagAlgorithm = (traversalCommitsLimit: number, t
     return async (headCommitSHA: string, tags: IteratorObject<Tag>, includeHeadCommitSHA: boolean, githubAPI: GitHubAPI): Promise<IteratorObject<DateTag>> => {
         const graph = new LazyGitHubGraph<GraphData>(githubAPI, () => ({
             flags: 0,
-            depth: undefined,
-            tags: new Set<string>(),
-            commitDate: undefined
+            tags: new Set<string>()
         }), (data, fetchResult) => {data.commitDate = fetchResult.commitDate;});
 
         graph.addCommit(headCommitSHA);

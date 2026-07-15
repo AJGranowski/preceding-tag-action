@@ -47,9 +47,7 @@ function generateTestParameterSet(options: GenerateTestParameterSetOptions): Set
 }
 
 async function* iterableToAsyncGenerator<T>(iterable: Iterable<T>): AsyncGenerator<T> {
-    for (const item of iterable) {
-        yield item;
-    }
+    yield* iterable;
 }
 
 describe("fetchPrecedingTag", () => {

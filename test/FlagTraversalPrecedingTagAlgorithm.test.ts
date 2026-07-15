@@ -11,9 +11,7 @@ import type { MockProxy } from "vitest-mock-extended";
 import type { TopologicalPrecedingTagAlgorithm } from "../src/types/TopologicalPrecedingTagAlgorithm";
 
 async function* iterableToAsyncGenerator<T>(iterable: Iterable<T>): AsyncGenerator<T> {
-    for (const item of iterable) {
-        yield item;
-    }
+    yield* iterable;
 }
 
 describe("FlagTraversalPrecedingTagAlgorithm", () => {

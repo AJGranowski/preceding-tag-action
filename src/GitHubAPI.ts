@@ -37,15 +37,12 @@ class GitHubAPI {
         });
 
         for await (const response of pageIterator) {
-            const result = response.data.filter((object) => object.commit.sha.length > 0 && filter(object.name))
+            yield* response.data
+                .filter((object) => object.commit.sha.length > 0 && filter(object.name))
                 .map((object) => ({
                     name: object.name,
                     sha: object.commit.sha
                 }));
-
-            for (const tag of result) {
-                yield tag;
-            }
         }
     }
 
@@ -71,9 +68,8 @@ class GitHubAPI {
                 }
             }
 
-            for (const item of commitListResponse.data) {
-                yield this.listCommitsDataToCommitListItem(item);
-            }
+            yield* commitListResponse.data
+                .map((x) => this.listCommitsDataToCommitListItem(x));
         }
 
         return;

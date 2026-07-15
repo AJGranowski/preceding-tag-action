@@ -14,9 +14,7 @@ function randomString(): string {
 }
 
 async function* iterableToAsyncGenerator<T>(iterable: Iterable<T>): AsyncGenerator<T> {
-    for (const item of iterable) {
-        yield item;
-    }
+    yield* iterable;
 }
 
 describe("LazyGitHubGraph", () => {
