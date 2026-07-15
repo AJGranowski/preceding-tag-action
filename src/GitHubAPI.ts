@@ -33,7 +33,7 @@ class GitHubAPI {
         const pageIterator = this.octokit.paginate.iterator(this.octokit.rest.repos.listTags, {
             owner: this.repo.owner,
             repo: this.repo.repo,
-            per_page: Math.min(GitHubAPI.MAX_BATCH_SIZE.fetchTags, batchSize) // max
+            per_page: Math.min(GitHubAPI.MAX_BATCH_SIZE.fetchTags, batchSize)
         });
 
         for await (const response of pageIterator) {
