@@ -36,7 +36,7 @@ describe("Queue", () => {
         });
 
         test("accepts an empty iterator", () => {
-            queue = new Queue<number>([].values());
+            queue = new Queue([].values());
 
             expect(queue.size()).toBe(0);
             expect(queue.hasItems()).toBe(false);
