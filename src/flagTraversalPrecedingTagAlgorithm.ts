@@ -30,7 +30,7 @@ function countBits(n: number): number {
     return result;
 }
 
-const SEEN_FLAG = 1;
+const VISITED_FLAG = 1;
 const FLAG_OFFSET = 1;
 const MAX_TAGS = 30 - FLAG_OFFSET;
 const MIN_BATCH_SIZE = 30;
@@ -71,7 +71,7 @@ function findPrecedingTags(graphCommits: IteratorObject<LazyGitHubGraphNode<Grap
     let precedingCommits: DateTag[] = [];
     for (const commit of graphCommits) {
         const invalidCommit = commit.data.depth == null || (!includeHeadCommitSHA && commit.commitSHA === headCommitSHA);
-        const unseenCommit = (commit.data.flags & SEEN_FLAG) !== SEEN_FLAG;
+        const unseenCommit = (commit.data.flags & VISITED_FLAG) !== VISITED_FLAG;
         const untaggedCommit = commit.data.tags.size === 0;
         if (invalidCommit || unseenCommit || untaggedCommit) {
             continue;
@@ -147,7 +147,7 @@ const makeFlagTraversalPrecedingTagAlgorithm = (traversalCommitsLimit: number = 
         const bfsInitialize = (): QueueEntry => ({
             commitSHA: headCommitSHA,
             depth: 0,
-            flags: SEEN_FLAG
+            flags: VISITED_FLAG
         });
 
         const bfsTraversal = async (node: QueueEntry): Promise<IteratorObject<QueueEntry>> => {
@@ -164,7 +164,7 @@ const makeFlagTraversalPrecedingTagAlgorithm = (traversalCommitsLimit: number = 
             }
 
             // Skip unvisited commits if we've hit any of our traversal limits
-            if ((data.flags & SEEN_FLAG) !== SEEN_FLAG) {
+            if ((data.flags & VISITED_FLAG) !== VISITED_FLAG) {
                 if (isTraversalLimitReached(seenCommits, tagToFlags.size, traversalCommitsLimit, traversalTagsLimit)) {
                     return [].values();
                 }
