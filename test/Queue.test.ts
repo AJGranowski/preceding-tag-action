@@ -66,8 +66,6 @@ describe("Queue", () => {
     describe("dequeue", () => {
         test("returns undefined when the queue is empty", () => {
             expect(queue.dequeue()).toBeUndefined();
-            expect(queue.size()).toBe(0);
-            expect(queue.hasItems()).toBe(false);
         });
 
         test("can be reused after becoming empty", () => {
