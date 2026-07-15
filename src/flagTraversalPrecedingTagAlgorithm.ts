@@ -119,7 +119,7 @@ const makeFlagTraversalPrecedingTagAlgorithm = (traversalCommitsLimit: number = 
             depth: null,
             tags: new Set<string>(),
             commitDate: undefined
-        }));
+        }), (data, fetchResult) => {data.commitDate = fetchResult.commitDate;});
 
         graph.addCommit(headCommitSHA);
         let noTags = true;

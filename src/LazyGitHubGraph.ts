@@ -1,3 +1,4 @@
+import type { CommitListItem } from "./types/CommitListItem";
 import { GitHubAPI } from "./GitHubAPI";
 
 // eslint-disable-next-line @typescript-eslint/no-empty-object-type
@@ -13,8 +14,9 @@ interface Node<T> {
 class LazyGitHubGraph<T extends NotUndefined> {
     public static readonly MAX_FETCH_SIZE = GitHubAPI.MAX_BATCH_SIZE.fetchCommitList;
 
-    private readonly githubAPI: GitHubAPI;
     private readonly defaultDataFn: () => T;
+    private readonly githubAPI: GitHubAPI;
+    private readonly onFetch: (data: T, fetchResult: CommitListItem) => void;
 
     /**
      * Directional graph data.
@@ -27,9 +29,10 @@ class LazyGitHubGraph<T extends NotUndefined> {
      */
     private requestedNodes: Set<string>;
 
-    constructor(githubAPI: GitHubAPI, defaultDataFn: () => T) {
+    constructor(githubAPI: GitHubAPI, defaultDataFn: () => T, onFetch: (data: T, fetchResult: CommitListItem) => void = () => {}) {
         this.githubAPI = githubAPI;
         this.defaultDataFn = defaultDataFn;
+        this.onFetch = onFetch;
         this.nodes = new Map();
         this.requestedNodes = new Set();
     }
@@ -113,9 +116,7 @@ class LazyGitHubGraph<T extends NotUndefined> {
                     data = this.nodes.get(result.sha)!.data;
                 }
 
-                if (data != null && typeof data === "object") {
-                    (data as any)["commitDate"] = result.commitDate;
-                }
+                this.onFetch(data, result);
 
                 this.nodes.set(result.sha, {
                     allParentsKnown: true,
