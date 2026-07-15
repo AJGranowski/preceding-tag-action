@@ -66,9 +66,7 @@ function calculateBatchSize(numberOfFoundTags: number, seenCommits: number): num
  */
 // eslint-disable-next-line complexity, max-len
 function findPrecedingTags(graphCommits: IteratorObject<LazyGitHubGraphNode<GraphData>>, headCommitSHA: string, includeHeadCommitSHA: boolean): IteratorObject<DateTag> {
-    let lowestFlagCount = null;
-    let lowestDepth = null;
-    let precedingCommits: DateTag[] = [];
+    let best: {flagCount: number, depth: number, tags: DateTag[]} | null = null;
     for (const commit of graphCommits) {
         const invalidCommit = commit.data.depth == null || (!includeHeadCommitSHA && commit.commitSHA === headCommitSHA);
         const unseenCommit = (commit.data.flags & VISITED_FLAG) !== VISITED_FLAG;
@@ -85,19 +83,22 @@ function findPrecedingTags(graphCommits: IteratorObject<LazyGitHubGraphNode<Grap
         }));
 
         const flagCount = countBits(commit.data.flags);
-        if (lowestFlagCount == null || flagCount < lowestFlagCount) {
-            lowestFlagCount = flagCount;
-            lowestDepth = depth;
-            precedingCommits = [...tags];
-        } else if (flagCount === lowestFlagCount && (lowestDepth == null || depth < lowestDepth)) {
-            lowestDepth = depth;
-            precedingCommits = [...tags];
-        } else if (flagCount === lowestFlagCount && depth === lowestDepth) {
-            precedingCommits.push(...tags);
+        if (best == null || flagCount < best.flagCount || (flagCount === best.flagCount && depth < best.depth)) {
+            best = {
+                flagCount: flagCount,
+                depth: depth,
+                tags: [...tags]
+            };
+        } else if (flagCount === best.flagCount && depth === best.depth) {
+            best.tags.push(...tags);
         }
     }
 
-    return precedingCommits.values();
+    if (best == null) {
+        return [].values();
+    }
+
+    return best.tags.values();
 }
 
 function isTraversalLimitReached(seenCommits: number, seenTags: number, traversalCommitsLimit: number, traversalTagsLimit: number): boolean {
