@@ -109,7 +109,7 @@ class Input {
     }
 
     /**
-     * Return the tag fetch limit, defaults to 200.
+     * Return the tag fetch limit, defaults to 100.
      */
     getLimitTags(): number {
         if (this.memoization.getLimitTags != null) {
