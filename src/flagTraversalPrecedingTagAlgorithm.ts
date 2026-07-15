@@ -143,7 +143,7 @@ const makeFlagTraversalPrecedingTagAlgorithm = (traversalCommitsLimit: number = 
         }
 
         const tagToFlags = new Map();
-        let seenCommits = 0;
+        let visitedCommits = 0;
         const bfsInitialize = (): QueueEntry => ({
             commitSHA: headCommitSHA,
             depth: 0,
@@ -155,7 +155,7 @@ const makeFlagTraversalPrecedingTagAlgorithm = (traversalCommitsLimit: number = 
             let depth = node.depth;
             let flags = node.flags;
 
-            const batchSize = calculateBatchSize(tagToFlags.size, seenCommits);
+            const batchSize = calculateBatchSize(tagToFlags.size, visitedCommits);
             const data = (await graph.getCommit(commitSHA, batchSize))!;
 
             // Skip visited commits
@@ -165,11 +165,11 @@ const makeFlagTraversalPrecedingTagAlgorithm = (traversalCommitsLimit: number = 
 
             // Skip unvisited commits if we've hit any of our traversal limits
             if ((data.flags & VISITED_FLAG) !== VISITED_FLAG) {
-                if (isTraversalLimitReached(seenCommits, tagToFlags.size, traversalCommitsLimit, traversalTagsLimit)) {
+                if (isTraversalLimitReached(visitedCommits, tagToFlags.size, traversalCommitsLimit, traversalTagsLimit)) {
                     return [].values();
                 }
 
-                seenCommits++;
+                visitedCommits++;
             }
 
             flags |= data.flags;
