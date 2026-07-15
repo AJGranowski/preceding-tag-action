@@ -8,10 +8,10 @@ import type { Tag } from "./types/Tag";
 import type { TopologicalPrecedingTagAlgorithm } from "./types/TopologicalPrecedingTagAlgorithm";
 
 interface GraphData {
-    flags: number;
-    depth: number | null;
-    tags: Set<string>;
     commitDate?: CommitDate;
+    depth?: number;
+    flags: number;
+    tags: Set<string>;
 }
 
 interface QueueEntry {
@@ -117,7 +117,7 @@ const makeFlagTraversalPrecedingTagAlgorithm = (traversalCommitsLimit: number, t
     return async (headCommitSHA: string, tags: IteratorObject<Tag>, includeHeadCommitSHA: boolean, githubAPI: GitHubAPI): Promise<IteratorObject<DateTag>> => {
         const graph = new LazyGitHubGraph<GraphData>(githubAPI, () => ({
             flags: 0,
-            depth: null,
+            depth: undefined,
             tags: new Set<string>(),
             commitDate: undefined
         }), (data, fetchResult) => {data.commitDate = fetchResult.commitDate;});
@@ -131,7 +131,6 @@ const makeFlagTraversalPrecedingTagAlgorithm = (traversalCommitsLimit: number, t
             } else {
                 graph.addCommit(tag.sha, {
                     flags: 0,
-                    depth: null,
                     tags: new Set([tag.name])
                 });
             }
