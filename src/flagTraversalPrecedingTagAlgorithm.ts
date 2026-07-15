@@ -173,12 +173,7 @@ const makeFlagTraversalPrecedingTagAlgorithm = (traversalCommitsLimit: number = 
             }
 
             data.flags = flags = data.flags | flags;
-
-            if (data.depth == null) {
-                data.depth = depth;
-            } else {
-                depth = data.depth;
-            }
+            depth = (data.depth ??= depth); // Expression evaluates to `data.depth` if it exists, otherwise `depth`.
 
             if (data.tags.size > 0) {
                 if (!tagToFlags.has(commitSHA)) {
