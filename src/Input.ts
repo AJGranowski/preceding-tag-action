@@ -127,16 +127,16 @@ class Input {
     }
 
     /**
-     * Return the commit traversal limit if it exists, or undefined.
+     * Return the commit traversal limit, defaults to 1000.
      */
-    getLimitTraversalCommits(): number | undefined {
-        if (Object.hasOwn(this.memoization, "getLimitTraversalCommits")) {
+    getLimitTraversalCommits(): number {
+        if (this.memoization.getLimitTraversalCommits != null) {
             return this.memoization.getLimitTraversalCommits;
         }
 
         const inputString = this.getInput("limit-traversal-commits");
         if (inputString.length === 0) {
-            this.memoization.getLimitTraversalCommits = undefined;
+            this.memoization.getLimitTraversalCommits = 1000;
         } else {
             this.memoization.getLimitTraversalCommits = parseInt(inputString);
         }
@@ -145,16 +145,16 @@ class Input {
     }
 
     /**
-     * Return the tag traversal limit if it exists, or undefined.
+     * Return the tag traversal limit, defaults to 6.
      */
-    getLimitTraversalTags(): number | undefined {
-        if (Object.hasOwn(this.memoization, "getLimitTraversalTags")) {
+    getLimitTraversalTags(): number {
+        if (this.memoization.getLimitTraversalTags != null) {
             return this.memoization.getLimitTraversalTags;
         }
 
         const inputString = this.getInput("limit-traversal-tags");
         if (inputString.length === 0) {
-            this.memoization.getLimitTraversalTags = undefined;
+            this.memoization.getLimitTraversalTags = 6;
         } else {
             this.memoization.getLimitTraversalTags = parseInt(inputString);
         }

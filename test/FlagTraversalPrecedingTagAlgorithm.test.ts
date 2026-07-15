@@ -27,7 +27,7 @@ describe("FlagTraversalPrecedingTagAlgorithm", () => {
         let flagTraversalPrecedingTagAlgorithm: TopologicalPrecedingTagAlgorithm;
         let githubAPI: MockProxy<GitHubAPI>;
         beforeEach(() => {
-            flagTraversalPrecedingTagAlgorithm = makeFlagTraversalPrecedingTagAlgorithm();
+            flagTraversalPrecedingTagAlgorithm = makeFlagTraversalPrecedingTagAlgorithm(200, 6);
             githubAPI = mock<GitHubAPI>();
         });
 
@@ -142,7 +142,7 @@ describe("FlagTraversalPrecedingTagAlgorithm", () => {
         let flagTraversalPrecedingTagAlgorithm: TopologicalPrecedingTagAlgorithm;
         let githubAPI: MockProxy<GitHubAPI>;
         beforeEach(() => {
-            flagTraversalPrecedingTagAlgorithm = makeFlagTraversalPrecedingTagAlgorithm();
+            flagTraversalPrecedingTagAlgorithm = makeFlagTraversalPrecedingTagAlgorithm(200, 6);
             githubAPI = mock<GitHubAPI>();
         });
 
@@ -157,7 +157,7 @@ describe("FlagTraversalPrecedingTagAlgorithm", () => {
                 {sha: "5", commitDate: {}, parentSHAs: []}
             ]));
 
-            flagTraversalPrecedingTagAlgorithm = makeFlagTraversalPrecedingTagAlgorithm(0);
+            flagTraversalPrecedingTagAlgorithm = makeFlagTraversalPrecedingTagAlgorithm(0, 6);
             const result = await flagTraversalPrecedingTagAlgorithm("1", tags.values(), true, githubAPI);
             expect([...result]).to.be.empty;
         });
@@ -173,7 +173,7 @@ describe("FlagTraversalPrecedingTagAlgorithm", () => {
                 {sha: "5", commitDate: {}, parentSHAs: []}
             ]));
 
-            flagTraversalPrecedingTagAlgorithm = makeFlagTraversalPrecedingTagAlgorithm(1);
+            flagTraversalPrecedingTagAlgorithm = makeFlagTraversalPrecedingTagAlgorithm(1, 6);
             const result = await flagTraversalPrecedingTagAlgorithm("1", tags.values(), true, githubAPI);
             expect([...result]).toEqual([{name: "tag", sha: "1", commitDate: {}}]);
         });
@@ -189,7 +189,7 @@ describe("FlagTraversalPrecedingTagAlgorithm", () => {
                 {sha: "5", commitDate: {}, parentSHAs: []}
             ]));
 
-            flagTraversalPrecedingTagAlgorithm = makeFlagTraversalPrecedingTagAlgorithm(1);
+            flagTraversalPrecedingTagAlgorithm = makeFlagTraversalPrecedingTagAlgorithm(1, 6);
             const result = await flagTraversalPrecedingTagAlgorithm("1", tags.values(), true, githubAPI);
             expect([...result]).to.be.empty;
         });
