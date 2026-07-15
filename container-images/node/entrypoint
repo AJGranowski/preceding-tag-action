@@ -3,7 +3,7 @@
 # License: MIT
 set -eC
 
-VERSION='1.0.3-73f4a67'
+VERSION='1.0.6-99dd2e5'
 exec 3>/dev/null
 exec 4>/dev/null
 
@@ -45,19 +45,6 @@ download_file() {
         echo 'Expected at least two arguments.' >&2
         return 1
     fi
-}
-
-# Query GitHub for the latest release tag.
-get_latest_release_tag() {
-    response="$(curl -Ls -w '%{http_code}' 'https://api.github.com/repos/AJGranowski/docker-user-mirror/releases/latest')"
-    case "$(echo "$response" | tail -1)" in
-        2*)
-            echo "$response" | \
-            grep -E '^\s*"tag_name":' | \
-            sed -E 's/.*"tag_name": "([^"]+)".*/\1/g'
-        ;;
-        *) false;;
-    esac
 }
 
 # Get the version ID of a release.
@@ -114,7 +101,7 @@ update() {
 
     if [ "$o_yes" != true ]; then
         echo '\nInstall the update? (y/n)'
-        read yn
+        read -r yn
         case "$yn" in
             y*) ;;
             n*) return 0;;
@@ -129,9 +116,9 @@ update() {
 # Convert "$VERSION" to "release-**" format.
 version_to_release_tag() {
     if [ $# -eq 0 ]; then
-        echo "$VERSION" | sed -E 's/([^-]*).*/release-\1/g'
+        echo "release-${VERSION%-*}"
     else
-        echo "$1" | sed -E 's/([^-]*).*/release-\1/g'
+        echo "release-${1%-*}"
     fi
 }
 
@@ -235,6 +222,7 @@ else
     fi
 
     printf 'USER_MIRROR_CAPABILITIES=%s\n' "$USER_MIRROR_CAPABILITIES" >&3
+    printf 'USER_MIRROR_CHOWN_LIST=%s\n' "$USER_MIRROR_CHOWN_LIST" >&3
     printf 'USER_MIRROR_HOST_USER=%s\n' "$USER_MIRROR_HOST_USER" >&3
     printf 'USER_MIRROR_SERVICE_NAME=%s\n' "$USER_MIRROR_SERVICE_NAME" >&3
 
@@ -280,18 +268,46 @@ else
     export USER="$host_user_name"
 
     # Set the ownership of a set of items to the user.
-    while read service_name; do
+    while IFS= read -r service_name; do
         if [ -z "$service_name" ]; then
             continue
         fi
 
+        IFS= read -r ownership || {
+            printf 'Malformed ownership\n' >&2
+            return 1
+        }
+
+        IFS= read -r chown_path || {
+            printf 'Malformed chown_path\n' >&2
+            return 1
+        }
+
+        unset error
+
         case "$service_name" in
-            /*)
-                chown_path="$service_name"
-                unset service_name
-                ;;
-            *) read chown_path;;
+            S:*) service_name="${service_name#S:}";;
+            *) error=1;;
         esac
+
+        case "$ownership" in
+            O:*) ownership="${ownership#O:}";;
+            *) error=1;;
+        esac
+
+        if [ -z "$ownership" ]; then
+            ownership="${host_user_id}:${host_user_gid}"
+        fi
+
+        case "$chown_path" in
+            P:*) chown_path="${chown_path#P:}";;
+            *) error=1;;
+        esac
+
+        if [ -n "$error" ]; then
+            printf 'error: invalid chown list object: [%s, %s, %s]\n' "$service_name" "$ownership" "$chown_path" >&2
+            exit 1
+        fi
 
         if [ -n "$service_name" ] && [ "$service_name" != "$USER_MIRROR_SERVICE_NAME" ]; then
             continue
@@ -302,7 +318,7 @@ else
             continue
         fi
 
-        chown -c "${host_user_id}:${host_user_gid}" "$chown_path" >&3
+        chown -c "$ownership" "$chown_path" >&3
     done <<EOF
 $USER_MIRROR_CHOWN_LIST
 EOF

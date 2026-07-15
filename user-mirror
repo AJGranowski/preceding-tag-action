@@ -2,7 +2,7 @@
 # Source: https://github.com/AJGranowski/docker-user-mirror
 # License: MIT
 set -eC
-VERSION='1.0.3-73f4a67'
+VERSION='1.0.6-99dd2e5'
 
 # Create container(s) and return the container ID(s).
 container_create() {
@@ -58,7 +58,7 @@ container_create() {
             fi
 
             items="$(docker compose config --services)"
-            while read service; do
+            while IFS= read -r service; do
                 if [ "$arg" = "$service" ]; then
                     unset create_all_containers
                     $COMPOSE_ENGINE --progress quiet $compose_configuration_files create "$service" >/dev/null
@@ -167,19 +167,6 @@ download_file() {
     fi
 }
 
-# Query GitHub for the latest release tag.
-get_latest_release_tag() {
-    response="$(curl -Ls -w '%{http_code}' 'https://api.github.com/repos/AJGranowski/docker-user-mirror/releases/latest')"
-    case "$(echo "$response" | tail -1)" in
-        2*)
-            echo "$response" | \
-            grep -E '^\s*"tag_name":' | \
-            sed -E 's/.*"tag_name": "([^"]+)".*/\1/g'
-        ;;
-        *) false;;
-    esac
-}
-
 # Get the version ID of a release.
 # Args: release tag (defaults to latest release it not provided)
 get_release_version() {
@@ -198,16 +185,9 @@ get_release_version() {
 # Create host items and populate chown list
 # Args: container ID (retrieved from container_create)
 prepare_environment() {
-    # Grab the USER_MIRROR_SERVICE_NAME environment variable if it exists.
-    service_name="$($CONTAINER_ENGINE inspect --format '{{range .Config.Env}}{{if and (gt (len .) 25) (eq (slice . 0 25) "USER_MIRROR_SERVICE_NAME=")}}{{slice . 25}}{{end}}{{end}}' "$1")"
-
-    # Create a list of all read/write mount destinations so they can be chown'd in the container at runtime.
-    USER_MIRROR_CHOWN_LIST="$USER_MIRROR_CHOWN_LIST
-$($CONTAINER_ENGINE inspect --format "{{range .Mounts}}{{if .RW}}{{println \"${service_name}\"}}{{println .Destination}}{{end}}{{end}}" "$1")"
-
     # Loop through bind mounts that have a non-empty mode (`create_host_path: true` sets this), and mkdir those source paths on the host.
     items="$($CONTAINER_ENGINE inspect --format '{{range .Mounts}}{{if and (eq .Type "bind") .Mode}}{{println .Source}}{{end}}{{end}}' "$1")"
-    while read create_path; do
+    while IFS= read -r create_path; do
         if [ -z "$create_path" ]; then
             break
         fi
@@ -219,20 +199,26 @@ EOF
     # Loop though every pair of bind mounts and all mounts to create nested directories and files on the host.
     #   (for example, a volume mount within a bind mount will need to be created on the host relative to the bind mount)
     items="$($CONTAINER_ENGINE inspect --format '{{range .Mounts}}{{if eq .Type "bind"}}{{println .Source}}{{println .Destination}}{{end}}{{end}}' "$1")"
-    while read edge_source; do
+    while IFS= read -r edge_source; do
         if [ -z "$edge_source" ]; then
             break
         fi
 
-        read edge_destination
+        IFS= read -r edge_destination || {
+            printf 'Malformed edge_destination\n' >&2
+            return 1
+        }
 
         items="$($CONTAINER_ENGINE inspect --format '{{range .Mounts}}{{println .Source}}{{println .Destination}}{{end}}' "$1")"
-        while read node_source; do
+        while IFS= read -r node_source; do
             if [ -z "$node_source" ]; then
                 break
             fi
 
-            read node_destination
+            IFS= read -r node_destination || {
+                printf 'Malformed node_destination\n' >&2
+                return 1
+            }
 
             # Find replace
             resolved_node_destination="$(echo "$node_destination" | sed -e "s|^${edge_destination}/|${edge_source}/|g")"
@@ -244,7 +230,7 @@ EOF
 
             if [ -f "$node_source" ]; then
                 mkdir -p "$(dirname "$resolved_node_destination")" >/dev/null 2>&1 || true
-                touch "$resolved_node_destination"
+                touch "$resolved_node_destination" >/dev/null 2>&1 || true
             else
                 mkdir -p "$resolved_node_destination" >/dev/null 2>&1 || true
             fi
@@ -252,6 +238,30 @@ EOF
 $items
 EOF
 
+    done <<EOF
+$items
+EOF
+
+    # Grab the USER_MIRROR_SERVICE_NAME environment variable if it exists.
+    service_name="$($CONTAINER_ENGINE inspect --format '{{range .Config.Env}}{{if and (gt (len .) 25) (eq (slice . 0 25) "USER_MIRROR_SERVICE_NAME=")}}{{slice . 25}}{{end}}{{end}}' "$1")"
+
+    # Create a list of all read/write mount destinations so they can be chown'd in the container at runtime.
+    items="$($CONTAINER_ENGINE inspect --format '{{range .Mounts}}{{if .RW}}{{println .Source}}{{println .Destination}}{{end}}{{end}}' "$1")"
+    while IFS= read -r chown_source; do
+        if [ -z "$chown_source" ]; then
+            break
+        fi
+
+        IFS= read -r chown_path || {
+            printf 'Malformed chown_path\n' >&2
+            return 1
+        }
+
+        ownership="$(stat2 '%u:%g' "$chown_source" 2>/dev/null || echo '')"
+        USER_MIRROR_CHOWN_LIST="$USER_MIRROR_CHOWN_LIST
+S:$service_name
+O:$ownership
+P:$chown_path"
     done <<EOF
 $items
 EOF
@@ -263,6 +273,15 @@ release_tag_exists() {
         2*) true;;
         *) false;;
     esac
+}
+
+# Cross-UNIX stat command
+stat2() {
+    if stat -c "$1" "$2" >/dev/null 2>&1; then
+        stat -c "$1" "$2"
+    else
+        stat -f "$1" "$2"
+    fi
 }
 
 # Check for updates, and download the latest version.
@@ -292,7 +311,7 @@ update() {
 
     if [ "$o_yes" != true ]; then
         echo '\nInstall the update? (y/n)'
-        read yn
+        read -r yn
         case "$yn" in
             y*) ;;
             n*) return 0;;
@@ -307,9 +326,9 @@ update() {
 # Convert "$VERSION" to "release-**" format.
 version_to_release_tag() {
     if [ $# -eq 0 ]; then
-        echo "$VERSION" | sed -E 's/([^-]*).*/release-\1/g'
+        echo "release-${VERSION%-*}"
     else
-        echo "$1" | sed -E 's/([^-]*).*/release-\1/g'
+        echo "release-${1%-*}"
     fi
 }
 
@@ -418,7 +437,7 @@ if [ "$CONTAINER_ENGINE" = "docker" ] && ! docker info -f '{{println .SecurityOp
 
     # Loop through the containers created by this command.
     items="$(container_create "$@")"
-    while read temp_container_id; do
+    while IFS= read -r temp_container_id; do
         if [ -z "$temp_container_id" ]; then
             continue
         fi
