@@ -5,11 +5,11 @@
 
 <header align="center">
     <h1 align="center">Preceding Tag Action</h1>
-    <p align="center">Find the most recent tag that is reachable from a commit.</p>
+    <p align="center">Find the preceding tag of a commit using only the GitHub API.</p>
 </header>
 
 ## About
-This action functions similar to [`git describe`][git-describe-link] by finding the most recent tag that is reachable from a commit. Since this action uses the GitHub API instead of a local Git database, you can use this action without `actions/checkout`!
+This action functions just like [`git describe`][git-describe-link] by finding the closest tag of a commit with no tagged descendants. Since this action uses the GitHub API instead of a local Git database, you can use this action without `actions/checkout`!
 
 ## Usage
 ```yml
