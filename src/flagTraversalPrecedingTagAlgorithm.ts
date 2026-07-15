@@ -32,7 +32,7 @@ function countBits(n: number): number {
 
 const VISITED_FLAG = 1;
 const FLAG_OFFSET = 1;
-const MAX_TAGS = 30 - FLAG_OFFSET;
+const MAX_TAGS = 30 - FLAG_OFFSET; // JavaScript bitwise ops use signed 32-bit integers. 30 gives us some padding to avoid the flag from becoming negative.
 const MIN_BATCH_SIZE = 30;
 
 /**
@@ -40,9 +40,9 @@ const MIN_BATCH_SIZE = 30;
  * @param initialize The root node of the search.
  * @param traversal Given a node, generate a list of nodes to add to the search.
  */
-async function bfs<T>(initialize: () => T, traversal: (node: T) => Promise<IteratorObject<T>>): Promise<void> {
+async function bfs<T>(root: T, traversal: (node: T) => Promise<IteratorObject<T>>): Promise<void> {
     const queue: Queue<T> = new Queue();
-    queue.enqueue(initialize());
+    queue.enqueue(root);
     while (queue.hasItems()) {
         for (const next of await traversal(queue.dequeue()!)) {
             queue.enqueue(next);
@@ -111,7 +111,7 @@ function isTraversalLimitReached(seenCommits: number, seenTags: number, traversa
  */
 const makeFlagTraversalPrecedingTagAlgorithm = (traversalCommitsLimit: number = 200, traversalTagsLimit: number = 6): TopologicalPrecedingTagAlgorithm => {
     if (traversalTagsLimit > MAX_TAGS) {
-        throw new Error(`The input tag traversal limit: ${traversalTagsLimit}, is larger than the maximum limit of ${MAX_TAGS})`);
+        throw new Error(`The input tag traversal limit: ${traversalTagsLimit}, is larger than the maximum limit of ${MAX_TAGS}`);
     }
 
     return async (headCommitSHA: string, tags: IteratorObject<Tag>, includeHeadCommitSHA: boolean, githubAPI: GitHubAPI): Promise<IteratorObject<DateTag>> => {
@@ -142,13 +142,13 @@ const makeFlagTraversalPrecedingTagAlgorithm = (traversalCommitsLimit: number = 
             return [].values();
         }
 
-        const tagToFlags = new Map();
+        const tagToFlags = new Map<string, number>();
         let visitedCommits = 0;
-        const bfsInitialize = (): QueueEntry => ({
+        const root: QueueEntry = {
             commitSHA: headCommitSHA,
             depth: 0,
             flags: VISITED_FLAG
-        });
+        };
 
         const bfsTraversal = async (node: QueueEntry): Promise<IteratorObject<QueueEntry>> => {
             const commitSHA = node.commitSHA;
@@ -180,7 +180,7 @@ const makeFlagTraversalPrecedingTagAlgorithm = (traversalCommitsLimit: number = 
                     tagToFlags.set(commitSHA, 1 << (tagToFlags.size + FLAG_OFFSET));
                 }
 
-                flags |= tagToFlags.get(commitSHA);
+                flags |= tagToFlags.get(commitSHA)!;
             }
 
             return (await graph.getParents(commitSHA, batchSize)).map((parent) => ({
@@ -190,7 +190,7 @@ const makeFlagTraversalPrecedingTagAlgorithm = (traversalCommitsLimit: number = 
             }));
         };
 
-        await bfs(bfsInitialize, bfsTraversal);
+        await bfs(root, bfsTraversal);
         return findPrecedingTags(graph.getCommits(), headCommitSHA, includeHeadCommitSHA);
     };
 };
