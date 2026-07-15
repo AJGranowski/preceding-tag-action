@@ -26,7 +26,7 @@ jobs:
 
     steps:
     - name: Harden Runner
-      uses: step-security/harden-runner@9af89fc71515a100421586dfdb3dc9c984fbf411 # v2.19.4
+      uses: step-security/harden-runner@bf7454d06d71f1098171f2acdf0cd4708d7b5920 # v2.20.0
       with:
         disable-sudo: true
         egress-policy: block
@@ -106,7 +106,7 @@ jobs:
 
     steps:
     - name: Harden Runner
-      uses: step-security/harden-runner@9af89fc71515a100421586dfdb3dc9c984fbf411 # v2.19.4
+      uses: step-security/harden-runner@bf7454d06d71f1098171f2acdf0cd4708d7b5920 # v2.20.0
       with:
         disable-sudo: true
         egress-policy: block
@@ -215,7 +215,7 @@ jobs:
     if: ${{ github.ref == 'refs/heads/main' && needs.workflow-filter.outputs.run-check-release-files == 'true' }}
     steps:
     - name: Harden Runner
-      uses: step-security/harden-runner@9af89fc71515a100421586dfdb3dc9c984fbf411 # v2.19.4
+      uses: step-security/harden-runner@bf7454d06d71f1098171f2acdf0cd4708d7b5920 # v2.20.0
       with:
         disable-sudo: true
         egress-policy: block
@@ -259,7 +259,7 @@ jobs:
     if: ${{ github.ref == 'refs/heads/main' && needs.check-release-files.outputs.changed == 'true' }}
     steps:
     - name: Harden Runner
-      uses: step-security/harden-runner@9af89fc71515a100421586dfdb3dc9c984fbf411 # v2.19.4
+      uses: step-security/harden-runner@bf7454d06d71f1098171f2acdf0cd4708d7b5920 # v2.20.0
       with:
         disable-sudo: true
         egress-policy: block
@@ -275,7 +275,7 @@ jobs:
 
     - name: Get Preceding Release Tag
       id: preceding-tag
-      uses: AJGranowski/preceding-tag-action@00d3a92b4d3f272233e4837f96afec4cc09b818a # v1.1.7
+      uses: AJGranowski/preceding-tag-action@01965f6ae83db9b70975c95ac1b2802a3ead8e3a # v1.2.0
       with:
         regex: ${{ env.RELEASE_REGEX }}
 
@@ -339,7 +339,7 @@ jobs:
     if: ${{ startsWith(github.ref, 'refs/tags/release-') && needs.workflow-filter.outputs.run-release-bump != 'true' }}
     steps:
     - name: Harden Runner
-      uses: step-security/harden-runner@9af89fc71515a100421586dfdb3dc9c984fbf411 # v2.19.4
+      uses: step-security/harden-runner@bf7454d06d71f1098171f2acdf0cd4708d7b5920 # v2.20.0
       with:
         disable-sudo: true
         egress-policy: block
@@ -412,7 +412,7 @@ jobs:
     if: ${{ startsWith(github.ref, 'refs/tags/release-') }}
     steps:
     - name: Harden Runner
-      uses: step-security/harden-runner@9af89fc71515a100421586dfdb3dc9c984fbf411 # v2.19.4
+      uses: step-security/harden-runner@bf7454d06d71f1098171f2acdf0cd4708d7b5920 # v2.20.0
       with:
         disable-sudo: true
         egress-policy: block
@@ -467,7 +467,7 @@ jobs:
 
     - name: Get Preceding Release Tag Of Parent Commit
       id: preceding-release-tag
-      uses: AJGranowski/preceding-tag-action@00d3a92b4d3f272233e4837f96afec4cc09b818a # v1.1.7
+      uses: AJGranowski/preceding-tag-action@01965f6ae83db9b70975c95ac1b2802a3ead8e3a # v1.2.0
       with:
         ref: ${{ steps.parent-commit.outputs.sha }}
         regex: ${{ env.RELEASE_REGEX }}
