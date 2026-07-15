@@ -131,8 +131,7 @@ const makeFlagTraversalPrecedingTagAlgorithm = (traversalCommitsLimit: number = 
                 graph.addCommit(tag.sha, {
                     flags: 0,
                     depth: null,
-                    tags: new Set([tag.name]),
-                    commitDate: undefined
+                    tags: new Set([tag.name])
                 });
             }
         }
