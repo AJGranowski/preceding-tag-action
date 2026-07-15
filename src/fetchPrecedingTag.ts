@@ -1,12 +1,16 @@
+import type { DateTag } from "./types/DateTag";
 import type { GitHubAPI } from "./GitHubAPI";
 import type { GitRef } from "./types/GitRef";
+import type { Octokit } from "@octokit/rest";
 import type { Tag } from "./types/Tag";
+import type { TopologicalPrecedingTagAlgorithm } from "./types/TopologicalPrecedingTagAlgorithm";
 
-import { comparePrecedingTagAlgorithm } from "./comparePrecedingTagAlgorithm";
+type Octokit_log = Octokit["log"];
 
 interface Options {
     filter?: (string: string) => boolean;
     includeRef?: boolean;
+    maxTags?: number;
 }
 
 /**
@@ -17,16 +21,32 @@ interface Options {
  *
  * Will reject if the API is unavailable, or if the reference does not exist.
  */
-async function fetchPrecedingTag(githubAPI: GitHubAPI, ref: GitRef, options?: Options): Promise<Tag | null> {
+async function fetchPrecedingTag(githubAPI: GitHubAPI,
+    log: Octokit_log,
+    ref: GitRef,
+    precedingTagAlgo: TopologicalPrecedingTagAlgorithm,
+    options?: Options): Promise<Tag | null> {
+
     const optionsWithDefaults = {
         filter: (string: string): boolean => string.length > 0,
         includeRef: false,
+        maxTags: 100,
         ...options
     } satisfies Required<Options>;
 
     const sha = await githubAPI.fetchCommitSHA(ref);
-    const allTags = await Array.fromAsync(githubAPI.fetchTags(optionsWithDefaults.filter));
-    const precedingTags = [...await comparePrecedingTagAlgorithm(sha, allTags, optionsWithDefaults.includeRef, githubAPI)];
+    const allTags = [];
+    let count = 0;
+    for await (const tag of githubAPI.fetchTags(optionsWithDefaults.filter)) {
+        allTags.push(tag);
+        count++;
+        if (count >= optionsWithDefaults.maxTags) {
+            log.warn(`Tag fetch limit reached. (${count} >= ${optionsWithDefaults.maxTags})`);
+            break;
+        }
+    }
+
+    const precedingTags: DateTag[] = [...await precedingTagAlgo(sha, allTags.values(), optionsWithDefaults.includeRef, githubAPI)];
 
     if (precedingTags.length === 0) {
         return null;
@@ -34,14 +54,7 @@ async function fetchPrecedingTag(githubAPI: GitHubAPI, ref: GitRef, options?: Op
         return precedingTags[0];
     }
 
-    const commitDates = await Promise.all(precedingTags.map(async (tag) => {
-        return {
-            tag: tag,
-            commitDate: await githubAPI.fetchCommitDate(tag.sha)
-        };
-    }));
-
-    return commitDates.reduce((prev, next) => {
+    return precedingTags.reduce((prev, next) => {
         let compareNextPrev = nullableDateComparator(next.commitDate.committer, prev.commitDate.committer);
         if (compareNextPrev > 0) {
             return next;
@@ -58,7 +71,7 @@ async function fetchPrecedingTag(githubAPI: GitHubAPI, ref: GitRef, options?: Op
         }
 
         return prev;
-    }).tag;
+    });
 }
 
 /**

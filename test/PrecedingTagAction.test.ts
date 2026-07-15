@@ -5,11 +5,9 @@ import {
     test,
     vi
 } from "vitest";
-
 import * as core from "@actions/core";
 import { context } from "@actions/github";
 import { Octokit } from "@octokit/rest";
-
 import PrecedingTagAction from "../src/PrecedingTagAction";
 
 vi.mock("@actions/core", () => ({
@@ -43,7 +41,7 @@ vi.mock("@octokit/rest", () => {
         return mapper(await fn(args), () => {});
     };
 
-    Octokit.prototype.paginate.iterator = async function* (fn: any, args: any): AsyncIterable<any> {
+    Octokit.prototype.paginate.iterator = async function* (fn: any, args: any): AsyncGenerator<any> {
         yield await fn(args);
     };
 
@@ -51,6 +49,7 @@ vi.mock("@octokit/rest", () => {
         repos: {
             compareCommitsWithBasehead: undefined,
             getCommit: undefined,
+            listCommits: undefined,
             listTags: undefined
         }
     };
@@ -71,6 +70,7 @@ describe("PrecedingTagAction", () => {
         (Octokit.prototype as any).saveCache = () => Promise.resolve();
         (Octokit.prototype as any).rest.repos.compareCommitsWithBasehead = () => {throw new Error("Not implemented.");};
         (Octokit.prototype as any).rest.repos.getCommit = () => {throw new Error("Not implemented.");};
+        (Octokit.prototype as any).rest.repos.listCommits = () => {throw new Error("Not implemented.");};
         (Octokit.prototype as any).rest.repos.listTags = () => {throw new Error("Not implemented.");};
     });
 
@@ -80,6 +80,7 @@ describe("PrecedingTagAction", () => {
             (core as any).getBooleanInput = () => false;
             (Octokit.prototype as Octokit).rest.repos.compareCommitsWithBasehead = vi.fn(() => Promise.reject()) as any;
             (Octokit.prototype as Octokit).rest.repos.getCommit = vi.fn(() => Promise.reject()) as any;
+            (Octokit.prototype as Octokit).rest.repos.listCommits = vi.fn(() => Promise.reject()) as any;
             (Octokit.prototype as Octokit).rest.repos.listTags = vi.fn(() => Promise.reject()) as any;
         });
 
@@ -120,6 +121,9 @@ describe("PrecedingTagAction", () => {
             "default-tag": "some-default-tag",
             "regex": "",
             "include-ref": "false",
+            "limit-tags": "100",
+            "limit-traversal-commits": "1000",
+            "limit-traversal-tags": "6",
             "ref": "",
             "repository": "owner/repo",
             "token": ""

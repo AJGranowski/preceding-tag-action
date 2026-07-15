@@ -1,13 +1,20 @@
-import type { Octokit } from "@octokit/rest";
-
 import type { CommitDate } from "./types/CommitDate";
+import type { CommitListItem } from "./types/CommitListItem";
 import type { GitRef } from "./types/GitRef";
+import type { Octokit } from "@octokit/rest";
 import type { Repository } from "./types/Repository";
 import type { Tag } from "./types/Tag";
 
-const MAX_TAGS: number = 100;
+type MaxBatchSizeType<T> = {
+    readonly [K in keyof T]?: T[K] extends ((...args: any[]) => any) ? number : never;
+};
 
 class GitHubAPI {
+    public static readonly MAX_BATCH_SIZE = Object.freeze({
+        fetchCommitList: 100,
+        fetchTags: 100
+    }) satisfies MaxBatchSizeType<GitHubAPI>;
+
     private readonly octokit: Octokit;
     private readonly repo: Repository;
 
@@ -21,32 +28,51 @@ class GitHubAPI {
      *
      * Will reject if the API is unavailable.
      */
-    async *fetchTags(filter: (string: string) => boolean): AsyncIterable<Tag> {
-        let totalTags = 0;
+    async *fetchTags(filter: (string: string) => boolean, batchSize: number = 100): AsyncGenerator<Tag> {
         // https://docs.github.com/en/rest/repos/repos?apiVersion=2022-11-28#list-repository-tags
         const pageIterator = this.octokit.paginate.iterator(this.octokit.rest.repos.listTags, {
             owner: this.repo.owner,
             repo: this.repo.repo,
-            per_page: Math.min(100, MAX_TAGS) // max
+            per_page: Math.min(GitHubAPI.MAX_BATCH_SIZE.fetchTags, batchSize)
         });
 
         for await (const response of pageIterator) {
-            const result = response.data.filter((object) => object.commit.sha.length > 0 && filter(object.name))
+            yield* response.data
+                .filter((object) => object.commit.sha.length > 0 && filter(object.name))
                 .map((object) => ({
                     name: object.name,
                     sha: object.commit.sha
                 }));
-
-            for (const tag of result) {
-                totalTags++;
-                if (totalTags >= MAX_TAGS) {
-                    this.octokit.log.warn(`Total tag limit reached in request ${response.url}. (${totalTags} >= ${MAX_TAGS})`);
-                    return;
-                }
-
-                yield tag;
-            }
         }
+    }
+
+    /**
+     * Begin fetching bached ancestor commits from a starting SHA.
+     */
+    async *fetchCommitList(commitSHA: string, batchSize: number = 30): AsyncGenerator<CommitListItem> {
+        // https://docs.github.com/en/rest/commits/commits#list-commits
+        const pageIterator = this.octokit.paginate.iterator(this.octokit.rest.repos.listCommits, {
+            owner: this.repo.owner,
+            repo: this.repo.repo,
+            sha: commitSHA,
+            per_page: Math.min(GitHubAPI.MAX_BATCH_SIZE.fetchCommitList, batchSize)
+        });
+
+        let isFirst = true;
+        for await (const commitListResponse of pageIterator) {
+            if (isFirst) {
+                isFirst = false;
+                if (!this.isValidListCommitsResponse(commitSHA, commitListResponse)) {
+                    // eslint-disable-next-line max-len
+                    throw new Error(`Expected requested SHA (${commitSHA}) to appear as the first result in the response, but got ${commitListResponse.data[0]?.sha} instead.`);
+                }
+            }
+
+            yield* commitListResponse.data
+                .map((x) => this.listCommitsDataToCommitListItem(x));
+        }
+
+        return;
     }
 
     /**
@@ -120,9 +146,23 @@ class GitHubAPI {
     }
 
     /**
+     * @returns Remaps a listCommits entry into a CommitListItem
+     */
+    private listCommitsDataToCommitListItem(data: Awaited<ReturnType<Octokit["rest"]["repos"]["listCommits"]>>["data"][number]): CommitListItem {
+        return {
+            sha: data.sha,
+            commitDate: {
+                author: data.commit.author?.date,
+                committer: data.commit.committer?.date
+            },
+            parentSHAs: data.parents == null ? [] : data.parents.map((x) => x.sha)
+        };
+    }
+
+    /**
      * Return true if this error response is due to the compare diff taking too long to generate.
      */
-    isCompareDiffTooLargeError(error: any): boolean {
+    private isCompareDiffTooLargeError(error: any): boolean {
         if (error == null || error.status == null || error.request == null || error.response == null || error.response.data == null) {
             return false;
         }
@@ -134,10 +174,14 @@ class GitHubAPI {
         return false;
     }
 
+    private isValidListCommitsResponse(requestCommitSHA: string, response: Awaited<ReturnType<Octokit["rest"]["repos"]["listCommits"]>>): boolean {
+        return response.data.length > 0 && response.data[0].sha === requestCommitSHA;
+    }
+
     /**
      * Extract the commit difference from a compareCommitsWithBasehead response.
      */
-    parseCommitDifference(response: Awaited<ReturnType<Octokit["rest"]["repos"]["compareCommitsWithBasehead"]>>): number {
+    private parseCommitDifference(response: Awaited<ReturnType<Octokit["rest"]["repos"]["compareCommitsWithBasehead"]>>): number {
         switch (response.data.status) {
             case "ahead":
                 if (response.data.ahead_by < 0) {

@@ -1,0 +1,202 @@
+import type { CommitDate } from "./types/CommitDate";
+import type { DateTag } from "./types/DateTag";
+import type { GitHubAPI } from "./GitHubAPI";
+import { LazyGitHubGraph } from "./LazyGitHubGraph";
+import type { LazyGitHubGraphNode } from "./LazyGitHubGraph";
+import { Queue } from "./Queue";
+import type { Tag } from "./types/Tag";
+import type { TopologicalPrecedingTagAlgorithm } from "./types/TopologicalPrecedingTagAlgorithm";
+
+interface GraphData {
+    commitDate?: CommitDate;
+    depth?: number;
+    flags: number;
+    tags: Set<string>;
+}
+
+interface QueueEntry {
+    commitSHA: string;
+    depth: number;
+    flags: number;
+}
+
+function countBits(n: number): number {
+    n |= 0;
+    let result = 0;
+    while (n !== 0) {
+        n &= (n - 1);
+        result++;
+    }
+
+    return result;
+}
+
+function* iteratorConcat<T>(...iterables: Iterable<T>[]): Generator<T> {
+    for (const iterable of iterables) {
+        yield* iterable;
+    }
+}
+
+const VISITED_FLAG = 1;
+const FLAG_OFFSET = 1;
+const MAX_TAGS = 30 - FLAG_OFFSET; // JavaScript bitwise ops use signed 32-bit integers. 30 gives us some padding to avoid the flag from becoming negative.
+const MIN_BATCH_SIZE = 30;
+
+/**
+ * Perform a breadth-first search.
+ * @param initialize The root node of the search.
+ * @param traversal Given a node, generate a list of nodes to add to the search.
+ */
+async function bfs<T>(root: T, traversal: (node: T) => Promise<IteratorObject<T>>): Promise<void> {
+    const queue: Queue<T> = new Queue();
+    queue.enqueue(root);
+    while (queue.hasItems()) {
+        for (const next of await traversal(queue.dequeue()!)) {
+            queue.enqueue(next);
+        }
+    }
+}
+
+/**
+ * Calculate the batch size for the next fetch
+ */
+function calculateBatchSize(numberOfFoundTags: number, visitedCommits: number): number {
+    if (numberOfFoundTags === 0) {
+        return LazyGitHubGraph.MAX_FETCH_SIZE;
+    }
+
+    return Math.max(MIN_BATCH_SIZE, Math.min(LazyGitHubGraph.MAX_FETCH_SIZE, Math.round(2 * visitedCommits / numberOfFoundTags)));
+}
+
+/**
+ * Given a traversed graph, find the tags with the lowest traversal flag count and shallowest depth.
+ */
+// eslint-disable-next-line complexity, max-len
+function findPrecedingTags(graphCommits: IteratorObject<LazyGitHubGraphNode<GraphData>>, headCommitSHA: string, includeHeadCommitSHA: boolean): IteratorObject<DateTag> {
+    let best: {flagCount: number, depth: number, tags: Iterable<DateTag>} | null = null;
+    for (const commit of graphCommits) {
+        const invalidCommit = commit.data.depth == null || (!includeHeadCommitSHA && commit.commitSHA === headCommitSHA);
+        const unvisitedCommit = (commit.data.flags & VISITED_FLAG) !== VISITED_FLAG;
+        const untaggedCommit = commit.data.tags.size === 0;
+        if (invalidCommit || unvisitedCommit || untaggedCommit) {
+            continue;
+        }
+
+        const depth = commit.data.depth!;
+        const tags: IteratorObject<DateTag> = commit.data.tags.values().map((tag) => ({
+            name: tag,
+            sha: commit.commitSHA,
+            commitDate: commit.data.commitDate == null ? {} : commit.data.commitDate
+        }));
+
+        const flagCount = countBits(commit.data.flags >>> FLAG_OFFSET);
+        if (best == null || flagCount < best.flagCount || (flagCount === best.flagCount && depth < best.depth)) {
+            best = {
+                flagCount: flagCount,
+                depth: depth,
+                tags: tags
+            };
+        } else if (flagCount === best.flagCount && depth === best.depth) {
+            best.tags = iteratorConcat(best.tags, tags);
+        }
+    }
+
+    if (best == null) {
+        return [].values();
+    }
+
+    return Iterator.from(best.tags);
+}
+
+function isTraversalLimitReached(visitedCommits: number, visitedTags: number, traversalCommitsLimit: number, traversalTagsLimit: number): boolean {
+    return visitedCommits >= traversalCommitsLimit || (visitedTags >= traversalTagsLimit && visitedCommits > 0);
+}
+
+/**
+ * Create a topological preceding tag algorithm that traverses some number of tags, and returns the shallowest tag with no tagged descendants.
+ * @throws Throws an error if the number of tags to traverse is too high.
+ */
+const makeFlagTraversalPrecedingTagAlgorithm = (traversalCommitsLimit: number, traversalTagsLimit: number): TopologicalPrecedingTagAlgorithm => {
+    if (traversalTagsLimit > MAX_TAGS) {
+        throw new Error(`The input tag traversal limit: ${traversalTagsLimit}, is larger than the maximum limit of ${MAX_TAGS}`);
+    }
+
+    return async (headCommitSHA: string, tags: IteratorObject<Tag>, includeHeadCommitSHA: boolean, githubAPI: GitHubAPI): Promise<IteratorObject<DateTag>> => {
+        const graph = new LazyGitHubGraph<GraphData>(githubAPI, () => ({
+            flags: 0,
+            tags: new Set<string>()
+        }), (data, fetchResult) => {data.commitDate = fetchResult.commitDate;});
+
+        graph.addCommit(headCommitSHA);
+        let noTags = true;
+        for (const tag of tags) {
+            noTags = false;
+            if (graph.hasCommit(tag.sha)) {
+                graph.getCommit(tag.sha)!.tags.add(tag.name);
+            } else {
+                graph.addCommit(tag.sha, {
+                    flags: 0,
+                    tags: new Set([tag.name])
+                });
+            }
+        }
+
+        // Don't search if there's nothing to search for
+        if (noTags) {
+            return [].values();
+        }
+
+        const tagToFlags = new Map<string, number>();
+        let visitedCommits = 0;
+        const root: QueueEntry = {
+            commitSHA: headCommitSHA,
+            depth: 0,
+            flags: VISITED_FLAG
+        };
+
+        const bfsTraversal = async (node: QueueEntry): Promise<IteratorObject<QueueEntry>> => {
+            const commitSHA = node.commitSHA;
+            let depth = node.depth;
+            let flags = node.flags;
+
+            const batchSize = calculateBatchSize(tagToFlags.size, visitedCommits);
+            const data = (await graph.getCommit(commitSHA, batchSize))!;
+
+            // Skip visited commits
+            if ((data.flags & flags) === flags) {
+                return [].values();
+            }
+
+            // Skip unvisited commits if we've hit any of our traversal limits
+            if ((data.flags & VISITED_FLAG) !== VISITED_FLAG) {
+                if (isTraversalLimitReached(visitedCommits, tagToFlags.size, traversalCommitsLimit, traversalTagsLimit)) {
+                    return [].values();
+                }
+
+                visitedCommits++;
+            }
+
+            data.flags = flags = data.flags | flags | VISITED_FLAG;
+            depth = (data.depth ??= depth); // Expression evaluates to `data.depth` if it exists, otherwise `depth`.
+
+            if (data.tags.size > 0) {
+                if (!tagToFlags.has(commitSHA)) {
+                    tagToFlags.set(commitSHA, 1 << (tagToFlags.size + FLAG_OFFSET));
+                }
+
+                flags |= tagToFlags.get(commitSHA)!;
+            }
+
+            return (await graph.getParents(commitSHA, batchSize)).map((parent) => ({
+                commitSHA: parent,
+                depth: depth + 1,
+                flags: flags
+            }));
+        };
+
+        await bfs(root, bfsTraversal);
+        return findPrecedingTags(graph.getCommits(), headCommitSHA, includeHeadCommitSHA);
+    };
+};
+
+export { makeFlagTraversalPrecedingTagAlgorithm };

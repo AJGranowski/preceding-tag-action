@@ -1,15 +1,13 @@
+import type { context as contextType } from "@actions/github";
 import {
     describe,
     expect,
     test,
     vi
 } from "vitest";
-
-import { mock } from "vitest-mock-extended";
-import type { context as contextType } from "@actions/github";
 import type { getBooleanInput as getBooleanInputType, getInput as getInputType } from "@actions/core";
-
 import { Input } from "../src/Input";
+import { mock } from "vitest-mock-extended";
 
 type Core_getBooleanInput = typeof getBooleanInputType;
 type Core_getInput = typeof getInputType;
@@ -151,6 +149,9 @@ describe("Input", () => {
                 input.getDefaultTag();
                 input.getFilter();
                 input.getIncludeRef();
+                input.getLimitTags();
+                input.getLimitTraversalCommits();
+                input.getLimitTraversalTags();
                 input.getRef();
                 input.getRepository();
                 input.getToken();

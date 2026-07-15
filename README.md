@@ -5,11 +5,11 @@
 
 <header align="center">
     <h1 align="center">Preceding Tag Action</h1>
-    <p align="center">Find the most recent tag that is reachable from a commit.</p>
+    <p align="center">Find the preceding tag of a commit using only the GitHub API.</p>
 </header>
 
 ## About
-This action functions similar to [`git describe`][git-describe-link] by finding the most recent tag that is reachable from a commit. Since this action uses the GitHub API instead of a local Git database, you can use this action without `actions/checkout`!
+This action functions just like [`git describe`][git-describe-link] by finding the closest tag of a commit with no tagged descendants. Since this action uses the GitHub API instead of a local Git database, you can use this action without `actions/checkout`!
 
 ## Usage
 ```yml
@@ -38,14 +38,17 @@ This action functions similar to [`git describe`][git-describe-link] by finding 
 Although this project publishes version tags, I strongly recommend [pinning this action to a full-length commit SHA][security-sha-pinning-link]. You can get the SHA of the latest release from the [latest release page][latest-release-link] by clicking the commit link, then and copying the SHA from the URL.
 
 ## Inputs
-| Name          | Type    | Default                    | Description                                                                 |
-|---------------|---------|----------------------------|-----------------------------------------------------------------------------|
-| `repository`  | String  | `${{ github.repository }}` | Repository name with owner. For example, `AJGranowski/preceding-tag-action` |
-| `ref`         | String  | `${{ github.sha }}`        | The branch, tag, or SHA to find the preceding tag from.                     |
-| `regex`       | String  | `^.+$`                     | A regular expression used to filter candidate tag names.                    |
-| `default-tag` | String  | `​`                         | The default tag to return if no preceding tag was found.                    |
-| `include-ref` | Boolean | `false`                    | If true, include tags pointing to `ref` as candidates.                      |
-| `token`       | String  | `${{ github.token }}`      | Personal access token (PAT) used to fetch the tags.                         |
+| Name                      | Type    | Default                    | Description                                                                                                                                                       |
+|---------------------------|---------|----------------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `repository`              | String  | `${{ github.repository }}` | Repository name with owner. For example, `AJGranowski/preceding-tag-action`                                                                                       |
+| `ref`                     | String  | `${{ github.sha }}`        | The branch, tag, or SHA to find the preceding tag from.                                                                                                           |
+| `regex`                   | String  | `^.+$`                     | A regular expression used to filter candidate tag names.                                                                                                          |
+| `default-tag`             | String  | `​`                         | The default tag to return if no preceding tag was found.                                                                                                          |
+| `include-ref`             | Boolean | `false`                    | If true, include tags pointing to `ref` as candidates.                                                                                                            |
+| `token`                   | String  | `${{ github.token }}`      | Personal access token (PAT) used to fetch the tags.                                                                                                               |
+| `limit-tags`              | Number  | `100`                      | Tag fetch limit. Only tags matching `regex` count towards this limit. Increasing this may produce a more accurate result when `ref` is very far away from `HEAD`. |
+| `limit-traversal-commits` | Number  | `1000`                     | The commit traversal limit while searching for a preceding tag.                                                                                                   |
+| `limit-traversal-tags`    | Number  | `6`                        | The tag traversal limit while searching for a preceding tag. Behaves similar to `--candidates`` on `git describe`.                                                |
 
 ## Outputs
 | Name        | Type    | Description                                                                            |

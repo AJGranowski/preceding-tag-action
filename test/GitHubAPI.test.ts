@@ -1,10 +1,13 @@
-import { describe, expect, test } from "vitest";
-import { mock } from "vitest-mock-extended";
-
-import type { Octokit } from "@octokit/rest";
-
+import {
+    beforeEach,
+    describe,
+    expect,
+    test
+} from "vitest";
 import type { CommitDate } from "../src/types/CommitDate";
 import { GitHubAPI } from "../src/GitHubAPI";
+import type { Octokit } from "@octokit/rest";
+import { mock } from "vitest-mock-extended";
 import type { Repository } from "../src/types/Repository";
 
 const defaultRepo = {
@@ -76,7 +79,7 @@ describe("GitHubAPI", () => {
                 return mapper(await fn(args), () => {});
             };
 
-            paginate.iterator = async function* (fn: any, args: any): AsyncIterable<any> {
+            paginate.iterator = async function* (fn: any, args: any): AsyncGenerator<any> {
                 yield await fn(args);
             };
 
@@ -271,6 +274,85 @@ describe("GitHubAPI", () => {
             const githubAPI = new GitHubAPI(octokit, defaultRepo);
             const difference = await githubAPI.fetchCommitDifference("ref1", "ref2");
             expect(difference).toBeNaN();
+        });
+    });
+
+    describe("fetchCommitList", () => {
+        let paginate: any;
+        beforeEach(() => {
+            paginate = async (fn: any, args: any, mapper: any = (response: any) => response.data) => {
+                return mapper(await fn(args), () => {});
+            };
+
+            paginate.iterator = async function* (fn: any, args: any): AsyncGenerator<any> {
+                yield await fn(args);
+            };
+        });
+
+        test("should return the commit list", async () => {
+            const octokit = mock<Octokit>({
+                paginate: paginate as any,
+                rest: {
+                    repos: {
+                        listCommits: (() => Promise.resolve({
+                            data: [
+                                {
+                                    sha: "sha",
+                                    commit: {
+                                        author: {
+                                            date: "author date"
+                                        },
+                                        committer: {
+                                            date: "committer date"
+                                        }
+                                    },
+                                    parents: []
+                                }
+                            ]
+                        })) as any
+                    }
+                }
+            });
+
+            const githubAPI = new GitHubAPI(octokit, defaultRepo);
+            const commitList = await Array.fromAsync(githubAPI.fetchCommitList("sha"));
+            expect(commitList).to.deep.equals([{
+                sha: "sha",
+                commitDate: {
+                    author: "author date",
+                    committer: "committer date"
+                },
+                parentSHAs: []
+            }]);
+        });
+
+        test("should error if the first item does not match the input sha", async () => {
+            const octokit = mock<Octokit>({
+                paginate: paginate as any,
+                rest: {
+                    repos: {
+                        listCommits: (() => Promise.resolve({
+                            data: [
+                                {
+                                    sha: "sha2",
+                                    commit: {
+                                        author: {
+                                            date: "author date"
+                                        },
+                                        committer: {
+                                            date: "committer date"
+                                        }
+                                    },
+                                    parents: []
+                                }
+                            ]
+                        })) as any
+                    }
+                }
+            });
+
+            const githubAPI = new GitHubAPI(octokit, defaultRepo);
+            await expect(() => Array.fromAsync(githubAPI.fetchCommitList("sha1"))).rejects.toThrowError();
         });
     });
 });

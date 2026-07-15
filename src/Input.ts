@@ -1,7 +1,6 @@
 import type { context } from "@actions/github";
 import type { getBooleanInput, getInput, warning } from "@actions/core";
 import { hash } from "crypto";
-
 import type { Repository } from "./types/Repository";
 
 type Core_getBooleanInput = typeof getBooleanInput;
@@ -48,6 +47,9 @@ class Input {
         this.getDefaultTag();
         this.getFilter();
         this.getIncludeRef();
+        this.getLimitTags();
+        this.getLimitTraversalCommits();
+        this.getLimitTraversalTags();
         this.getRef();
         this.getRepository();
         this.getToken();
@@ -107,6 +109,60 @@ class Input {
     }
 
     /**
+     * Return the tag fetch limit, defaults to 100.
+     */
+    getLimitTags(): number {
+        if (this.memoization.getLimitTags != null) {
+            return this.memoization.getLimitTags;
+        }
+
+        const inputString = this.getInput("limit-tags");
+        if (inputString.length === 0) {
+            this.memoization.getLimitTags = 100;
+        } else {
+            this.memoization.getLimitTags = parseInt(inputString);
+        }
+
+        return this.memoization.getLimitTags;
+    }
+
+    /**
+     * Return the commit traversal limit, defaults to 1000.
+     */
+    getLimitTraversalCommits(): number {
+        if (this.memoization.getLimitTraversalCommits != null) {
+            return this.memoization.getLimitTraversalCommits;
+        }
+
+        const inputString = this.getInput("limit-traversal-commits");
+        if (inputString.length === 0) {
+            this.memoization.getLimitTraversalCommits = 1000;
+        } else {
+            this.memoization.getLimitTraversalCommits = parseInt(inputString);
+        }
+
+        return this.memoization.getLimitTraversalCommits;
+    }
+
+    /**
+     * Return the tag traversal limit, defaults to 6.
+     */
+    getLimitTraversalTags(): number {
+        if (this.memoization.getLimitTraversalTags != null) {
+            return this.memoization.getLimitTraversalTags;
+        }
+
+        const inputString = this.getInput("limit-traversal-tags");
+        if (inputString.length === 0) {
+            this.memoization.getLimitTraversalTags = 6;
+        } else {
+            this.memoization.getLimitTraversalTags = parseInt(inputString);
+        }
+
+        return this.memoization.getLimitTraversalTags;
+    }
+
+    /**
      * Get the ref to get the preceding tag of. Defaults to HEAD if not supplied for some reason.
      */
     getRef(): string {
@@ -163,7 +219,7 @@ class Input {
      * Return the token if it exists, or undefined.
      */
     getToken(): string | undefined {
-        if ("getToken" in this.memoization) {
+        if (Object.hasOwn(this.memoization, "getToken")) {
             return this.memoization.getToken;
         }
 
