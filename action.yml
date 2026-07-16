@@ -1,6 +1,6 @@
 name: Preceding Tag Action
 author: AJ Granowski
-description: Find the preceding tag of a commit using only the GitHub API.
+description: Find the latest/previous/last/preceding tag of a commit using only the GitHub API, similar to `git describe`.
 branding:
   color: orange
   icon: tag
