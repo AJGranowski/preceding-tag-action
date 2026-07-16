@@ -76,6 +76,7 @@ jobs:
       with:
         files_yaml: |
           paths:
+            - "action.yml"
             - "cjs-shim.mjs"
             - "esbuild.config.mjs"
             - "package.json"
