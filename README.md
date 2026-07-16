@@ -5,7 +5,7 @@
 
 <header align="center">
     <h1 align="center">Preceding Tag Action</h1>
-    <p align="center">Find the latest/previous/last/preceding tag of a commit using only the GitHub API, similar to `git describe`.</p>
+    <p align="center">Find the latest/previous/last/preceding tag of a commit using only the GitHub API, similar to git describe.</p>
 </header>
 
 ## About
