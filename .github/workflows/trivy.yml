@@ -1,7 +1,7 @@
 name: Trivy security scanner
 on:
   schedule:
-    - cron: '16 8 * * 6'
+    - cron: "16 8 * * 6"
   push:
     branches: [ "main" ]
   pull_request:
@@ -95,10 +95,10 @@ jobs:
       - name: Run Trivy vulnerability scanner
         uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25 # v0.36.0
         with:
-          image-ref: '${{ matrix.image }}'
-          format: 'sarif'
-          output: 'trivy-results.sarif'
-          severity: 'CRITICAL'
+          image-ref: "${{ matrix.image }}"
+          format: "sarif"
+          output: "trivy-results.sarif"
+          severity: "CRITICAL"
       
       - name: "Upload artifact"
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
