@@ -54,6 +54,24 @@ jobs:
         with:
           persist-credentials: false
 
+      - name: Docker Cache
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: /tmp/buildkit-cache
+          key: buildkit-${{ runner.os }}-${{ hashFiles('./container-images/**') }}
+
+      - name: Build Docker images
+        uses: docker/bake-action@d3418bd7d0e9324001bca92fa8ba175ea7e6dc9b # v7.3.0
+        with:
+          allow: |
+            network.host
+          builder: ${{ steps.setup-buildx-action.outputs.name }}
+          load: true
+          set: |
+            *.cache-from=type=local,src=/tmp/buildkit-cache
+            *.cache-to=type=local,dest=/tmp/buildkit-cache,mode=max
+          source: .
+
       - name: Build an images
         run: docker compose build
 
@@ -68,7 +86,7 @@ jobs:
       - name: "Upload artifact"
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
-          name: SARIF file
+          name: SARIF file ${{ matrix.image }}
           path: trivy-results.sarif
           retention-days: 5
 
