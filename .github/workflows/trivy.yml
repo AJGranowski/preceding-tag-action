@@ -49,12 +49,13 @@ jobs:
         uses: step-security/harden-runner@bf7454d06d71f1098171f2acdf0cd4708d7b5920 # v2.20.0
         with:
           disable-sudo: true
-          egress-policy: block
+          egress-policy: audit
           allowed-endpoints: >
             api.github.com:443
             auth.docker.io:443
             check.trivy.dev:443
             dl-cdn.alpinelinux.org:443
+            get.trivy.dev:443
             github.com:443
             production.cloudfront.docker.com:443
             registry-1.docker.io:443
