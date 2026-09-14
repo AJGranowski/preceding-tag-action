@@ -36,7 +36,7 @@ jobs:
 
     steps:
     - name: Harden Runner
-      uses: step-security/harden-runner@b09bb98e06d4d774595224525879c09bc6e98c40 # v2.20.1
+      uses: step-security/harden-runner@e14015d583714f6e62063499dc959a02595150a1 # v2.21.1
       with:
         disable-sudo: true
         egress-policy: block
@@ -52,7 +52,7 @@ jobs:
 
     - name: Run Published Action
       id: preceding-tag-published
-      uses: AJGranowski/preceding-tag-action@b308dd34c1a6ee88036f08cb40de4e0ceade1077 # v1.2.2
+      uses: AJGranowski/preceding-tag-action@efde4bddc63fde7406e4683d89d475f1e61ad929 # v1.2.3
       with:
         include-ref: ${{ matrix.include-ref }}
         ref: ${{ matrix.ref }}
