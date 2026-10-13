@@ -2,7 +2,6 @@ services:
   npm:
     build:
       context: "./container-images/node"
-      network: host
 
     cap_add:
       # Minimum permissions for Docker User Mirror entrypoint:
